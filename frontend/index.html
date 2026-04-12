@@ -625,6 +625,29 @@ footer {
   border-radius: 10px; cursor: none; transition: background 0.2s;
 }
 .aside-user:hover { background: #f4f3f1; }
+.aside-logout {
+  width: 100%;
+  margin-top: 10px;
+  border: 1px solid rgba(244, 63, 94, 0.24);
+  background: #fff1f2;
+  color: var(--rose);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: none;
+  transition: all 0.2s;
+}
+.aside-logout:hover {
+  background: var(--rose);
+  color: #fff;
+  border-color: transparent;
+}
 .aside-av {
   width: 34px; height: 34px; border-radius: 10px; background: var(--violet);
   display: flex; align-items: center; justify-content: center;
@@ -657,6 +680,7 @@ footer {
   width: 36px; height: 36px; border-radius: 10px; background: #f4f3f1;
   border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
   font-size: 16px; cursor: none; transition: all 0.2s; position: relative;
+  padding: 0; font-family: inherit; color: var(--ink2);
 }
 .h-icon-btn:hover { border-color: var(--violet); background: var(--violet-soft); }
 .h-toggle-btn {
@@ -769,6 +793,416 @@ footer {
 }
 .add-col-btn:hover { border-color: var(--violet); color: var(--violet); background: var(--violet-soft); }
 
+/* DASHBOARD SUBVIEWS */
+.db-content-view { display: none; }
+.db-content-view.active { display: block; }
+#dbView-board.db-content-view.active {
+  display: flex;
+  flex: 1;
+  overflow-x: auto;
+  align-items: flex-start;
+}
+.db-page {
+  flex: 1;
+  height: calc(100vh - 62px);
+  overflow-y: auto;
+  padding: 24px;
+  position: relative;
+  isolation: isolate;
+}
+.db-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(420px 260px at calc(12% + var(--px, 0px)) calc(8% + var(--py, 0px)), rgba(124,92,252,0.12), transparent 70%),
+    radial-gradient(360px 240px at calc(88% - var(--px, 0px)) calc(18% - var(--py, 0px)), rgba(56,189,248,0.1), transparent 72%),
+    radial-gradient(340px 220px at calc(72% + var(--px, 0px)) calc(92% - var(--py, 0px)), rgba(20,184,166,0.08), transparent 72%);
+  transition: background-position 0.25s ease;
+}
+.db-page > * { position: relative; z-index: 1; }
+.db-page-head { margin-bottom: 18px; }
+.db-page-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  color: var(--muted2);
+  font-weight: 800;
+}
+.db-page h3 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 30px;
+  line-height: 1.1;
+  margin-top: 8px;
+}
+.db-page-sub { color: var(--muted); font-size: 14px; margin-top: 8px; max-width: 620px; }
+.db-anim { opacity: 0; transform: translateY(14px) scale(0.995); }
+.db-content-view.active.is-animating .db-anim {
+  animation: dbReveal 0.58s var(--ease) forwards;
+}
+.db-delay-1 { animation-delay: 0.06s !important; }
+.db-delay-2 { animation-delay: 0.16s !important; }
+.db-delay-3 { animation-delay: 0.26s !important; }
+@keyframes dbReveal {
+  0% { opacity: 0; transform: translateY(14px) scale(0.995); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.db-page-hero {
+  background: radial-gradient(120% 140% at 0% 0%, #ffffff 0%, #f7f4ff 34%, #eef6ff 100%);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 18px 38px rgba(15, 14, 13, 0.07);
+}
+.db-hero-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.db-hero-badges { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.db-badge {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(124, 92, 252, 0.18);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #5f46cf;
+}
+.db-hero-metric {
+  min-width: 188px;
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(124, 92, 252, 0.2);
+}
+.db-hero-metric-label { font-size: 11px; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 800; }
+.db-hero-metric-value { font-size: 31px; font-weight: 800; margin-top: 3px; color: var(--ink); }
+.db-hero-metric-note { font-size: 12px; color: var(--teal); font-weight: 700; margin-top: 1px; }
+.db-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.db-kpi-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  transition: transform 0.2s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+.db-kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: rgba(124,92,252,0.35); }
+.db-kpi-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.db-kpi-spark {
+  width: 64px;
+  height: 22px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(124,92,252,0.12), rgba(124,92,252,0.03));
+  border: 1px solid rgba(124,92,252,0.2);
+  padding: 2px 3px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: visible;
+}
+.db-kpi-spark svg { width: 100%; height: 100%; display: block; }
+.db-kpi-spark path {
+  stroke: rgba(124,92,252,0.92);
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 130;
+  stroke-dashoffset: 130;
+}
+.db-content-view.active.is-animating .db-kpi-spark path { animation: kpiSparkIn 0.75s ease forwards; }
+@keyframes kpiSparkIn {
+  to { stroke-dashoffset: 0; }
+}
+.db-spark-dot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--violet);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(124,92,252,0.35);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.15s ease;
+}
+.db-spark-tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 7px;
+  border-radius: 7px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.db-spark-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid var(--ink);
+}
+.db-kpi-spark.hovered .db-spark-dot,
+.db-kpi-spark.hovered .db-spark-tip { opacity: 1; }
+.db-kpi-spark.pinned .db-spark-dot,
+.db-kpi-spark.pinned .db-spark-tip { opacity: 1; }
+.db-kpi-spark.pinned {
+  border-color: rgba(124,92,252,0.52);
+  box-shadow: 0 0 0 3px rgba(124,92,252,0.12);
+}
+.db-kpi-card.kpi-finished {
+  border-color: rgba(124,92,252,0.4);
+  box-shadow: 0 10px 24px rgba(124,92,252,0.16);
+}
+.db-kpi-card.kpi-finished .db-kpi-spark {
+  animation: kpiPulse 0.5s ease;
+}
+@keyframes kpiPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.db-kpi-label { font-size: 11px; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 800; }
+.db-kpi-value { font-size: 27px; font-weight: 800; margin-top: 6px; }
+.counting { opacity: 0.98; }
+.db-kpi-delta { font-size: 12px; color: var(--teal); margin-top: 2px; font-weight: 700; }
+.db-slab {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.db-slab-title { font-size: 12px; font-weight: 800; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+.db-slab-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.db-slab-note { font-size: 12px; color: var(--muted); }
+.db-bars { display: grid; gap: 10px; }
+.db-bar-row { display: grid; grid-template-columns: 120px 1fr 44px; gap: 10px; align-items: center; }
+.db-bar-name { font-size: 12px; color: var(--muted); font-weight: 700; }
+.db-bar-track { height: 8px; background: #f1efeb; border-radius: 99px; overflow: hidden; }
+.db-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--violet), #c084fc); }
+.db-bar-val { font-size: 12px; font-weight: 700; color: var(--ink2); text-align: right; }
+.db-grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; }
+.db-line-chart {
+  height: 180px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(124,92,252,0.12), rgba(124,92,252,0.02));
+  border: 1px solid rgba(124,92,252,0.2);
+  position: relative;
+  overflow: hidden;
+}
+.db-line-chart svg { width: 100%; height: 100%; display: block; }
+.chart-line {
+  stroke-dasharray: 980;
+  stroke-dashoffset: 980;
+}
+.db-content-view.active.is-animating .chart-line {
+  animation: dbChartDraw 1.15s ease forwards;
+}
+.db-content-view.active.is-animating .chart-line.secondary { animation-delay: 0.18s; }
+@keyframes dbChartDraw {
+  to { stroke-dashoffset: 0; }
+}
+.db-donut {
+  width: 132px;
+  height: 132px;
+  margin: 8px auto 10px;
+  border-radius: 50%;
+  background: conic-gradient(var(--violet) 0 58%, #f59e0b 58% 82%, #14b8a6 82% 100%);
+  position: relative;
+  transform: scale(0.9) rotate(-18deg);
+  opacity: 0.75;
+}
+.db-content-view.active.is-animating .db-donut { animation: dbDonutIn 0.75s var(--spring) forwards; }
+@keyframes dbDonutIn {
+  0% { transform: scale(0.9) rotate(-18deg); opacity: 0.75; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.db-donut::after {
+  content: '';
+  position: absolute;
+  inset: 18px;
+  background: #fff;
+  border-radius: 50%;
+}
+.db-donut-label {
+  position: relative;
+  margin-top: -91px;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 800;
+  z-index: 1;
+}
+.db-donut-sub { text-align: center; font-size: 12px; color: var(--muted); margin-top: 24px; }
+.db-activity-list { display: grid; gap: 10px; }
+.db-activity-item {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  background: #fbfaf8;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  transition: transform 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.db-activity-item:hover { transform: translateX(2px); border-color: rgba(124,92,252,0.3); background: #ffffff; }
+.db-activity-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--violet-soft);
+  color: var(--violet);
+}
+.db-activity-msg { font-size: 13px; color: var(--ink2); }
+.db-activity-time { font-size: 11px; color: var(--muted2); font-weight: 700; }
+.db-day-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted2);
+  margin: 10px 0 2px;
+}
+.db-notif-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.db-notif-btn {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--ink2);
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: none;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.db-notif-btn:hover { border-color: var(--violet); color: var(--violet); background: var(--violet-soft); }
+.db-member-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.db-member-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--white);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.db-member-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.db-member-av {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.db-member-name { font-size: 13px; font-weight: 700; }
+.db-member-role { font-size: 11px; color: var(--muted); }
+.db-pill {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #f0fdf4;
+  color: var(--teal);
+}
+.db-member-meta { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.db-mini-track {
+  width: 76px;
+  height: 6px;
+  border-radius: 999px;
+  background: #ece9e3;
+  overflow: hidden;
+}
+.db-mini-fill { height: 100%; background: linear-gradient(90deg, var(--sky), var(--violet)); }
+.db-settings-list { display: grid; gap: 10px; }
+.db-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: var(--white);
+  transition: border-color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.db-setting-row:hover { border-color: rgba(124,92,252,0.35); transform: translateY(-1px); }
+.db-setting-title { font-size: 13px; font-weight: 700; }
+.db-setting-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.db-toggle {
+  width: 42px;
+  height: 24px;
+  border-radius: 99px;
+  border: none;
+  background: #e8e4de;
+  position: relative;
+  cursor: none;
+}
+.db-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.2s var(--ease);
+}
+.db-toggle.on { background: var(--violet); }
+.db-toggle.on::after { left: 21px; }
+.db-actions-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.db-ghost-btn,
+.db-solid-btn {
+  border-radius: 10px;
+  padding: 9px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: none;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.db-ghost-btn { border: 1px solid var(--border); background: #fff; color: var(--ink2); }
+.db-ghost-btn:hover { border-color: var(--violet); color: var(--violet); background: var(--violet-soft); }
+.db-solid-btn { border: none; background: var(--ink); color: #fff; }
+.db-solid-btn:hover { background: var(--violet); box-shadow: 0 10px 24px rgba(124,92,252,0.25); }
+
 /* RIGHT PANEL */
 .db-panel {
   width: 288px; height: 100vh; background: var(--white);
@@ -816,6 +1250,12 @@ footer {
   margin-top: 12px;
 }
 .invite-row:hover { background: var(--violet); color: #fff; border-color: transparent; }
+
+@media (max-width: 1180px) {
+  .db-cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .db-member-grid { grid-template-columns: 1fr; }
+  .db-grid-2 { grid-template-columns: 1fr; }
+}
 
 /* MODAL */
 .modal-ov {
@@ -1248,11 +1688,12 @@ footer {
     </div>
     <div class="aside-section">
       <div class="aside-sec-label">Main</div>
-      <button class="aside-nav-btn active"><span class="anb-icon"><i class="bi bi-kanban"></i></span> Board</button>
-      <button class="aside-nav-btn"><span class="anb-icon"><i class="bi bi-bar-chart"></i></span> Analytics</button>
-      <button class="aside-nav-btn"><span class="anb-icon"><i class="bi bi-bell"></i></span> Activity <span class="anb-badge">5</span></button>
-      <button class="aside-nav-btn"><span class="anb-icon"><i class="bi bi-people"></i></span> Members</button>
-      <button class="aside-nav-btn"><span class="anb-icon"><i class="bi bi-gear"></i></span> Settings</button>
+      <button class="aside-nav-btn active" data-db-view="board" onclick="switchDashboardView('board', this)"><span class="anb-icon"><i class="bi bi-kanban"></i></span> Board</button>
+      <button class="aside-nav-btn" data-db-view="analytics" onclick="switchDashboardView('analytics', this)"><span class="anb-icon"><i class="bi bi-bar-chart"></i></span> Analytics</button>
+      <button class="aside-nav-btn" data-db-view="activity" onclick="switchDashboardView('activity', this)"><span class="anb-icon"><i class="bi bi-clock-history"></i></span> Activity</button>
+      <button class="aside-nav-btn" data-db-view="notifications" onclick="switchDashboardView('notifications', this)"><span class="anb-icon"><i class="bi bi-bell"></i></span> Notifications <span class="anb-badge">5</span></button>
+      <button class="aside-nav-btn" data-db-view="members" onclick="switchDashboardView('members', this)"><span class="anb-icon"><i class="bi bi-people"></i></span> Members</button>
+      <button class="aside-nav-btn" data-db-view="settings" onclick="switchDashboardView('settings', this)"><span class="anb-icon"><i class="bi bi-gear"></i></span> Settings</button>
     </div>
     <div class="aside-section">
       <div class="aside-sec-label">Boards</div>
@@ -1268,6 +1709,7 @@ footer {
         <div class="aside-av">Z</div>
         <div><div class="aside-uname">Zainab Saeed</div><div class="aside-urole">Owner</div></div>
       </div>
+      <button class="aside-logout" onclick="doLogout()"><i class="bi bi-box-arrow-right"></i> Log out</button>
     </div>
   </div>
 
@@ -1275,16 +1717,16 @@ footer {
   <div class="db-main">
     <div class="db-header">
       <button class="h-toggle-btn" onclick="toggleSide('left')" aria-label="Toggle left panel"><i class="bi bi-layout-sidebar-inset"></i></button>
-      <div class="db-header-title">Sprint 4 — April 2026</div>
+      <div class="db-header-title" id="dbHeaderTitle">Sprint 4 — April 2026</div>
       <div class="live-chip"><span class="on-dot"></span> 3 online</div>
       <div class="h-search"><span style="color:var(--muted2);font-size:13px">⌕</span><input type="text" placeholder="Search cards…"></div>
-      <div class="h-icon-btn"><i class="bi bi-bell"></i><div class="notif-pip"></div></div>
-      <div class="h-icon-btn"><i class="bi bi-gear"></i></div>
+      <button class="h-icon-btn" onclick="switchDashboardView('notifications')" aria-label="Open notifications"><i class="bi bi-bell"></i><div class="notif-pip"></div></button>
+      <button class="h-icon-btn" onclick="switchDashboardView('settings')" aria-label="Open settings"><i class="bi bi-gear"></i></button>
       <button class="h-toggle-btn" onclick="toggleSide('right')" aria-label="Toggle right panel"><i class="bi bi-layout-sidebar-reverse"></i></button>
       <button class="h-add-btn" onclick="showToast('bi-stars','Open card editor','Fill in your new task details')">+ Add Card</button>
       <div class="h-uav">Z</div>
     </div>
-    <div class="db-board" id="boardArea">
+    <div class="db-board db-content-view active" id="dbView-board">
       <!-- TO DO -->
       <div class="b-col">
         <div class="b-col-head">
@@ -1380,6 +1822,217 @@ footer {
       </div>
       <button class="add-col-btn" onclick="showToast('bi-kanban','Column added','New workflow stage created!')">+ Add Column</button>
     </div>
+
+    <div class="db-content-view db-page" id="dbView-analytics">
+      <div class="db-page-hero db-anim db-delay-1">
+        <div class="db-hero-row">
+          <div>
+            <div class="db-page-kicker"><i class="bi bi-bar-chart-line"></i> Team Metrics</div>
+            <h3>Analytics Command Center</h3>
+            <p class="db-page-sub">Live performance pulse for Sprint 4 with throughput, bottlenecks, and workload balancing insights.</p>
+            <div class="db-hero-badges">
+              <span class="db-badge"><i class="bi bi-lightning-charge"></i> WebSocket Live</span>
+              <span class="db-badge"><i class="bi bi-hourglass-split"></i> Latency &lt; 50ms</span>
+              <span class="db-badge"><i class="bi bi-graph-up-arrow"></i> +12% this week</span>
+            </div>
+          </div>
+          <div class="db-hero-metric">
+            <div class="db-hero-metric-label">Predictive completion</div>
+            <div class="db-hero-metric-value" data-countup="86">86%</div>
+            <div class="db-hero-metric-note">On track for Apr 20</div>
+          </div>
+        </div>
+      </div>
+      <div class="db-cards-grid db-anim db-delay-2">
+        <div class="db-kpi-card">
+          <div class="db-kpi-top">
+            <div class="db-kpi-label">Sprint Velocity</div>
+            <div class="db-kpi-spark" data-trend="17,19,18,21,24,26,28" data-unit=" pts"><svg viewBox="0 0 64 20" preserveAspectRatio="none" aria-hidden="true"><path d="M1,16 L10,14 L20,15 L30,10 L40,12 L50,8 L63,6"></path></svg></div>
+          </div>
+          <div class="db-kpi-value" data-countup="28">28</div>
+          <div class="db-kpi-delta">+9% vs last sprint</div>
+        </div>
+        <div class="db-kpi-card">
+          <div class="db-kpi-top">
+            <div class="db-kpi-label">Cycle Time</div>
+            <div class="db-kpi-spark" data-trend="3.8,3.6,3.4,3.3,3.1,3.0,2.8" data-unit="d"><svg viewBox="0 0 64 20" preserveAspectRatio="none" aria-hidden="true"><path d="M1,6 L10,7 L20,8 L30,9 L40,11 L50,12 L63,14"></path></svg></div>
+          </div>
+          <div class="db-kpi-value" data-countup="2.8">2.8d</div>
+          <div class="db-kpi-delta">-0.4d improvement</div>
+        </div>
+        <div class="db-kpi-card">
+          <div class="db-kpi-top">
+            <div class="db-kpi-label">Completion</div>
+            <div class="db-kpi-spark" data-trend="32,38,41,47,51,56,60" data-unit="%"><svg viewBox="0 0 64 20" preserveAspectRatio="none" aria-hidden="true"><path d="M1,17 L10,16 L20,14 L30,13 L40,11 L50,9 L63,8"></path></svg></div>
+          </div>
+          <div class="db-kpi-value" data-countup="60">60%</div>
+          <div class="db-kpi-delta">7/12 cards done</div>
+        </div>
+        <div class="db-kpi-card">
+          <div class="db-kpi-top">
+            <div class="db-kpi-label">Blocked Tasks</div>
+            <div class="db-kpi-spark" data-trend="6,5,6,4,3,3,2" data-unit=" issues"><svg viewBox="0 0 64 20" preserveAspectRatio="none" aria-hidden="true"><path d="M1,7 L10,8 L20,7 L30,9 L40,10 L50,9 L63,11"></path></svg></div>
+          </div>
+          <div class="db-kpi-value" data-countup="2">2</div>
+          <div class="db-kpi-delta" style="color:var(--peach)">Needs review</div>
+        </div>
+      </div>
+      <div class="db-grid-2 db-anim db-delay-3">
+        <div class="db-slab">
+          <div class="db-slab-head"><div class="db-slab-title" style="margin-bottom:0">Progress by team</div><div class="db-slab-note">Updated every 30s</div></div>
+          <div class="db-bars">
+            <div class="db-bar-row"><div class="db-bar-name">Backend</div><div class="db-bar-track"><div class="db-bar-fill" style="width:75%"></div></div><div class="db-bar-val">75%</div></div>
+            <div class="db-bar-row"><div class="db-bar-name">Frontend</div><div class="db-bar-track"><div class="db-bar-fill" style="width:40%"></div></div><div class="db-bar-val">40%</div></div>
+            <div class="db-bar-row"><div class="db-bar-name">Database</div><div class="db-bar-track"><div class="db-bar-fill" style="width:88%"></div></div><div class="db-bar-val">88%</div></div>
+            <div class="db-bar-row"><div class="db-bar-name">QA</div><div class="db-bar-track"><div class="db-bar-fill" style="width:52%"></div></div><div class="db-bar-val">52%</div></div>
+          </div>
+          <div class="db-line-chart" style="margin-top:14px">
+            <svg viewBox="0 0 600 180" preserveAspectRatio="none" aria-hidden="true">
+              <polyline class="chart-line primary" points="0,134 80,122 160,128 240,96 320,108 400,82 480,88 560,66 600,72" fill="none" stroke="rgba(124,92,252,0.95)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+              <polyline class="chart-line secondary" points="0,142 80,138 160,130 240,122 320,126 400,112 480,120 560,109 600,114" fill="none" stroke="rgba(20,184,166,0.8)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            </svg>
+          </div>
+        </div>
+        <div class="db-slab">
+          <div class="db-slab-title">Distribution</div>
+          <div class="db-donut"></div>
+          <div class="db-donut-label" data-countup="58">58%</div>
+          <div class="db-donut-sub">Engineering throughput concentration</div>
+          <div class="db-bars" style="margin-top:14px">
+            <div class="db-bar-row" style="grid-template-columns: 1fr 44px"><div class="db-bar-name">Feature work</div><div class="db-bar-val">58%</div></div>
+            <div class="db-bar-row" style="grid-template-columns: 1fr 44px"><div class="db-bar-name">Bug fixes</div><div class="db-bar-val">24%</div></div>
+            <div class="db-bar-row" style="grid-template-columns: 1fr 44px"><div class="db-bar-name">Refactor</div><div class="db-bar-val">18%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="db-content-view db-page" id="dbView-activity">
+      <div class="db-page-hero db-anim db-delay-1">
+        <div class="db-hero-row">
+          <div>
+            <div class="db-page-kicker"><i class="bi bi-clock-history"></i> Audit Trail</div>
+            <h3>Activity Timeline</h3>
+            <p class="db-page-sub">A high-fidelity operational timeline with contextual changes, owners, and cadence patterns.</p>
+          </div>
+          <div class="db-hero-metric">
+            <div class="db-hero-metric-label">Events today</div>
+            <div class="db-hero-metric-value" data-countup="34">34</div>
+            <div class="db-hero-metric-note">Peak at 11:30 AM</div>
+          </div>
+        </div>
+      </div>
+      <div class="db-slab db-anim db-delay-2">
+        <div class="db-slab-head"><div class="db-slab-title" style="margin-bottom:0">Recent actions</div><div class="db-slab-note">Sorted by newest first</div></div>
+        <div class="db-activity-list">
+          <div class="db-day-label">Today</div>
+          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-arrow-left-right"></i></div><div class="db-activity-msg"><b>Zainab</b> moved <b>REST API endpoints</b> from In Progress to In Review</div><div class="db-activity-time">2 min ago</div></div>
+          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-chat-dots"></i></div><div class="db-activity-msg"><b>Zunairah</b> commented on <b>WebSocket event system</b></div><div class="db-activity-time">8 min ago</div></div>
+          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-person-check"></i></div><div class="db-activity-msg"><b>Zainab</b> assigned <b>Kanban drag-and-drop</b> to Zunairah</div><div class="db-activity-time">15 min ago</div></div>
+          <div class="db-day-label">Yesterday</div>
+          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-stars"></i></div><div class="db-activity-msg"><b>Zunairah</b> created <b>JWT middleware setup</b></div><div class="db-activity-time">1 hour ago</div></div>
+          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-check2-circle"></i></div><div class="db-activity-msg"><b>DB migrations</b> passed final verification checks</div><div class="db-activity-time">Yesterday, 5:14 PM</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="db-content-view db-page" id="dbView-notifications">
+      <div class="db-page-hero db-anim db-delay-1">
+        <div class="db-hero-row">
+          <div>
+            <div class="db-page-kicker"><i class="bi bi-bell"></i> Alerts</div>
+            <h3>Notification Center</h3>
+            <p class="db-page-sub">Prioritized inbox for mentions, status changes, and approval requests across your boards.</p>
+          </div>
+          <div class="db-hero-metric">
+            <div class="db-hero-metric-label">Unread alerts</div>
+            <div class="db-hero-metric-value" data-countup="5">5</div>
+            <div class="db-hero-metric-note">2 require action</div>
+          </div>
+        </div>
+      </div>
+      <div class="db-notif-toolbar db-anim db-delay-2">
+        <button class="db-notif-btn" onclick="showToast('bi-check2-all','Marked as read','All current notifications were marked as read')">Mark all read</button>
+        <button class="db-notif-btn" onclick="showToast('bi-funnel','Filter applied','Showing only mentions and assignments')">Filter important</button>
+        <button class="db-notif-btn" onclick="showToast('bi-archive','Notifications archived','Resolved items moved to archive')">Archive resolved</button>
+      </div>
+      <div class="db-slab db-anim db-delay-3">
+        <div class="db-slab-head"><div class="db-slab-title" style="margin-bottom:0">Unread (5)</div><div class="db-slab-note">Realtime delivery enabled</div></div>
+        <div class="db-activity-list">
+          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-at"></i></div><div class="db-activity-msg"><b>@zainab</b> you were mentioned in <b>Design auth flow mockups</b></div><div class="db-activity-time">Just now</div></div>
+          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-check2-square"></i></div><div class="db-activity-msg"><b>Project setup + CI/CD</b> was marked as done</div><div class="db-activity-time">6 min ago</div></div>
+          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-person-plus"></i></div><div class="db-activity-msg"><b>Areeba</b> requested access to workspace <b>Alpha</b></div><div class="db-activity-time">20 min ago</div></div>
+          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-exclamation-circle"></i></div><div class="db-activity-msg"><b>JWT middleware setup</b> is due in <b>4 hours</b></div><div class="db-activity-time">34 min ago</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="db-content-view db-page" id="dbView-members">
+      <div class="db-page-hero db-anim db-delay-1">
+        <div class="db-hero-row">
+          <div>
+            <div class="db-page-kicker"><i class="bi bi-people"></i> Team Directory</div>
+            <h3>Members Hub</h3>
+            <p class="db-page-sub">Role visibility, workload snapshots, and availability across all active contributors.</p>
+          </div>
+          <div class="db-hero-metric">
+            <div class="db-hero-metric-label">Online now</div>
+            <div class="db-hero-metric-value" data-countup="4">4</div>
+            <div class="db-hero-metric-note">Out of 6 members</div>
+          </div>
+        </div>
+      </div>
+      <div class="db-member-grid db-anim db-delay-2">
+        <div class="db-member-card"><div class="db-member-av" style="background:var(--violet)">Z</div><div><div class="db-member-name">Zainab Saeed</div><div class="db-member-role">Owner</div></div><div class="db-member-meta"><div class="db-mini-track"><div class="db-mini-fill" style="width:82%"></div></div><div class="db-pill">Online</div></div></div>
+        <div class="db-member-card"><div class="db-member-av" style="background:#ec4899">U</div><div><div class="db-member-name">Zunairah Sarwar</div><div class="db-member-role">Admin</div></div><div class="db-member-meta"><div class="db-mini-track"><div class="db-mini-fill" style="width:74%"></div></div><div class="db-pill">Online</div></div></div>
+        <div class="db-member-card"><div class="db-member-av" style="background:var(--teal)">A</div><div><div class="db-member-name">Areeba Khan</div><div class="db-member-role">Member</div></div><div class="db-member-meta"><div class="db-mini-track"><div class="db-mini-fill" style="width:48%"></div></div><div class="db-pill" style="background:#fff7ed;color:var(--peach)">Idle</div></div></div>
+        <div class="db-member-card"><div class="db-member-av" style="background:var(--sky)">H</div><div><div class="db-member-name">Hassan Malik</div><div class="db-member-role">Member</div></div><div class="db-member-meta"><div class="db-mini-track"><div class="db-mini-fill" style="width:66%"></div></div><div class="db-pill" style="background:#eef2ff;color:var(--violet)">Remote</div></div></div>
+      </div>
+      <div class="db-slab db-anim db-delay-3" style="margin-top:12px">
+        <div class="db-slab-head"><div class="db-slab-title" style="margin-bottom:0">Collaboration load</div><div class="db-slab-note">Tasks assigned this sprint</div></div>
+        <div class="db-bars">
+          <div class="db-bar-row"><div class="db-bar-name">Zainab</div><div class="db-bar-track"><div class="db-bar-fill" style="width:92%"></div></div><div class="db-bar-val">11</div></div>
+          <div class="db-bar-row"><div class="db-bar-name">Zunairah</div><div class="db-bar-track"><div class="db-bar-fill" style="width:76%"></div></div><div class="db-bar-val">9</div></div>
+          <div class="db-bar-row"><div class="db-bar-name">Areeba</div><div class="db-bar-track"><div class="db-bar-fill" style="width:42%"></div></div><div class="db-bar-val">5</div></div>
+        </div>
+        <button class="invite-row" onclick="showToast('bi-link-45deg','Invite link copied','Share it with new teammates')">+ Invite teammate</button>
+      </div>
+    </div>
+
+    <div class="db-content-view db-page" id="dbView-settings">
+      <div class="db-page-hero db-anim db-delay-1">
+        <div class="db-hero-row">
+          <div>
+            <div class="db-page-kicker"><i class="bi bi-sliders"></i> Workspace Controls</div>
+            <h3>Settings Studio</h3>
+            <p class="db-page-sub">Tune your collaboration behavior, notification policy, and sprint automation from one place.</p>
+          </div>
+          <div class="db-hero-metric">
+            <div class="db-hero-metric-label">Config health</div>
+            <div class="db-hero-metric-value">A+</div>
+            <div class="db-hero-metric-note">3 optimized defaults active</div>
+          </div>
+        </div>
+      </div>
+      <div class="db-settings-list db-anim db-delay-2">
+        <div class="db-setting-row">
+          <div><div class="db-setting-title">Real-time desktop notifications</div><div class="db-setting-desc">Show browser alerts when cards are assigned or moved.</div></div>
+          <button class="db-toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="db-setting-row">
+          <div><div class="db-setting-title">Auto-archive completed cards</div><div class="db-setting-desc">Automatically archive cards 7 days after completion.</div></div>
+          <button class="db-toggle" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="db-setting-row">
+          <div><div class="db-setting-title">Weekly sprint summary email</div><div class="db-setting-desc">Send digest every Friday to all team members.</div></div>
+          <button class="db-toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+      </div>
+      <div class="db-actions-row db-anim db-delay-3">
+        <button class="db-ghost-btn" onclick="showToast('bi-arrow-counterclockwise','Reverted','Settings reset to last saved state')">Reset</button>
+        <button class="db-solid-btn" onclick="showToast('bi-floppy','Saved','Workspace settings updated successfully')">Save changes</button>
+      </div>
+    </div>
   </div>
 
   <!-- RIGHT PANEL -->
@@ -1439,8 +2092,36 @@ function showView(id) {
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
 }
+function switchDashboardView(viewId, btnEl) {
+  const target = document.getElementById('dbView-' + viewId);
+  if (!target) return;
+  document.querySelectorAll('.db-content-view').forEach(v => v.classList.remove('active'));
+  target.classList.add('active');
+  target.classList.remove('is-animating');
+  void target.offsetWidth;
+  target.classList.add('is-animating');
+
+  const navBtns = document.querySelectorAll('.aside-nav-btn[data-db-view]');
+  navBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.dbView === viewId));
+  if (btnEl) btnEl.classList.add('active');
+
+  const titles = {
+    board: 'Sprint 4 — April 2026',
+    analytics: 'Analytics — Sprint Insights',
+    activity: 'Activity — Team Timeline',
+    notifications: 'Notifications — Inbox',
+    members: 'Members — Workspace Team',
+    settings: 'Settings — Workspace Preferences'
+  };
+  const titleEl = document.getElementById('dbHeaderTitle');
+  if (titleEl) titleEl.textContent = titles[viewId] || 'TeamOps Dashboard';
+
+  target.querySelectorAll('.db-kpi-card').forEach(card => card.classList.remove('kpi-finished'));
+  runCountUps(target);
+}
 function showDashboard() {
   showView('dashboard');
+  switchDashboardView('board');
   setTimeout(() => showToast('bi-broadcast-pin','Connected','Joined Sprint 4 board room via WebSocket'), 600);
 }
 function toggleSide(side) {
@@ -1448,6 +2129,160 @@ function toggleSide(side) {
   if (!dash) return;
   if (side === 'left') dash.classList.toggle('left-collapsed');
   if (side === 'right') dash.classList.toggle('right-collapsed');
+}
+function runCountUps(rootEl) {
+  const counters = rootEl.querySelectorAll('[data-countup]');
+  counters.forEach(el => {
+    const target = parseFloat(el.getAttribute('data-countup'));
+    if (Number.isNaN(target)) return;
+    const finalText = el.dataset.finalText || el.textContent.trim();
+    el.dataset.finalText = finalText;
+
+    const numMatch = finalText.match(/-?\d+(?:\.\d+)?/);
+    if (!numMatch) return;
+    const numText = numMatch[0];
+    const prefix = finalText.slice(0, numMatch.index);
+    const suffix = finalText.slice(numMatch.index + numText.length);
+    const decimals = (numText.split('.')[1] || '').length;
+
+    const duration = 900;
+    const start = performance.now();
+    el.classList.add('counting');
+
+    function tick(now) {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = target * eased;
+      el.textContent = prefix + current.toFixed(decimals) + suffix;
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        el.textContent = finalText;
+        el.classList.remove('counting');
+        const kpiCard = el.closest('.db-kpi-card');
+        if (kpiCard) {
+          kpiCard.classList.remove('kpi-finished');
+          void kpiCard.offsetWidth;
+          kpiCard.classList.add('kpi-finished');
+        }
+      }
+    }
+    requestAnimationFrame(tick);
+  });
+}
+function initKpiSparklines() {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const sparks = document.querySelectorAll('.db-kpi-spark');
+
+  sparks.forEach(spark => {
+    const raw = spark.dataset.trend || '';
+    const values = raw.split(',').map(v => parseFloat(v.trim())).filter(v => Number.isFinite(v));
+    if (values.length < 2) return;
+
+    const unit = spark.dataset.unit || '';
+    const path = spark.querySelector('path');
+    if (!path) return;
+
+    const w = 64;
+    const h = 20;
+    const pad = 1.5;
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const span = Math.max(0.0001, max - min);
+    const stepX = (w - pad * 2) / (values.length - 1);
+
+    const points = values.map((val, i) => {
+      const x = pad + i * stepX;
+      const y = h - pad - ((val - min) / span) * (h - pad * 2);
+      return { x, y, val };
+    });
+
+    const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
+    path.setAttribute('d', d);
+
+    let dot = spark.querySelector('.db-spark-dot');
+    if (!dot) {
+      dot = document.createElement('span');
+      dot.className = 'db-spark-dot';
+      spark.appendChild(dot);
+    }
+
+    let tip = spark.querySelector('.db-spark-tip');
+    if (!tip) {
+      tip = document.createElement('span');
+      tip.className = 'db-spark-tip';
+      spark.appendChild(tip);
+    }
+
+    const monthOffset = Math.max(0, months.length - points.length);
+    let pinnedIndex = null;
+
+    function showPoint(index) {
+      const p = points[Math.max(0, Math.min(points.length - 1, index))];
+      const month = months[(monthOffset + index) % months.length];
+      const val = Number.isInteger(p.val) ? `${p.val}` : p.val.toFixed(1);
+      dot.style.left = p.x + 'px';
+      dot.style.top = p.y + 'px';
+      tip.textContent = `${month}: ${val}${unit}`;
+    }
+
+    spark.addEventListener('pointerenter', e => {
+      spark.classList.add('hovered');
+      const rect = spark.getBoundingClientRect();
+      const relX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+      const idx = Math.round((relX / rect.width) * (points.length - 1));
+      showPoint(idx);
+    });
+    spark.addEventListener('pointermove', e => {
+      if (pinnedIndex !== null) return;
+      const rect = spark.getBoundingClientRect();
+      const relX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+      const idx = Math.round((relX / rect.width) * (points.length - 1));
+      showPoint(idx);
+    });
+    spark.addEventListener('pointerleave', () => {
+      if (pinnedIndex === null) spark.classList.remove('hovered');
+    });
+    spark.addEventListener('click', e => {
+      const rect = spark.getBoundingClientRect();
+      const relX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+      const idx = Math.round((relX / rect.width) * (points.length - 1));
+      if (pinnedIndex === idx) {
+        pinnedIndex = null;
+        spark.classList.remove('pinned');
+        spark.classList.remove('hovered');
+        return;
+      }
+      pinnedIndex = idx;
+      showPoint(idx);
+      spark.classList.add('pinned');
+      spark.classList.add('hovered');
+    });
+    spark.addEventListener('dblclick', () => {
+      pinnedIndex = null;
+      spark.classList.remove('pinned');
+      spark.classList.remove('hovered');
+    });
+  });
+}
+function initDashboardParallax() {
+  const main = document.querySelector('.db-main');
+  if (!main) return;
+  main.addEventListener('pointermove', e => {
+    const activePage = main.querySelector('.db-page.db-content-view.active');
+    if (!activePage) return;
+    const rect = activePage.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / Math.max(1, rect.width) - 0.5) * 14;
+    const y = ((e.clientY - rect.top) / Math.max(1, rect.height) - 0.5) * 10;
+    activePage.style.setProperty('--px', x.toFixed(2) + 'px');
+    activePage.style.setProperty('--py', y.toFixed(2) + 'px');
+  });
+  main.addEventListener('pointerleave', () => {
+    const activePage = main.querySelector('.db-page.db-content-view.active');
+    if (!activePage) return;
+    activePage.style.setProperty('--px', '0px');
+    activePage.style.setProperty('--py', '0px');
+  });
 }
 
 // ── AUTH ─────────────────────────────────────────
@@ -1460,6 +2295,11 @@ function switchTab(t) {
 function doLogin() {
   showDashboard();
   setTimeout(() => showToast('bi-person-check','Welcome back, Zainab!','You\'re signed in to Alpha workspace'), 700);
+}
+function doLogout() {
+  showView('auth');
+  switchTab('login');
+  setTimeout(() => showToast('bi-box-arrow-right','Logged out','You have been signed out of Alpha workspace'), 350);
 }
 
 // ── TOAST ────────────────────────────────────────
@@ -1549,6 +2389,8 @@ const ro = new IntersectionObserver(entries => {
 document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
 
 // ── BOOT TOAST ───────────────────────────────────
+initKpiSparklines();
+initDashboardParallax();
 setTimeout(() => showToast('bi-stars','TeamOps v2','New design loaded — open the dashboard!'), 1000);
 </script>
 </body>
