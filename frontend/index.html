@@ -2440,7 +2440,10 @@ footer {
       </div>
       <div class="db-saved-list db-anim db-delay-2">
         <div class="db-saved-item">
-          <div class="db-saved-name">🔥 My High Priority</div>
+          <div class="db-saved-header">
+            <div class="db-saved-icon"><i class="bi bi-fire"></i></div>
+            <div class="db-saved-name">My High Priority</div>
+          </div>
           <div class="db-saved-desc">All assigned cards ranked High, due this week</div>
           <div class="db-saved-stats">
             <span class="db-saved-stat">7 cards</span>
@@ -2450,7 +2453,10 @@ footer {
           <button class="db-saved-action" onclick="showToast('bi-eye','View loaded','Showing 7 cards')">Open View</button>
         </div>
         <div class="db-saved-item">
-          <div class="db-saved-name">🚀 Ready to Ship</div>
+          <div class="db-saved-header">
+            <div class="db-saved-icon"><i class="bi bi-rocket"></i></div>
+            <div class="db-saved-name">Ready to Ship</div>
+          </div>
           <div class="db-saved-desc">All cards in In Review + Done from current sprint</div>
           <div class="db-saved-stats">
             <span class="db-saved-stat">4 cards</span>
@@ -2460,7 +2466,10 @@ footer {
           <button class="db-saved-action" onclick="showToast('bi-eye','View loaded','Showing 4 cards')">Open View</button>
         </div>
         <div class="db-saved-item">
-          <div class="db-saved-name">👥 Team Velocity</div>
+          <div class="db-saved-header">
+            <div class="db-saved-icon"><i class="bi bi-graph-up"></i></div>
+            <div class="db-saved-name">Team Velocity</div>
+          </div>
           <div class="db-saved-desc">Summary view: cards per member, completion rates</div>
           <div class="db-saved-stats">
             <span class="db-saved-stat">Dashboard</span>
@@ -2969,11 +2978,28 @@ footer {
   border-color: var(--violet);
   box-shadow: 0 6px 16px rgba(124, 92, 252, 0.1);
 }
+.db-saved-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.db-saved-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--violet-soft);
+  color: var(--violet);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
 .db-saved-name {
   font-size: 14px;
   font-weight: 600;
   color: var(--ink);
-  margin-bottom: 6px;
 }
 .db-saved-desc {
   font-size: 12px;
