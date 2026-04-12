@@ -1696,6 +1696,17 @@ footer {
       <button class="aside-nav-btn" data-db-view="settings" onclick="switchDashboardView('settings', this)"><span class="anb-icon"><i class="bi bi-gear"></i></span> Settings</button>
     </div>
     <div class="aside-section">
+      <div class="aside-sec-label">Manage</div>
+      <button class="aside-nav-btn" data-db-view="projects" onclick="switchDashboardView('projects', this)"><span class="anb-icon"><i class="bi bi-briefcase"></i></span> Projects</button>
+      <button class="aside-nav-btn" data-db-view="search" onclick="switchDashboardView('search', this)"><span class="anb-icon"><i class="bi bi-search"></i></span> Search</button>
+      <button class="aside-nav-btn" data-db-view="roadmap" onclick="switchDashboardView('roadmap', this)"><span class="anb-icon"><i class="bi bi-timeline"></i></span> Roadmap</button>
+      <button class="aside-nav-btn" data-db-view="integrations" onclick="switchDashboardView('integrations', this)"><span class="anb-icon"><i class="bi bi-puzzle"></i></span> Integrations</button>
+      <button class="aside-nav-btn" data-db-view="channels" onclick="switchDashboardView('channels', this)"><span class="anb-icon"><i class="bi bi-diagram-3"></i></span> Channels</button>
+      <button class="aside-nav-btn" data-db-view="audit" onclick="switchDashboardView('audit', this)"><span class="anb-icon"><i class="bi bi-clipboard-check"></i></span> Audit Log</button>
+      <button class="aside-nav-btn" data-db-view="help" onclick="switchDashboardView('help', this)"><span class="anb-icon"><i class="bi bi-question-circle"></i></span> Help</button>
+      <button class="aside-nav-btn" data-db-view="saved" onclick="switchDashboardView('saved', this)"><span class="anb-icon"><i class="bi bi-bookmark"></i></span> Saved Views</button>
+    </div>
+    <div class="aside-section">
       <div class="aside-sec-label">Boards</div>
     </div>
     <div class="aside-boards">
@@ -2033,6 +2044,433 @@ footer {
         <button class="db-solid-btn" onclick="showToast('bi-floppy','Saved','Workspace settings updated successfully')">Save changes</button>
       </div>
     </div>
+
+    <!-- PROJECTS VIEW -->
+    <div class="db-content-view db-page" id="dbView-projects">
+      <div class="db-page-hero db-anim db-delay-1">
+        <div class="db-hero-row">
+          <div>
+            <div class="db-page-kicker"><i class="bi bi-briefcase"></i> Initiative Hub</div>
+            <h3>Projects & Workspaces</h3>
+            <p class="db-page-sub">Centralized view of all active initiatives with team allocation, budget, and progress tracking at a glance.</p>
+            <div class="db-hero-badges">
+              <span class="db-badge"><i class="bi bi-lightning-charge"></i> 7 Active</span>
+              <span class="db-badge"><i class="bi bi-people"></i> 18 Contributors</span>
+              <span class="db-badge"><i class="bi bi-graph-up"></i> On budget</span>
+            </div>
+          </div>
+          <div class="db-hero-metric">
+            <div class="db-hero-metric-label">Avg. completion</div>
+            <div class="db-hero-metric-value" data-countup="72">72%</div>
+            <div class="db-hero-metric-note">+8% from last month</div>
+          </div>
+        </div>
+      </div>
+      <div class="db-projects-grid db-anim db-delay-2">
+        <div class="db-project-card">
+          <div class="db-project-head">
+            <div><h4>Sprint 4 Mobile</h4><div class="db-project-status">In Progress</div></div>
+            <div class="db-project-meta">4 weeks • 12 members</div>
+          </div>
+          <div class="db-project-desc">Native iOS/Android release with offline sync.</div>
+          <div class="db-project-tags"><span>Mobile</span><span>Q2</span></div>
+          <div class="db-project-progress"><div class="db-progress-bar" style="width:65%"></div></div>
+        </div>
+        <div class="db-project-card">
+          <div class="db-project-head">
+            <div><h4>API Redesign</h4><div class="db-project-status" style="color:var(--teal)">Planned</div></div>
+            <div class="db-project-meta">6 weeks • 5 members</div>
+          </div>
+          <div class="db-project-desc">RESTful to GraphQL migration with backward compatibility layer.</div>
+          <div class="db-project-tags"><span>Backend</span><span>Q3</span></div>
+          <div class="db-project-progress"><div class="db-progress-bar" style="width:15%; background:var(--muted2)"></div></div>
+        </div>
+        <div class="db-project-card">
+          <div class="db-project-head">
+            <div><h4>Design System v2</h4><div class="db-project-status" style="color:var(--teal)">Review</div></div>
+            <div class="db-project-meta">3 weeks • 8 members</div>
+          </div>
+          <div class="db-project-desc">Component library refresh with accessibility audit and token system.</div>
+          <div class="db-project-tags"><span>Design</span><span>Q2</span></div>
+          <div class="db-project-progress"><div class="db-progress-bar" style="width:92%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH VIEW -->
+    <div class="db-content-view db-page" id="dbView-search">
+      <div class="db-page-hero db-anim db-delay-1">
+        <div class="db-hero-row">
+          <div>
+            <div class="db-page-kicker"><i class="bi bi-search"></i> Quick Access</div>
+            <h3>Global Search</h3>
+            <p class="db-page-sub">Instantly find tasks, members, messages, docs, and files across TypeOps.</p>
+            <div class="db-search-input-container">
+              <input type="text" class="db-search-input" placeholder="Search cards, people, boards, messages…" autofocus>
+              <div class="db-search-shortcuts">Type <code>/</code> for filters • <code>@</code> for members • <code>#</code> for channels</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="db-search-results db-anim db-delay-2">
+        <div class="db-search-section">
+          <div class="db-search-sec-title">Recent Searches</div>
+          <div class="db-search-item">
+            <div class="db-search-icon"><i class="bi bi-kanban"></i></div>
+            <div class="db-search-info">
+              <div class="db-search-name">WebSocket event system</div>
+              <div class="db-search-meta">Card • In Progress</div>
+            </div>
+            <div class="db-search-meta" style="text-align:right">Sprint 4</div>
+          </div>
+          <div class="db-search-item">
+            <div class="db-search-icon"><i class="bi bi-person"></i></div>
+            <div class="db-search-info">
+              <div class="db-search-name">Zunairah Sarwar</div>
+              <div class="db-search-meta">Team member • 4 cards assigned</div>
+            </div>
+            <div class="db-search-meta">@zunairah</div>
+          </div>
+          <div class="db-search-item">
+            <div class="db-search-icon"><i class="bi bi-chat-dots"></i></div>
+            <div class="db-search-info">
+              <div class="db-search-name">Sprint 4 Kickoff</div>
+              <div class="db-search-meta">Message • 14 replies</div>
+            </div>
+            <div class="db-search-meta">2 days ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROADMAP VIEW -->
+    <div class="db-content-view db-page" id="dbView-roadmap">
+      <div class="db-page-hero db-anim db-delay-1">
+        <div class="db-hero-row">
+          <div>
+            <div class="db-page-kicker"><i class="bi bi-timeline"></i> Strategic View</div>
+            <h3>Team Roadmap</h3>
+            <p class="db-page-sub">Quarterly initiatives, launch dates, and dependency tracking for long-term planning.</p>
+            <div class="db-hero-badges">
+              <span class="db-badge"><i class="bi bi-lightning-charge"></i> 12 Milestones</span>
+              <span class="db-badge"><i class="bi bi-hourglass"></i> 18 weeks ahead</span>
+              <span class="db-badge"><i class="bi bi-graph-up-arrow"></i> On track</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="db-roadmap-timeline db-anim db-delay-2">
+        <div class="db-roadmap-section">
+          <div class="db-roadmap-quarter">Q2 2026</div>
+          <div class="db-roadmap-item">
+            <div class="db-roadmap-dot" style="background:var(--teal)"></div>
+            <div class="db-roadmap-content">
+              <div class="db-roadmap-title">Mobile App Launch</div>
+              <div class="db-roadmap-desc">iOS & Android native apps with offline support</div>
+              <div class="db-roadmap-date">Apr 22 - Jun 15</div>
+            </div>
+          </div>
+          <div class="db-roadmap-item">
+            <div class="db-roadmap-dot" style="background:var(--violet)"></div>
+            <div class="db-roadmap-content">
+              <div class="db-roadmap-title">Design System v2</div>
+              <div class="db-roadmap-desc">Refreshed components with Figma tokens</div>
+              <div class="db-roadmap-date">May 1 - May 30</div>
+            </div>
+          </div>
+        </div>
+        <div class="db-roadmap-section">
+          <div class="db-roadmap-quarter">Q3 2026</div>
+          <div class="db-roadmap-item">
+            <div class="db-roadmap-dot" style="background:var(--rose)"></div>
+            <div class="db-roadmap-content">
+              <div class="db-roadmap-title">GraphQL Migration</div>
+              <div class="db-roadmap-desc">API layer modernization with federation</div>
+              <div class="db-roadmap-date">Jun 20 - Aug 31</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTEGRATIONS VIEW -->
+    <div class="db-content-view db-page" id="dbView-integrations">
+      <div class="db-page-hero db-anim db-delay-1">
+        <div class="db-hero-row">
+          <div>
+            <div class="db-page-kicker"><i class="bi bi-puzzle"></i> Connected Tools</div>
+            <h3>Integrations Hub</h3>
+            <p class="db-page-sub">Monitor connected services, sync status, and configure webhooks from one place.</p>
+            <div class="db-hero-badges">
+              <span class="db-badge"><i class="bi bi-check-circle"></i> 8 Connected</span>
+              <span class="db-badge"><i class="bi bi-lightning"></i> All healthy</span>
+              <span class="db-badge"><i class="bi bi-arrow-repeat"></i> Last sync 2m ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="db-integrations-list db-anim db-delay-2">
+        <div class="db-integration-item">
+          <div class="db-integration-icon" style="background:var(--violet-soft)"><i class="bi bi-github"></i></div>
+          <div class="db-integration-info">
+            <div class="db-integration-name">GitHub</div>
+            <div class="db-integration-status">Connected • team-ops repo sync active</div>
+          </div>
+          <div class="db-integration-health" style="color:var(--teal)"><i class="bi bi-check-circle-fill"></i> Healthy</div>
+        </div>
+        <div class="db-integration-item">
+          <div class="db-integration-icon" style="background:#e8f4e8"><i class="bi bi-slack"></i></div>
+          <div class="db-integration-info">
+            <div class="db-integration-name">Slack</div>
+            <div class="db-integration-status">Connected • #team-ops channel</div>
+          </div>
+          <div class="db-integration-health" style="color:var(--teal)"><i class="bi bi-check-circle-fill"></i> Healthy</div>
+        </div>
+        <div class="db-integration-item">
+          <div class="db-integration-icon" style="background:#fef3e8"><i class="bi bi-calendar"></i></div>
+          <div class="db-integration-info">
+            <div class="db-integration-name">Google Calendar</div>
+            <div class="db-integration-status">Connected • 14 linked events this week</div>
+          </div>
+          <div class="db-integration-health" style="color:var(--teal)"><i class="bi bi-check-circle-fill"></i> Healthy</div>
+        </div>
+        <div class="db-integration-item">
+          <div class="db-integration-icon" style="background:#f3e8ff"><i class="bi bi-figma"></i></div>
+          <div class="db-integration-info">
+            <div class="db-integration-name">Figma</div>
+            <div class="db-integration-status">Connected • Design System workspace</div>
+          </div>
+          <div class="db-integration-health" style="color:var(--rose)"><i class="bi bi-exclamation-circle-fill"></i> Sync warning</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHANNELS VIEW -->
+    <div class="db-content-view db-page" id="dbView-channels">
+      <div class="db-page-hero db-anim db-delay-1">
+        <div class="db-hero-row">
+          <div>
+            <div class="db-page-kicker"><i class="bi bi-diagram-3"></i> Team Structure</div>
+            <h3>Channels & Teams</h3>
+            <p class="db-page-sub">Organize members into teams, channels, and project groups with dedicated communication spaces.</p>
+            <div class="db-hero-badges">
+              <span class="db-badge"><i class="bi bi-people"></i> 5 Teams</span>
+              <span class="db-badge"><i class="bi bi-chat"></i> 12 Channels</span>
+              <span class="db-badge"><i class="bi bi-zap"></i> 100% active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="db-channels-grid db-anim db-delay-2">
+        <div class="db-channel-card">
+          <div class="db-channel-head">
+            <div class="db-channel-name">#product-team</div>
+            <div class="db-channel-count">8 members</div>
+          </div>
+          <div class="db-channel-desc">Product strategy, roadmap, and customer feedback</div>
+          <div class="db-channel-members">
+            <div style="display:flex; gap:4px">
+              <div class="db-small-av" style="background:var(--violet)">Z</div>
+              <div class="db-small-av" style="background:#ec4899">U</div>
+              <div class="db-small-av" style="background:var(--teal)">C</div>
+              <div class="db-small-av" style="background:var(--rose)">+5</div>
+            </div>
+          </div>
+        </div>
+        <div class="db-channel-card">
+          <div class="db-channel-head">
+            <div class="db-channel-name">#engineering</div>
+            <div class="db-channel-count">6 members</div>
+          </div>
+          <div class="db-channel-desc">Backend, frontend, DevOps, and infrastructure</div>
+          <div class="db-channel-members">
+            <div style="display:flex; gap:4px">
+              <div class="db-small-av" style="background:var(--violet)">Z</div>
+              <div class="db-small-av" style="background:var(--teal)">C</div>
+              <div class="db-small-av" style="background:var(--sky)">+3</div>
+            </div>
+          </div>
+        </div>
+        <div class="db-channel-card">
+          <div class="db-channel-head">
+            <div class="db-channel-name">#design</div>
+            <div class="db-channel-count">4 members</div>
+          </div>
+          <div class="db-channel-desc">Visual design, UX, and brand guidelines</div>
+          <div class="db-channel-members">
+            <div style="display:flex; gap:4px">
+              <div class="db-small-av" style="background:#ec4899">U</div>
+              <div class="db-small-av" style="background:var(--peach)">A</div>
+              <div class="db-small-av" style="background:var(--green)">+1</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUDIT LOG VIEW -->
+    <div class="db-content-view db-page" id="dbView-audit">
+      <div class="db-page-hero db-anim db-delay-1">
+        <div class="db-hero-row">
+          <div>
+            <div class="db-page-kicker"><i class="bi bi-clipboard-check"></i> Compliance</div>
+            <h3>Audit Log</h3>
+            <p class="db-page-sub">Complete record of all workspace changes: who, what, when, for compliance and accountability.</p>
+            <div class="db-hero-badges">
+              <span class="db-badge"><i class="bi bi-archive"></i> 847 events logged</span>
+              <span class="db-badge"><i class="bi bi-calendar"></i> Last 30 days</span>
+              <span class="db-badge"><i class="bi bi-download"></i> Export available</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="db-audit-list db-anim db-delay-2">
+        <div class="db-audit-item">
+          <div class="db-audit-meta">
+            <div class="db-audit-action" style="background:var(--violet-soft); color:var(--violet)"><i class="bi bi-stars"></i> Created</div>
+            <div class="db-audit-desc">
+              <div class="db-audit-title">Card created: "WebSocket event system"</div>
+              <div class="db-audit-user">by Zunairah Sarwar</div>
+            </div>
+            <div class="db-audit-time">Apr 12, 2:34 PM</div>
+          </div>
+        </div>
+        <div class="db-audit-item">
+          <div class="db-audit-meta">
+            <div class="db-audit-action" style="background:#f3e8ff; color:var(--rose)"><i class="bi bi-pencil"></i> Modified</div>
+            <div class="db-audit-desc">
+              <div class="db-audit-title">Card renamed • "JWT implementation" → "JWT middleware setup"</div>
+              <div class="db-audit-user">by Zainab Saeed</div>
+            </div>
+            <div class="db-audit-time">Apr 12, 1:52 PM</div>
+          </div>
+        </div>
+        <div class="db-audit-item">
+          <div class="db-audit-meta">
+            <div class="db-audit-action" style="background:#c7f0dd; color:var(--teal)"><i class="bi bi-arrow-left-right"></i> Moved</div>
+            <div class="db-audit-desc">
+              <div class="db-audit-title">"REST API endpoints" moved • In Progress → In Review</div>
+              <div class="db-audit-user">by Zainab Saeed</div>
+            </div>
+            <div class="db-audit-time">Apr 12, 9:12 AM</div>
+          </div>
+        </div>
+        <div class="db-audit-item">
+          <div class="db-audit-meta">
+            <div class="db-audit-action" style="background:#fee2e2; color:var(--rose)"><i class="bi bi-trash"></i> Deleted</div>
+            <div class="db-audit-desc">
+              <div class="db-audit-title">Card archived: "Old card template"</div>
+              <div class="db-audit-user">by Zainab Saeed</div>
+            </div>
+            <div class="db-audit-time">Apr 11, 4:23 PM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HELP VIEW -->
+    <div class="db-content-view db-page" id="dbView-help">
+      <div class="db-page-hero db-anim db-delay-1">
+        <div class="db-hero-row">
+          <div>
+            <div class="db-page-kicker"><i class="bi bi-question-circle"></i> Resources</div>
+            <h3>Help & Documentation</h3>
+            <p class="db-page-sub">Learn TeamOps, explore features, and get answers from our knowledge base.</p>
+            <div class="db-help-search-container">
+              <input type="text" class="db-help-search" placeholder="Search for help articles…">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="db-help-categories db-anim db-delay-2">
+        <div class="db-help-category">
+          <div class="db-help-cat-icon"><i class="bi bi-lightning-charge"></i></div>
+          <div class="db-help-cat-title">Getting Started</div>
+          <div class="db-help-cat-articles">
+            <a href="#">First steps with TeamOps</a>
+            <a href="#">Creating your first board</a>
+            <a href="#">Inviting team members</a>
+          </div>
+        </div>
+        <div class="db-help-category">
+          <div class="db-help-cat-icon"><i class="bi bi-kanban"></i></div>
+          <div class="db-help-cat-title">Kanban & Cards</div>
+          <div class="db-help-cat-articles">
+            <a href="#">Understanding columns</a>
+            <a href="#">Card templates & shortcuts</a>
+            <a href="#">Drag and drop guide</a>
+          </div>
+        </div>
+        <div class="db-help-category">
+          <div class="db-help-cat-icon"><i class="bi bi-people"></i></div>
+          <div class="db-help-cat-title">Team Collaboration</div>
+          <div class="db-help-cat-articles">
+            <a href="#">Assigning tasks</a>
+            <a href="#">Comments and mentions</a>
+            <a href="#">Real-time sync explained</a>
+          </div>
+        </div>
+        <div class="db-help-category">
+          <div class="db-help-cat-icon"><i class="bi bi-tools"></i></div>
+          <div class="db-help-cat-title">Advanced</div>
+          <div class="db-help-cat-articles">
+            <a href="#">API documentation</a>
+            <a href="#">Webhooks & automation</a>
+            <a href="#">Custom integrations</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SAVED VIEWS -->
+    <div class="db-content-view db-page" id="dbView-saved">
+      <div class="db-page-hero db-anim db-delay-1">
+        <div class="db-hero-row">
+          <div>
+            <div class="db-page-kicker"><i class="bi bi-bookmark"></i> Quick Access</div>
+            <h3>Saved Views & Filters</h3>
+            <p class="db-page-sub">Create, organize, and reuse custom filters and board views for faster workflows.</p>
+            <div class="db-hero-badges">
+              <span class="db-badge"><i class="bi bi-bookmark-fill"></i> 12 Saved</span>
+              <span class="db-badge"><i class="bi bi-star-fill"></i> 4 Starred</span>
+              <span class="db-badge"><i class="bi bi-share"></i> 2 Shared</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="db-saved-list db-anim db-delay-2">
+        <div class="db-saved-item">
+          <div class="db-saved-name">🔥 My High Priority</div>
+          <div class="db-saved-desc">All assigned cards ranked High, due this week</div>
+          <div class="db-saved-stats">
+            <span class="db-saved-stat">7 cards</span>
+            <span class="db-saved-stat">3 boards</span>
+            <span class="db-saved-stat">Last used 2h ago</span>
+          </div>
+          <button class="db-saved-action" onclick="showToast('bi-eye','View loaded','Showing 7 cards')">Open View</button>
+        </div>
+        <div class="db-saved-item">
+          <div class="db-saved-name">🚀 Ready to Ship</div>
+          <div class="db-saved-desc">All cards in In Review + Done from current sprint</div>
+          <div class="db-saved-stats">
+            <span class="db-saved-stat">4 cards</span>
+            <span class="db-saved-stat">2 boards</span>
+            <span class="db-saved-stat">Last used yesterday</span>
+          </div>
+          <button class="db-saved-action" onclick="showToast('bi-eye','View loaded','Showing 4 cards')">Open View</button>
+        </div>
+        <div class="db-saved-item">
+          <div class="db-saved-name">👥 Team Velocity</div>
+          <div class="db-saved-desc">Summary view: cards per member, completion rates</div>
+          <div class="db-saved-stats">
+            <span class="db-saved-stat">Dashboard</span>
+            <span class="db-saved-stat">All members</span>
+            <span class="db-saved-stat">Last used 3 days ago</span>
+          </div>
+          <button class="db-saved-action" onclick="showToast('bi-eye','View loaded','Team analytics')">Open View</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- RIGHT PANEL -->
@@ -2060,6 +2498,515 @@ footer {
     </div>
   </div>
 </div>
+
+<!-- NEW VIEWS STYLING -->
+<style>
+/* ══ PROJECTS VIEW ══════════════════════════════ */
+.db-projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+.db-project-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+  transition: all 0.3s var(--ease);
+  cursor: pointer;
+}
+.db-project-card:hover {
+  border-color: var(--violet);
+  box-shadow: 0 8px 24px rgba(124, 92, 252, 0.12);
+  transform: translateY(-2px);
+}
+.db-project-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.db-project-head h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ink);
+}
+.db-project-status {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--violet);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.db-project-meta {
+  font-size: 12px;
+  color: var(--muted2);
+  margin-bottom: 10px;
+}
+.db-project-desc {
+  font-size: 13px;
+  color: var(--ink2);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+.db-project-tags {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.db-project-tags span {
+  font-size: 11px;
+  background: var(--violet-soft);
+  color: var(--violet);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.db-project-progress {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.db-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--violet), var(--teal));
+  border-radius: 2px;
+  transition: width 0.4s var(--ease);
+}
+
+/* ══ SEARCH VIEW ═══════════════════════════════ */
+.db-search-input-container {
+  margin-top: 20px;
+}
+.db-search-input {
+  width: 100%;
+  max-width: 500px;
+  padding: 12px 14px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--white);
+  color: var(--ink);
+  transition: all 0.3s;
+}
+.db-search-input:focus {
+  outline: none;
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px rgba(124, 92, 252, 0.1);
+}
+.db-search-shortcuts {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.db-search-shortcuts code {
+  background: var(--violet-soft);
+  color: var(--violet);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+}
+.db-search-results {
+  padding: 20px;
+}
+.db-search-section {
+  margin-bottom: 24px;
+}
+.db-search-sec-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+.db-search-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.db-search-item:hover {
+  background: var(--violet-soft);
+}
+.db-search-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--violet);
+  flex-shrink: 0;
+}
+.db-search-info {
+  flex: 1;
+  min-width: 0;
+}
+.db-search-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.db-search-meta {
+  font-size: 12px;
+  color: var(--muted2);
+  margin-top: 2px;
+}
+
+/* ══ ROADMAP VIEW ══════════════════════════════ */
+.db-roadmap-timeline {
+  padding: 20px;
+}
+.db-roadmap-section {
+  margin-bottom: 32px;
+}
+.db-roadmap-quarter {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--violet);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+}
+.db-roadmap-item {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  position: relative;
+}
+.db-roadmap-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.db-roadmap-item::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 20px;
+  bottom: -20px;
+  width: 2px;
+  background: var(--border);
+}
+.db-roadmap-item:last-child::before {
+  display: none;
+}
+.db-roadmap-content {
+  padding: 12px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex: 1;
+}
+.db-roadmap-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.db-roadmap-desc {
+  font-size: 13px;
+  color: var(--ink2);
+  margin-bottom: 6px;
+}
+.db-roadmap-date {
+  font-size: 11px;
+  color: var(--muted2);
+}
+
+/* ══ INTEGRATIONS VIEW ═════════════════════════ */
+.db-integrations-list {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.db-integration-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  transition: all 0.3s;
+}
+.db-integration-item:hover {
+  border-color: var(--violet);
+  box-shadow: 0 4px 12px rgba(124, 92, 252, 0.08);
+}
+.db-integration-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.db-integration-info {
+  flex: 1;
+}
+.db-integration-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.db-integration-status {
+  font-size: 12px;
+  color: var(--muted2);
+}
+.db-integration-health {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ══ CHANNELS VIEW ═════════════════════════════ */
+.db-channels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+.db-channel-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.db-channel-card:hover {
+  border-color: var(--violet);
+  box-shadow: 0 6px 16px rgba(124, 92, 252, 0.1);
+  transform: translateY(-2px);
+}
+.db-channel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.db-channel-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--violet);
+}
+.db-channel-count {
+  font-size: 11px;
+  color: var(--muted2);
+}
+.db-channel-desc {
+  font-size: 12px;
+  color: var(--ink2);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+.db-channel-members {
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.db-small-av {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--white);
+  flex-shrink: 0;
+}
+
+/* ══ AUDIT LOG VIEW ════════════════════════════ */
+.db-audit-list {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.db-audit-item {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+  transition: all 0.3s;
+}
+.db-audit-item:hover {
+  box-shadow: 0 4px 12px rgba(15, 14, 13, 0.08);
+}
+.db-audit-meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.db-audit-action {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.db-audit-desc {
+  flex: 1;
+}
+.db-audit-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.db-audit-user {
+  font-size: 11px;
+  color: var(--muted2);
+}
+.db-audit-time {
+  font-size: 11px;
+  color: var(--muted2);
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* ══ HELP VIEW ═════════════════════════════════ */
+.db-help-search-container {
+  margin-top: 20px;
+}
+.db-help-search {
+  width: 100%;
+  max-width: 500px;
+  padding: 12px 14px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--white);
+  color: var(--ink);
+  transition: all 0.3s;
+}
+.db-help-search:focus {
+  outline: none;
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px rgba(124, 92, 252, 0.1);
+}
+.db-help-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+.db-help-category {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.db-help-category:hover {
+  border-color: var(--violet);
+  box-shadow: 0 8px 24px rgba(124, 92, 252, 0.12);
+  transform: translateY(-2px);
+}
+.db-help-cat-icon {
+  font-size: 28px;
+  color: var(--violet);
+  margin-bottom: 12px;
+}
+.db-help-cat-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.db-help-cat-articles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.db-help-cat-articles a {
+  font-size: 12px;
+  color: var(--violet);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.db-help-cat-articles a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* ══ SAVED VIEWS VIEW ══════════════════════════ */
+.db-saved-list {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.db-saved-item {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+  transition: all 0.3s;
+}
+.db-saved-item:hover {
+  border-color: var(--violet);
+  box-shadow: 0 6px 16px rgba(124, 92, 252, 0.1);
+}
+.db-saved-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.db-saved-desc {
+  font-size: 12px;
+  color: var(--ink2);
+  margin-bottom: 10px;
+}
+.db-saved-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.db-saved-stat {
+  font-size: 11px;
+  color: var(--muted2);
+}
+.db-saved-action {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--violet);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.db-saved-action:hover {
+  background: var(--violet-mid);
+  transform: scale(1.02);
+}
+</style>
 
 <script>
 // ── CURSOR ─────────────────────────────────────
