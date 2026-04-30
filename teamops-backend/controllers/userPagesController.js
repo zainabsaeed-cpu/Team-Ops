@@ -1,4 +1,4 @@
-const pool = require('../models');
+const { Workspace, User, Activity } = require('../models');
 
 exports.getAnalytics = async (req, res) => {
     // Return static metrics as requested
@@ -14,11 +14,14 @@ exports.getAnalytics = async (req, res) => {
 
 exports.getActivityFeed = async (req, res) => {
     try {
-        // Fetch real activity if workspaceId is provided, else mock/global
-        const result = await pool.query(
-            'SELECT a.*, u.name as user_name FROM activities a JOIN users u ON a.user_id = u.id ORDER BY a.created_at DESC LIMIT 20'
-        );
-        res.json(result.rows);
+        const workspaces = await Workspace.find({ 'members.user': req.userId }).lean();
+        const workspaceIds = workspaces.map((workspace) => workspace._id);
+        const result = await Activity.find({ workspace: { $in: workspaceIds } }).sort({ createdAt: -1 }).limit(20).lean();
+        res.json(result.map((activity) => ({
+            id: activity._id.toString(),
+            message: activity.action,
+            time: new Date(activity.createdAt).toLocaleString(),
+        })));
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
@@ -28,16 +31,25 @@ exports.getActivityFeed = async (req, res) => {
 exports.getMembers = async (req, res) => {
     try {
         const { workspaceId } = req.query;
-        let query = 'SELECT u.id, u.name, u.email, u.avatar_url, wm.role FROM users u JOIN workspace_members wm ON u.id = wm.user_id';
-        let params = [];
-        
-        if (workspaceId) {
-            query += ' WHERE wm.workspace_id = $1';
-            params.push(workspaceId);
-        }
+        const workspaces = workspaceId
+            ? await Workspace.find({ _id: workspaceId }).lean()
+            : await Workspace.find({ 'members.user': req.userId }).lean();
 
-        const result = await pool.query(query, params);
-        res.json(result.rows);
+        const memberRoles = new Map();
+        workspaces.forEach((workspace) => {
+            workspace.members.forEach((member) => {
+                memberRoles.set(member.user.toString(), member.role);
+            });
+        });
+
+        const users = await User.find({ _id: { $in: Array.from(memberRoles.keys()) } }).lean();
+        const statuses = ['Online', 'Online', 'Away', 'Offline'];
+        res.json(users.map((user, index) => ({
+            id: user._id.toString(),
+            name: user.name,
+            role: memberRoles.get(user._id.toString()) || 'member',
+            status: statuses[index % statuses.length],
+        })));
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
@@ -68,13 +80,17 @@ exports.getMessages = (req, res) => {
 exports.getSettings = async (req, res) => {
     // Mock settings as requested
     res.json({
-        notifications: true,
-        darkMode: false,
-        language: 'en'
+        workspaceName: 'TeamOps Workspace',
+        notifyEmail: true,
+        notifyPush: true,
     });
 };
 
 exports.updateSettings = async (req, res) => {
     // For now, just return success
-    res.json({ message: 'Settings updated', settings: req.body });
+    res.json({
+        workspaceName: req.body.workspaceName || 'TeamOps Workspace',
+        notifyEmail: Boolean(req.body.notifyEmail),
+        notifyPush: Boolean(req.body.notifyPush),
+    });
 };

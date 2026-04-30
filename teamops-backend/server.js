@@ -3,7 +3,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const pool = require('./models');
+const { connectDB, seedDatabase, mongoose } = require('./models');
 
 const authRoutes = require('./routes/auth');
 const workspaceRoutes = require('./routes/workspaces');
@@ -30,7 +30,8 @@ app.use('/api/user', userPageRoutes);
 // Test DB
 app.get('/api/health', async (req, res) => {
     try {
-        await pool.query('SELECT 1');
+        await connectDB();
+        await mongoose.connection.db.admin().ping();
         res.json({ status: 'OK', db: 'connected' });
     } catch (err) {
         res.status(500).json({ status: 'ERROR', db: err.message });
@@ -41,6 +42,16 @@ app.get('/api/health', async (req, res) => {
 require('./socket')(io);
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+
+(async () => {
+    try {
+        await connectDB();
+        await seedDatabase();
+        server.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    } catch (err) {
+        console.error('Failed to start server:', err);
+        process.exit(1);
+    }
+})();

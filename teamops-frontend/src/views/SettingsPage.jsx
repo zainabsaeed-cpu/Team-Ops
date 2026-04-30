@@ -3,7 +3,7 @@ import { getSettings, updateSettings } from '../services/api.js'
 
 export default function SettingsPage() {
   const [form, setForm] = useState({
-    workspaceName: 'Alpha Workspace',
+    workspaceName: 'TeamOps Workspace',
     notifyEmail: true,
     notifyPush: true,
   })
@@ -62,7 +62,7 @@ export default function SettingsPage() {
       <div className="section-header">
         <div>
           <h2>Settings</h2>
-          <p>Workspace preferences and notifications</p>
+          <p>Polish the demo workspace preferences before presenting.</p>
         </div>
       </div>
       {error ? <div className="error">{error}</div> : null}

@@ -158,7 +158,7 @@ export default function AppLayout() {
           TeamOps
         </div>
 
-        <div className="sidebar-workspace-chip">Alpha</div>
+        <div className="sidebar-workspace-chip">Demo ready</div>
 
         <p className="aside-section-label">Main</p>
         <nav className="nav-links">

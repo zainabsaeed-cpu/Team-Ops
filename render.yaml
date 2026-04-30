@@ -1,0 +1,30 @@
+services:
+  - type: web_service
+    name: teamops-backend
+    env: node
+    plan: free
+    buildCommand: cd teamops-backend && npm install
+    startCommand: cd teamops-backend && npm start
+    autoDeploy: true
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        sync: false
+
+  - type: static_site
+    name: teamops-frontend
+    env: static
+    plan: free
+    buildCommand: cd teamops-frontend && npm install && npm run build
+    publishPath: teamops-frontend/dist
+    autoDeploy: true
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_SOCKET_URL
+        sync: false

@@ -1,28 +1,33 @@
-const pool = require('../models');
+const { Card, formatCard } = require('../models');
 
 exports.getCards = async (req, res) => {
     const { columnId } = req.params;
-    const result = await pool.query('SELECT * FROM cards WHERE column_id = $1 ORDER BY position', [columnId]);
-    res.json(result.rows);
+    const result = await Card.find({ column: columnId }).sort({ position: 1 }).lean();
+    res.json(result.map(formatCard));
 };
 
 exports.createCard = async (req, res) => {
     const { columnId } = req.params;
     const { title, description, priority, assignee_id, due_date, position } = req.body;
-    const result = await pool.query(
-        `INSERT INTO cards (column_id, title, description, priority, assignee_id, due_date, position) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-        [columnId, title, description, priority, assignee_id, due_date, position]
-    );
-    res.status(201).json(result.rows[0]);
+    const card = await Card.create({
+        column: columnId,
+        title,
+        description,
+        priority,
+        assignee: assignee_id || null,
+        dueDate: due_date || null,
+        position,
+    });
+    res.status(201).json(formatCard(card.toObject()));
 };
 
 exports.moveCard = async (req, res) => {
     const { cardId } = req.params;
     const { newColumnId, newPosition } = req.body;
-    await pool.query(
-        'UPDATE cards SET column_id = $1, position = $2, updated_at = NOW() WHERE id = $3',
-        [newColumnId, newPosition, cardId]
-    );
+    await Card.findByIdAndUpdate(cardId, {
+        column: newColumnId,
+        position: newPosition,
+        updatedAt: new Date(),
+    });
     res.json({ message: 'Card moved' });
 };

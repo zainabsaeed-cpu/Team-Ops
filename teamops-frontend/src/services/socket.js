@@ -4,7 +4,7 @@ let socketInstance = null
 
 export function getSocket(token) {
   if (!socketInstance) {
-    socketInstance = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
+    socketInstance = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5001', {
       autoConnect: false,
       transports: ['websocket'],
       auth: { token },

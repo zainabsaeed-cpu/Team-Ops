@@ -1,17 +1,34 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const pool = require('../models');
+const { User, Workspace, Column, formatUser } = require('../models');
+const jwtSecret = process.env.JWT_SECRET || 'teamops-dev-secret';
+
+const createStarterWorkspace = async (userId) => {
+    const workspace = await Workspace.create({
+        name: 'My Workspace',
+        owner: userId,
+        inviteCode: `invite-${Date.now().toString(36)}`,
+        members: [{ user: userId, role: 'owner' }],
+    });
+
+    await Column.insertMany([
+        { workspace: workspace._id, title: 'To Do', position: 0 },
+        { workspace: workspace._id, title: 'In Progress', position: 1 },
+        { workspace: workspace._id, title: 'Done', position: 2 },
+    ]);
+
+    return workspace;
+};
 
 exports.register = async (req, res) => {
     const { name, email, password } = req.body;
     try {
         const hashed = await bcrypt.hash(password, 10);
-        const result = await pool.query(
-            'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email',
-            [name, email, hashed]
-        );
-        const token = jwt.sign({ userId: result.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.status(201).json({ user: result.rows[0], token });
+        const user = await User.create({ name, email, passwordHash: hashed });
+        await createStarterWorkspace(user._id);
+
+        const token = jwt.sign({ userId: user._id.toString() }, jwtSecret, { expiresIn: '7d' });
+        res.status(201).json({ user: formatUser(user), token });
     } catch (err) {
         res.status(400).json({ error: 'Email already exists' });
     }
@@ -20,15 +37,14 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     const { email, password } = req.body;
     try {
-        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (result.rows.length === 0) return res.status(401).json({ error: 'Invalid credentials' });
+        const user = await User.findOne({ email: email.toLowerCase().trim() });
+        if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
-        const user = result.rows[0];
-        const valid = await bcrypt.compare(password, user.password_hash);
+        const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
 
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.json({ user: { id: user.id, name: user.name, email: user.email }, token });
+        const token = jwt.sign({ userId: user._id.toString() }, jwtSecret, { expiresIn: '7d' });
+        res.json({ user: formatUser(user), token });
     } catch (err) {
         res.status(500).json({ error: 'Server error' });
     }

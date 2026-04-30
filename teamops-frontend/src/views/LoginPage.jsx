@@ -1,6 +1,6 @@
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { ArrowRight, LockKeyhole, Mail, Moon, Sparkles, Sun } from 'lucide-react'
+import { ArrowRight, BadgeCheck, LockKeyhole, Mail, Moon, Sparkles, Sun } from 'lucide-react'
 import { useAuth } from '../state/AuthContext.jsx'
 import { useTheme } from '../state/ThemeContext.jsx'
 
@@ -92,35 +92,54 @@ export default function LoginPage() {
             <div className="login-card-bottom-note">Built for high-velocity product teams.</div>
           </form>
 
-          <aside className="event-glass-card">
-            <div className="event-column">
-              <h2>
-                Thu
-                <span>24th</span>
-              </h2>
-              <p>18 PM</p>
-              <p>Kerkstraat 12B</p>
-              <p>Amsterdam</p>
-              <div className="event-chip">
+          <aside className="demo-glass-card event-glass-card">
+            <div className="demo-summary-panel">
+              <div className="demo-chip">
                 <Sparkles size={14} />
-                C.Lab
+                Demo ready
+              </div>
+              <h2>Open the seeded workspace in one login.</h2>
+              <p>
+                The backend is seeded, MongoDB is connected, and the board is preloaded so the
+                walkthrough feels live from the first click.
+              </p>
+
+              <div className="demo-credential-card">
+                <BadgeCheck size={16} />
+                <div>
+                  <span>Seeded account</span>
+                  <strong>zainab@teamops.dev</strong>
+                  <small>Password: 123456</small>
+                </div>
               </div>
             </div>
-            <div className="event-body">
-              <p>Grand opening</p>
-              <strong>New store</strong>
-              <div className="event-sun" />
-              <button type="button" className="event-join-btn">Join in</button>
+
+            <div className="demo-stack-panel">
+              <div className="demo-stat">
+                <span>Live board</span>
+                <strong>Kanban + drag-and-drop</strong>
+              </div>
+              <div className="demo-stat">
+                <span>Realtime</span>
+                <strong>Socket.io events</strong>
+              </div>
+              <div className="demo-stat">
+                <span>Data layer</span>
+                <strong>MongoDB seeded demo</strong>
+              </div>
+              <div className="demo-callout">
+                Everything you need for the final demo is already live.
+              </div>
             </div>
           </aside>
         </section>
 
-        <article className="discover-card">
+        <article className="discover-card demo-footer-card">
           <div>
-            <h3>New in</h3>
-            <p>TeamOps V3 release notes and collaborative updates.</p>
+            <h3>Final demo flow</h3>
+            <p>Log in, open the workspace board, and move a card to show the live update loop.</p>
           </div>
-          <button type="button" className="discover-link">Discover</button>
+          <button type="button" className="discover-link">Ready to go</button>
         </article>
       </div>
     </div>
