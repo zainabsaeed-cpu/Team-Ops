@@ -13,11 +13,12 @@ const userPageRoutes = require('./routes/userPages');
 
 const app = express();
 const server = http.createServer(app);
+const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 const io = new Server(server, {
-    cors: { origin: '*' }
+    cors: { origin: CORS_ORIGIN }
 });
 
-app.use(cors());
+app.use(cors({ origin: CORS_ORIGIN }));
 app.use(express.json());
 
 // Routes

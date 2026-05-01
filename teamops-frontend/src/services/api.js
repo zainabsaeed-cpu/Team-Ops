@@ -6,6 +6,14 @@ const api = axios.create({
   timeout: 4000,
 })
 
+export const setAuthToken = (token) => {
+  if (token) {
+    api.defaults.headers.common.Authorization = `Bearer ${token}`
+  } else {
+    delete api.defaults.headers.common.Authorization
+  }
+}
+
 const clone = (value) => JSON.parse(JSON.stringify(value))
 
 async function tryBackend(request, fallback) {
@@ -31,6 +39,12 @@ export const registerUser = (payload) =>
         email: payload.email,
       },
     }),
+  )
+
+export const getCurrentUser = () =>
+  tryBackend(
+    () => api.get('/auth/me'),
+    () => ({ user: clone(mockState.user) }),
   )
 
 export const getWorkspaces = () =>

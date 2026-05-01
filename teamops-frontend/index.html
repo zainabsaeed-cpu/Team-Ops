@@ -544,6 +544,16 @@ footer {
 }
 .auth-input:focus { border-color: var(--violet); background: var(--white); box-shadow: 0 0 0 4px rgba(124,92,252,0.08); }
 .auth-input::placeholder { color: var(--muted2); }
+.auth-error {
+  margin: -6px 0 10px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+  font-size: 12.5px;
+  font-weight: 600;
+}
 .auth-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .auth-submit {
   width: 100%; background: var(--ink); color: #fff; border: none;
@@ -1375,7 +1385,7 @@ footer {
       <button class="cta-main" onclick="showView('auth')">
         Start for free <span class="cta-arrow">→</span>
       </button>
-      <button class="cta-ghost" onclick="showDashboard()">
+      <button class="cta-ghost" onclick="openDashboardFromDemo()">
         <i class="bi bi-play-circle icon-inline"></i>Live demo
       </button>
     </div>
@@ -1651,26 +1661,41 @@ footer {
       </div>
       <div id="fLogin">
         <label class="auth-label">Email</label>
-        <input type="email" class="auth-input" placeholder="you@example.com">
+        <input id="loginEmail" type="email" class="auth-input" placeholder="you@example.com">
         <label class="auth-label">Password</label>
-        <input type="password" class="auth-input" placeholder="••••••••">
+        <input id="loginPassword" type="password" class="auth-input" placeholder="••••••••">
+        <div id="authError" class="auth-error" style="display:none"></div>
         <button class="auth-submit" onclick="doLogin()">Log in →</button>
         <div class="auth-or">or</div>
-        <button class="social-login">
+        <button class="social-login" onclick="handleGoogleAuth()">
           <svg width="15" height="15" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
           Continue with Google
         </button>
       </div>
       <div id="fSignup" style="display:none">
         <div class="auth-row">
-          <div><label class="auth-label">First name</label><input type="text" class="auth-input" placeholder="Zainab"></div>
-          <div><label class="auth-label">Last name</label><input type="text" class="auth-input" placeholder="Saeed"></div>
+          <div><label class="auth-label">First name</label><input id="signupFirstName" type="text" class="auth-input" placeholder="Zainab"></div>
+          <div><label class="auth-label">Last name</label><input id="signupLastName" type="text" class="auth-input" placeholder="Saeed"></div>
         </div>
         <label class="auth-label">Email</label>
-        <input type="email" class="auth-input" placeholder="you@example.com">
+        <input id="signupEmail" type="email" class="auth-input" placeholder="you@example.com">
         <label class="auth-label">Password</label>
-        <input type="password" class="auth-input" placeholder="Create a strong password">
-        <button class="auth-submit" onclick="doLogin()">Create account →</button>
+        <input id="signupPassword" type="password" class="auth-input" placeholder="Create a strong password">
+        <div id="signupError" class="auth-error" style="display:none"></div>
+        <button class="auth-submit" onclick="doSignup()">Create account →</button>
+      </div>
+      <div id="fVerification" style="display:none">
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="font-size:14px;color:var(--muted);margin-bottom:8px">Check your email for a verification link</div>
+          <div style="font-size:13px;color:var(--muted2)">We sent a verification link to <strong id="verificationEmail"></strong></div>
+        </div>
+        <label class="auth-label">Verification code</label>
+        <input id="verificationCode" type="text" class="auth-input" placeholder="Paste the code from your email">
+        <div id="verificationError" class="auth-error" style="display:none"></div>
+        <button class="auth-submit" onclick="doVerify()">Verify email →</button>
+        <div style="text-align:center;margin-top:12px;font-size:13px">
+          <button style="background:none;border:none;color:var(--violet);cursor:pointer;text-decoration:underline" onclick="switchTab('signup')">Back to signup</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1684,7 +1709,7 @@ footer {
   <div class="db-aside">
     <div class="aside-head">
       <div class="aside-logo">Team<span>Ops</span></div>
-      <button class="ws-switcher">Alpha ▾</button>
+      <button class="ws-switcher" id="workspaceSwitcher">Alpha ▾</button>
     </div>
     <div class="aside-section">
       <div class="aside-sec-label">Main</div>
@@ -1692,8 +1717,8 @@ footer {
       <button class="aside-nav-btn" data-db-view="analytics" onclick="switchDashboardView('analytics', this)"><span class="anb-icon"><i class="bi bi-bar-chart"></i></span> Analytics</button>
       <button class="aside-nav-btn" data-db-view="activity" onclick="switchDashboardView('activity', this)"><span class="anb-icon"><i class="bi bi-clock-history"></i></span> Activity</button>
       <button class="aside-nav-btn" data-db-view="notifications" onclick="switchDashboardView('notifications', this)"><span class="anb-icon"><i class="bi bi-bell"></i></span> Notifications <span class="anb-badge">5</span></button>
-      <button class="aside-nav-btn" data-db-view="members" onclick="switchDashboardView('members', this)"><span class="anb-icon"><i class="bi bi-people"></i></span> Members</button>
-      <button class="aside-nav-btn" data-db-view="settings" onclick="switchDashboardView('settings', this)"><span class="anb-icon"><i class="bi bi-gear"></i></span> Settings</button>
+      <button class="aside-nav-btn" data-db-view="members" id="membersNavBtn" onclick="switchDashboardView('members', this)"><span class="anb-icon"><i class="bi bi-people"></i></span> Members</button>
+      <button class="aside-nav-btn" data-db-view="settings" id="settingsNavBtn" onclick="switchDashboardView('settings', this)"><span class="anb-icon"><i class="bi bi-gear"></i></span> Settings</button>
     </div>
     <div class="aside-section">
       <div class="aside-sec-label">Manage</div>
@@ -1710,15 +1735,15 @@ footer {
       <div class="aside-sec-label">Boards</div>
     </div>
     <div class="aside-boards">
-      <button class="aside-board-item active"><div class="b-dot" style="background:var(--violet)"></div>Sprint 4</button>
+      <button class="aside-board-item active" id="boardItemPrimary"><div class="b-dot" style="background:var(--violet)"></div>Sprint 4</button>
       <button class="aside-board-item"><div class="b-dot" style="background:#ec4899"></div>Backend API</button>
       <button class="aside-board-item"><div class="b-dot" style="background:var(--teal)"></div>Design System</button>
-      <button class="aside-board-item" onclick="showToast('bi-kanban','Board created','New board added to your workspace')" style="color:var(--muted2);font-size:12px;padding:6px 8px;font-style:italic">+ New board</button>
+      <button class="aside-board-item" id="newBoardBtn" onclick="showToast('bi-kanban','Board created','New board added to your workspace')" style="color:var(--muted2);font-size:12px;padding:6px 8px;font-style:italic">+ New board</button>
     </div>
     <div class="aside-foot">
       <div class="aside-user">
         <div class="aside-av">Z</div>
-        <div><div class="aside-uname">Zainab Saeed</div><div class="aside-urole">Owner</div></div>
+        <div><div class="aside-uname" id="asideUserName">Zainab Saeed</div><div class="aside-urole" id="asideUserRole">Owner</div></div>
       </div>
       <button class="aside-logout" onclick="doLogout()"><i class="bi bi-box-arrow-right"></i> Log out</button>
     </div>
@@ -1743,25 +1768,11 @@ footer {
         <div class="b-col-head">
           <div class="b-col-ind ci-todo"></div>
           <div class="b-col-title">To Do</div>
-          <div class="b-col-count" id="ct-todo">3</div>
+          <div class="b-col-count" id="ct-todo">0</div>
           <button class="b-col-add" onclick="addCard('todo')">+</button>
         </div>
         <div class="b-cards" id="cards-todo">
-          <div class="b-card" draggable="true" onclick="openCard('Design auth flow mockups','ct-v ct-s','Design all authentication screens — login, signup, and forgot password. Must match the design system with cream background, violet accents, and Instrument Serif headings.','Zunairah Sarwar','Apr 15, 2026','To Do','Medium')">
-            <div class="card-tags"><span class="c-tag ct-v">Design</span><span class="c-tag ct-s">Frontend</span></div>
-            <div class="b-card-title">Design auth flow mockups</div>
-            <div class="b-card-foot"><span class="c-prio cp-m">Med</span><div class="c-avs"><div class="c-av" style="background:#ec4899">U</div></div><span class="c-due">Apr 15</span></div>
-          </div>
-          <div class="b-card" draggable="true" onclick="openCard('PostgreSQL schema review','ct-g','Review all FK constraints, indices, and cascade rules. Ensure ordering columns for cards and columns use float positions to avoid bulk updates on reorder.','Zainab Saeed','Apr 16, 2026','To Do','Low')">
-            <div class="card-tags"><span class="c-tag ct-g">Database</span></div>
-            <div class="b-card-title">PostgreSQL schema review</div>
-            <div class="b-card-foot"><span class="c-prio cp-l">Low</span><div class="c-avs"><div class="c-av" style="background:var(--violet)">Z</div></div><span class="c-due">Apr 16</span></div>
-          </div>
-          <div class="b-card" draggable="true" onclick="openCard('JWT middleware setup','ct-r ct-s','Implement JWT verification middleware for Express. Protect all /api routes with a single middleware. Return 401 with JSON error body on expired/invalid tokens.','Zainab Saeed','Apr 14, 2026','To Do','High')">
-            <div class="card-tags"><span class="c-tag ct-r">Security</span><span class="c-tag ct-s">Backend</span></div>
-            <div class="b-card-title">JWT middleware setup</div>
-            <div class="b-card-foot"><span class="c-prio cp-h">High</span><div class="c-avs"><div class="c-av" style="background:var(--violet)">Z</div></div><span class="c-due">Apr 14</span></div>
-          </div>
+          <!-- Cards will be loaded from API -->
         </div>
         <button class="b-add-card" onclick="addCard('todo')">+ Add a card</button>
       </div>
@@ -1770,20 +1781,11 @@ footer {
         <div class="b-col-head">
           <div class="b-col-ind ci-prog"></div>
           <div class="b-col-title">In Progress</div>
-          <div class="b-col-count" id="ct-prog">2</div>
+          <div class="b-col-count" id="ct-prog">0</div>
           <button class="b-col-add" onclick="addCard('prog')">+</button>
         </div>
         <div class="b-cards" id="cards-prog">
-          <div class="b-card" style="border-color:var(--violet-mid)" draggable="true" onclick="openCard('WebSocket event system','ct-v ct-o','Set up Socket.io server with board-level rooms. card:moved, card:created, comment:added events broadcast to all connected clients in the same room in under 50ms. No polling.','Zainab Saeed','Apr 18, 2026','In Progress','High')">
-            <div class="card-tags"><span class="c-tag ct-v">Backend</span><span class="c-tag ct-o">Real-Time</span></div>
-            <div class="b-card-title">WebSocket event system</div>
-            <div class="b-card-foot"><span class="c-prio cp-h">High</span><div class="c-avs"><div class="c-av" style="background:var(--violet)">Z</div><div class="c-av" style="background:#ec4899">U</div></div><span style="font-size:11px;color:var(--muted)"><i class="bi bi-chat-dots"></i> 3</span></div>
-          </div>
-          <div class="b-card" draggable="true" onclick="openCard('Kanban drag-and-drop','ct-s ct-o','Implement card drag and drop using react-beautiful-dnd or native HTML5 drag API. Persist new column_id and position to the DB on drop via REST call.','Zunairah Sarwar','Apr 17, 2026','In Progress','Medium')">
-            <div class="card-tags"><span class="c-tag ct-s">Frontend</span><span class="c-tag ct-o">UX</span></div>
-            <div class="b-card-title">Kanban drag-and-drop</div>
-            <div class="b-card-foot"><span class="c-prio cp-m">Med</span><div class="c-avs"><div class="c-av" style="background:#ec4899">U</div></div><span class="c-due">Apr 17</span></div>
-          </div>
+          <!-- Cards will be loaded from API -->
         </div>
         <button class="b-add-card" onclick="addCard('prog')">+ Add a card</button>
       </div>
@@ -1792,15 +1794,11 @@ footer {
         <div class="b-col-head">
           <div class="b-col-ind ci-rev"></div>
           <div class="b-col-title">In Review</div>
-          <div class="b-col-count" id="ct-rev">1</div>
+          <div class="b-col-count" id="ct-rev">0</div>
           <button class="b-col-add" onclick="addCard('rev')">+</button>
         </div>
         <div class="b-cards" id="cards-rev">
-          <div class="b-card" draggable="true" onclick="openCard('REST API endpoints','ct-s ct-g','CRUD for users, workspaces, boards, columns, cards, comments. RESTful conventions, proper HTTP status codes (200/201/400/404/500), and centralized error handling middleware.','Zainab Saeed','Apr 13, 2026','In Review','Medium')">
-            <div class="card-tags"><span class="c-tag ct-s">Backend</span><span class="c-tag ct-g">API</span></div>
-            <div class="b-card-title">REST API endpoints</div>
-            <div class="b-card-foot"><span class="c-prio cp-m">Med</span><div class="c-avs"><div class="c-av" style="background:var(--violet)">Z</div></div><span style="font-size:11px;color:var(--muted)"><i class="bi bi-chat-dots"></i> 1</span><span class="c-due">Apr 13</span></div>
-          </div>
+          <!-- Cards will be loaded from API -->
         </div>
         <button class="b-add-card" onclick="addCard('rev')">+ Add a card</button>
       </div>
@@ -1809,29 +1807,59 @@ footer {
         <div class="b-col-head">
           <div class="b-col-ind ci-done"></div>
           <div class="b-col-title">Done</div>
-          <div class="b-col-count" id="ct-done">3</div>
+          <div class="b-col-count" id="ct-done">0</div>
           <button class="b-col-add" onclick="addCard('done')">+</button>
         </div>
         <div class="b-cards" id="cards-done">
-          <div class="b-card" style="opacity:0.65" draggable="true" onclick="openCard('Project setup + CI/CD','ct-g','Monorepo with /client and /server. GitHub Actions CI. ESLint + Prettier. .env management. Docker-compose for local dev.','Zunairah Sarwar','Apr 5, 2026','Done','Low')">
-            <div class="card-tags"><span class="c-tag ct-g">DevOps</span></div>
-            <div class="b-card-title">Project setup + CI/CD</div>
-            <div class="b-card-foot"><span class="c-prio cp-l">Low</span><div class="c-avs"><div class="c-av" style="background:#ec4899">U</div></div><span class="c-due" style="color:var(--teal)">✓ Done</span></div>
-          </div>
-          <div class="b-card" style="opacity:0.65" draggable="true" onclick="openCard('DB migrations','ct-g','All tables with FK constraints, cascade deletes, indices on lookup columns, float-based ordering for drag-and-drop positions.','Zainab Saeed','Apr 7, 2026','Done','Medium')">
-            <div class="card-tags"><span class="c-tag ct-g">Database</span></div>
-            <div class="b-card-title">DB migrations</div>
-            <div class="b-card-foot"><span class="c-prio cp-m">Med</span><div class="c-avs"><div class="c-av" style="background:var(--violet)">Z</div></div><span class="c-due" style="color:var(--teal)">✓ Done</span></div>
-          </div>
-          <div class="b-card" style="opacity:0.65" draggable="true" onclick="openCard('User authentication','ct-r ct-s','bcrypt password hashing, JWT issuance, /api/auth/register and /api/auth/login. Token stored in httpOnly cookie.','Zainab Saeed','Apr 8, 2026','Done','High')">
-            <div class="card-tags"><span class="c-tag ct-r">Auth</span><span class="c-tag ct-s">Backend</span></div>
-            <div class="b-card-title">User authentication</div>
-            <div class="b-card-foot"><span class="c-prio cp-h">High</span><div class="c-avs"><div class="c-av" style="background:var(--violet)">Z</div></div><span class="c-due" style="color:var(--teal)">✓ Done</span></div>
-          </div>
+          <!-- Cards will be loaded from API -->
         </div>
         <button class="b-add-card" onclick="addCard('done')">+ Add a card</button>
       </div>
-      <button class="add-col-btn" onclick="showToast('bi-kanban','Column added','New workflow stage created!')">+ Add Column</button>
+      <button class="add-col-btn" onclick="addColumn()">+ Add Column</button>
+    </div>
+
+    <!-- CARD CREATION MODAL -->
+    <div id="cardCreateModal" style="display:none;position:fixed;inset:0;background:rgba(15,14,13,0.4);backdrop-filter:blur(4px);z-index:2000;display:flex;align-items:center;justify-content:center">
+      <div style="background:white;border-radius:var(--r);width:90%;max-width:500px;padding:32px;box-shadow:var(--shadow-lg)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+          <h3 style="font-size:20px;font-weight:700">Create new card</h3>
+          <button onclick="closeCardModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)">✕</button>
+        </div>
+        <form id="cardForm" onsubmit="submitCardForm(event)" style="display:flex;flex-direction:column;gap:16px">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ink)">Card title *</label>
+            <input id="cardTitle" type="text" placeholder="e.g., Implement user authentication" required style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit">
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ink)">Description</label>
+            <textarea id="cardDesc" placeholder="Add details about this task..." style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;min-height:80px;resize:vertical"></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div>
+              <label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ink)">Priority</label>
+              <select id="cardPriority" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ink)">Due date</label>
+              <input id="cardDueDate" type="date" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit">
+            </div>
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ink)">Assign to</label>
+            <select id="cardAssignee" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit">
+              <option value="">No one assigned</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:8px">
+            <button type="submit" style="flex:1;padding:12px;background:var(--violet);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">Create card</button>
+            <button type="button" onclick="closeCardModal()" style="flex:1;padding:12px;background:var(--cream);color:var(--ink);border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">Cancel</button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <div class="db-content-view db-page" id="dbView-analytics">
@@ -3093,9 +3121,24 @@ function switchDashboardView(viewId, btnEl) {
   runCountUps(target);
 }
 function showDashboard() {
+  if (!getToken()) {
+    showView('auth');
+    switchTab('login');
+    return;
+  }
   showView('dashboard');
   switchDashboardView('board');
   setTimeout(() => showToast('bi-broadcast-pin','Connected','Joined Sprint 4 board room via WebSocket'), 600);
+}
+
+function openDashboardFromDemo() {
+  if (!getToken()) {
+    showView('auth');
+    switchTab('login');
+    setTimeout(() => showToast('bi-shield-lock','Sign in required','Log in with your workspace account to open the dashboard.'), 300);
+    return;
+  }
+  showDashboard();
 }
 function toggleSide(side) {
   const dash = document.getElementById('dashboard');
@@ -3264,15 +3307,283 @@ function switchTab(t) {
   document.getElementById('tabSignup').classList.toggle('active', t==='signup');
   document.getElementById('fLogin').style.display = t==='login'?'':'none';
   document.getElementById('fSignup').style.display = t==='signup'?'':'none';
+  if (t !== 'verification') {
+    document.getElementById('fVerification').style.display = 'none';
+  }
+  hideAuthError();
 }
-function doLogin() {
-  showDashboard();
-  setTimeout(() => showToast('bi-person-check','Welcome back, Zainab!','You\'re signed in to Alpha workspace'), 700);
+const API_BASE = 'http://localhost:5001/api';
+const TOKEN_KEY = 'teamops_token';
+const USER_KEY = 'teamops_user';
+
+function showAuthError(message, target = 'authError') {
+  const el = document.getElementById(target);
+  if (!el) return;
+  el.textContent = message;
+  el.style.display = 'block';
+}
+
+function hideAuthError() {
+  const loginError = document.getElementById('authError');
+  const signupError = document.getElementById('signupError');
+  const verificationError = document.getElementById('verificationError');
+  if (loginError) {
+    loginError.textContent = '';
+    loginError.style.display = 'none';
+  }
+  if (signupError) {
+    signupError.textContent = '';
+    signupError.style.display = 'none';
+  }
+  if (verificationError) {
+    verificationError.textContent = '';
+    verificationError.style.display = 'none';
+  }
+}
+
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY) || '';
+}
+
+function saveSession(payload) {
+  localStorage.setItem(TOKEN_KEY, payload.token);
+  localStorage.setItem(USER_KEY, JSON.stringify(payload.user));
+}
+
+function clearSession() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+}
+
+async function apiRequest(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  const token = getToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch (_) {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    throw new Error(payload?.error || 'Request failed');
+  }
+
+  return payload;
+}
+
+function applyWorkspaceContext(sessionUser, workspaces) {
+  const primaryWorkspace = Array.isArray(workspaces) && workspaces.length > 0 ? workspaces[0] : null;
+  const role = primaryWorkspace?.role || 'member';
+  const workspaceName = primaryWorkspace?.name || 'Workspace';
+
+  const userNameEl = document.getElementById('asideUserName');
+  const userRoleEl = document.getElementById('asideUserRole');
+  const workspaceSwitcher = document.getElementById('workspaceSwitcher');
+  const boardItemPrimary = document.getElementById('boardItemPrimary');
+
+  if (userNameEl) userNameEl.textContent = sessionUser?.name || 'User';
+  if (userRoleEl) userRoleEl.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+  if (workspaceSwitcher) workspaceSwitcher.textContent = `${workspaceName} ▾`;
+  if (boardItemPrimary) boardItemPrimary.innerHTML = `<div class="b-dot" style="background:var(--violet)"></div>${workspaceName}`;
+
+  const canManage = role === 'owner' || role === 'admin';
+  const newBoardBtn = document.getElementById('newBoardBtn');
+  const membersNavBtn = document.getElementById('membersNavBtn');
+  const settingsNavBtn = document.getElementById('settingsNavBtn');
+
+  if (newBoardBtn) {
+    newBoardBtn.style.opacity = canManage ? '1' : '0.45';
+    newBoardBtn.style.pointerEvents = canManage ? 'auto' : 'none';
+    newBoardBtn.title = canManage ? '' : 'Only owners and admins can create boards';
+  }
+  if (membersNavBtn) {
+    membersNavBtn.style.opacity = canManage ? '1' : '0.55';
+    membersNavBtn.title = canManage ? '' : 'Members page is read-only for members';
+  }
+  if (settingsNavBtn) {
+    settingsNavBtn.style.opacity = canManage ? '1' : '0.55';
+    settingsNavBtn.title = canManage ? '' : 'Workspace settings require owner or admin access';
+  }
+}
+
+async function bootstrapSession() {
+  if (!getToken()) {
+    showView('auth');
+    switchTab('login');
+    return false;
+  }
+
+  try {
+    const me = await apiRequest('/auth/me');
+    const workspaces = await apiRequest('/workspaces');
+    if (me?.user) {
+      localStorage.setItem(USER_KEY, JSON.stringify(me.user));
+      
+      // Store the primary workspace ID for API calls
+      if (workspaces && workspaces.length > 0) {
+        localStorage.setItem('teamops_workspace_id', workspaces[0]._id);
+      } else {
+        localStorage.removeItem('teamops_workspace_id');
+      }
+      
+      applyWorkspaceContext(me.user, workspaces);
+    }
+    showDashboard(true);
+    return true;
+  } catch (err) {
+    clearSession();
+    showView('auth');
+    switchTab('login');
+    return false;
+  }
+}
+
+async function doLogin() {
+  hideAuthError();
+  const email = document.getElementById('loginEmail')?.value?.trim() || '';
+  const password = document.getElementById('loginPassword')?.value || '';
+
+  if (!email || !password) {
+    showAuthError('Email and password are required.');
+    return;
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email)) {
+    showAuthError('Please enter a valid email address.');
+    return;
+  }
+
+  if (password.length < 6) {
+    showAuthError('Password must be at least 6 characters.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      showAuthError(payload?.error || 'Login failed. Please try again.');
+      return;
+    }
+
+    saveSession(payload);
+    await bootstrapSession();
+    setTimeout(() => showToast('bi-person-check', `Welcome back, ${payload.user?.name || 'User'}!`, 'You are now signed in.'), 700);
+  } catch (err) {
+    showAuthError('Cannot reach backend. Check that server is running on port 5001.');
+  }
+}
+
+async function doSignup() {
+  hideAuthError();
+
+  const firstName = document.getElementById('signupFirstName')?.value?.trim() || '';
+  const lastName = document.getElementById('signupLastName')?.value?.trim() || '';
+  const email = document.getElementById('signupEmail')?.value?.trim() || '';
+  const password = document.getElementById('signupPassword')?.value || '';
+  const fullName = `${firstName} ${lastName}`.trim();
+
+  if (!firstName || !lastName || !email || !password) {
+    showAuthError('All signup fields are required.', 'signupError');
+    return;
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email)) {
+    showAuthError('Please enter a valid email address.', 'signupError');
+    return;
+  }
+
+  if (password.length < 6) {
+    showAuthError('Password must be at least 6 characters.', 'signupError');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: fullName, email, password }),
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      showAuthError(payload?.error || 'Signup failed. Please try again.', 'signupError');
+      return;
+    }
+
+    // Account created, now show verification form
+    document.getElementById('verificationEmail').textContent = email;
+    document.getElementById('signupFirstName').value = '';
+    document.getElementById('signupLastName').value = '';
+    document.getElementById('signupEmail').value = '';
+    document.getElementById('signupPassword').value = '';
+    document.getElementById('fSignup').style.display = 'none';
+    document.getElementById('fVerification').style.display = 'block';
+    sessionStorage.setItem('pendingVerificationEmail', email);
+  } catch (err) {
+    showAuthError('Cannot reach backend. Check that server is running on port 5001.', 'signupError');
+  }
+}
+
+async function doVerify() {
+  const verificationCode = document.getElementById('verificationCode')?.value?.trim() || '';
+
+  if (!verificationCode) {
+    showAuthError('Please enter the verification code from your email.', 'verificationError');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/auth/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: verificationCode }),
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      showAuthError(payload?.error || 'Verification failed. Please try again.', 'verificationError');
+      return;
+    }
+
+    saveSession(payload);
+    document.getElementById('verificationCode').value = '';
+    sessionStorage.removeItem('pendingVerificationEmail');
+    await bootstrapSession();
+    showView('auth');
+    switchTab('login');
+    setTimeout(() => showToast('bi-check-circle', 'Email verified!', 'Your account is ready. You can now log in.'), 700);
+  } catch (err) {
+    showAuthError('Cannot reach backend. Check that server is running on port 5001.', 'verificationError');
+  }
 }
 function doLogout() {
+  clearSession();
   showView('auth');
   switchTab('login');
   setTimeout(() => showToast('bi-box-arrow-right','Logged out','You have been signed out of Alpha workspace'), 350);
+}
+
+function handleGoogleAuth() {
+  // Google OAuth integration
+  // To enable this feature:
+  // 1. Create a Google Cloud project and OAuth 2.0 credentials (Client ID)
+  // 2. Add the Client ID to your .env.local file
+  // 3. Implement the OAuth flow with the backend
+  showToast('bi-info-circle', 'Google OAuth', 'Coming soon! Configure Google credentials in your .env file.');
 }
 
 // ── TOAST ────────────────────────────────────────
@@ -3306,49 +3617,260 @@ function sendComment(btn) {
 }
 
 // ── ADD CARD ─────────────────────────────────────
-const cardNames = ['Fix API response format','Add loading skeleton','Write unit tests','Code review','Deploy to staging','Update README','Performance audit','Add error boundary'];
-function addCard(col) {
-  const title = cardNames[Math.floor(Math.random() * cardNames.length)];
-  const card = document.createElement('div');
-  card.className = 'b-card'; card.draggable = true;
-  card.style.cssText = 'opacity:0;transform:translateY(-10px)';
-  card.innerHTML = `<div class="card-tags"><span class="c-tag ct-v">Task</span></div><div class="b-card-title">${title}</div><div class="b-card-foot"><span class="c-prio cp-m">Med</span><div class="c-avs"><div class="c-av" style="background:var(--violet)">Z</div></div></div>`;
-  card.onclick = () => openCard(title, 'ct-v', 'Click to fill in details for this task.', 'Zainab Saeed', 'TBD', col, 'Medium');
-  const container = document.getElementById('cards-' + col);
-  container.insertBefore(card, container.firstChild);
-  requestAnimationFrame(() => { card.style.transition = 'all 0.35s cubic-bezier(0.34,1.56,0.64,1)'; card.style.opacity = '1'; card.style.transform = 'none'; });
-  const ct = document.getElementById('ct-' + col);
-  ct.textContent = parseInt(ct.textContent) + 1;
-  const names = {todo:'To Do', prog:'In Progress', rev:'In Review', done:'Done'};
-  showToast('bi-plus-circle','Card created',`"${title}" added to ${names[col]}`);
+// ── CARD MANAGEMENT ──────────────────────────────
+let currentCardColumn = null;
+
+function openCardModal(columnId) {
+  currentCardColumn = columnId;
+  document.getElementById('cardCreateModal').style.display = 'flex';
+  document.getElementById('cardTitle').focus();
+  
+  // Load workspace members for assignee dropdown
+  loadAssigneeOptions();
 }
 
-// ── DRAG & DROP ──────────────────────────────────
-let dragged = null, srcCol = null;
-document.addEventListener('dragstart', e => {
-  const c = e.target.closest('.b-card');
-  if (!c) return;
-  dragged = c; srcCol = c.closest('.b-cards')?.id?.replace('cards-','');
-  setTimeout(() => c.classList.add('dragging'), 0);
-});
-document.addEventListener('dragend', () => { if (dragged) { dragged.classList.remove('dragging'); dragged = null; } });
-document.querySelectorAll('.b-cards').forEach(col => {
-  col.addEventListener('dragover', e => { e.preventDefault(); col.style.outline = '2px dashed var(--violet-mid)'; col.style.borderRadius = '12px'; });
-  col.addEventListener('dragleave', () => { col.style.outline = ''; });
-  col.addEventListener('drop', e => {
-    e.preventDefault(); col.style.outline = '';
-    if (!dragged || col.contains(dragged)) return;
-    const tgt = col.id.replace('cards-', '');
-    col.appendChild(dragged);
-    const sc = document.getElementById('ct-' + srcCol);
-    const tc = document.getElementById('ct-' + tgt);
-    if (sc) sc.textContent = Math.max(0, parseInt(sc.textContent) - 1);
-    if (tc) tc.textContent = parseInt(tc.textContent) + 1;
-    const names = {todo:'To Do', prog:'In Progress', rev:'In Review', done:'Done'};
-    showToast('bi-arrow-left-right','Card moved',`Moved to ${names[tgt]} — synced via Socket.io`);
-    srcCol = tgt;
+function closeCardModal() {
+  document.getElementById('cardCreateModal').style.display = 'none';
+  document.getElementById('cardForm').reset();
+  currentCardColumn = null;
+}
+
+async function loadAssigneeOptions() {
+  const boardId = localStorage.getItem('teamops_workspace_id');
+  if (!boardId || boardId === 'undefined' || boardId === 'null') return;
+
+  try {
+    const assigneeSelect = document.getElementById('cardAssignee');
+    assigneeSelect.innerHTML = '<option value="">No one assigned</option>';
+
+    const payload = await apiRequest(`/workspaces/${boardId}/members`);
+    const members = Array.isArray(payload?.members) ? payload.members : [];
+
+    members.forEach(member => {
+      const option = document.createElement('option');
+      option.value = member.id;
+      option.textContent = member.name;
+      assigneeSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Load assignees error:', error);
+  }
+}
+
+async function submitCardForm(e) {
+  e.preventDefault();
+  const title = document.getElementById('cardTitle').value;
+  const description = document.getElementById('cardDesc').value;
+  const priority = document.getElementById('cardPriority').value;
+  const dueDate = document.getElementById('cardDueDate').value;
+  const assigneeId = document.getElementById('cardAssignee').value;
+
+  if (!title.trim() || !currentCardColumn) {
+    showToast('bi-exclamation-circle', 'Error', 'Please fill in required fields');
+    return;
+  }
+
+  // Get current board (workspace)
+  const boardId = localStorage.getItem('teamops_workspace_id');
+  if (!boardId) {
+    showToast('bi-exclamation-circle', 'Error', 'No active workspace');
+    return;
+  }
+
+  // Map column to columnId
+  const columnMap = { todo: 'todo', prog: 'prog', rev: 'rev', done: 'done' };
+  const column = await getColumnByName(boardId, currentCardColumn);
+
+  if (!column) {
+    showToast('bi-exclamation-circle', 'Error', 'Column not found');
+    return;
+  }
+
+  try {
+    const token = getToken();
+    const response = await fetch(`http://localhost:5001/api/boards/${boardId}/cards`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({
+        columnId: column._id,
+        title,
+        description,
+        priority,
+        dueDate: dueDate || null,
+        assigneeId: assigneeId || null,
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || 'Failed to create card');
+    }
+
+    const data = await response.json();
+    closeCardModal();
+    showToast('bi-plus-circle', 'Card created', `"${title}" added to workspace`);
+    
+    // Reload board data
+    await loadBoardData();
+  } catch (error) {
+    console.error('Create card error:', error);
+    showToast('bi-exclamation-circle', 'Error', error.message);
+  }
+}
+
+async function getColumnByName(workspaceId, colName) {
+  try {
+    const token = getToken();
+    const response = await fetch(`http://localhost:5001/api/boards/${workspaceId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await response.json();
+    const colMap = { todo: 'To Do', prog: 'In Progress', rev: 'In Review', review: 'Review', done: 'Done' };
+    return data.columns?.find(c => c.title === colMap[colName]);
+  } catch (err) {
+    console.error('Get column error:', err);
+    return null;
+  }
+}
+
+function addCard(col) {
+  openCardModal(col);
+}
+
+async function loadBoardData() {
+  const boardId = localStorage.getItem('teamops_workspace_id');
+  if (!boardId) return;
+
+  try {
+    const token = getToken();
+    const response = await fetch(`http://localhost:5001/api/boards/${boardId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!response.ok) throw new Error('Failed to load board');
+
+    const board = await response.json();
+    
+    // Clear existing cards
+    ['todo', 'prog', 'rev', 'done'].forEach(col => {
+      const container = document.getElementById(`cards-${col}`);
+      if (container) container.innerHTML = '';
+    });
+
+    // Render columns and cards
+    board.columns.forEach(col => {
+      const colMap = { 'To Do': 'todo', 'In Progress': 'prog', 'In Review': 'rev', 'Review': 'rev', 'Done': 'done' };
+      const colKey = colMap[col.title];
+      if (!colKey) return;
+
+      const countEl = document.getElementById(`ct-${colKey}`);
+      if (countEl) countEl.textContent = col.cards?.length || 0;
+
+      const container = document.getElementById(`cards-${colKey}`);
+      if (!container) return;
+
+      col.cards?.forEach(card => {
+        const cardEl = document.createElement('div');
+        cardEl.className = 'b-card';
+        cardEl.draggable = true;
+        cardEl.innerHTML = `
+          <div class="card-tags"><span class="c-tag ct-v">Task</span></div>
+          <div class="b-card-title">${escapeHtml(card.title)}</div>
+          <div class="b-card-foot">
+            <span class="c-prio cp-${card.priority === 'high' ? 'h' : card.priority === 'low' ? 'l' : 'm'}">${card.priority.charAt(0).toUpperCase() + card.priority.slice(1)}</span>
+            <div class="c-avs"><div class="c-av" style="background:var(--violet)">Z</div></div>
+          </div>
+        `;
+        cardEl.onclick = () => openCardDetail(card);
+        container.appendChild(cardEl);
+      });
+    });
+
+    // Setup drag & drop
+    setupDragDrop(board);
+  } catch (error) {
+    console.error('Load board error:', error);
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function openCardDetail(card) {
+  showToast('bi-pencil', 'Card details', `Editing "${card.title}"...`);
+}
+
+function setupDragDrop(board) {
+  let dragged = null, srcCol = null;
+  
+  document.addEventListener('dragstart', e => {
+    const c = e.target.closest('.b-card');
+    if (!c) return;
+    dragged = c;
+    srcCol = c.closest('.b-cards')?.id?.replace('cards-', '');
+    setTimeout(() => c.classList.add('dragging'), 0);
   });
-});
+
+  document.addEventListener('dragend', () => {
+    if (dragged) { dragged.classList.remove('dragging'); dragged = null; }
+  });
+
+  document.querySelectorAll('.b-cards').forEach(col => {
+    col.addEventListener('dragover', e => {
+      e.preventDefault();
+      col.style.outline = '2px dashed var(--violet-mid)';
+      col.style.borderRadius = '12px';
+    });
+
+    col.addEventListener('dragleave', () => { col.style.outline = ''; });
+
+    col.addEventListener('drop', async e => {
+      e.preventDefault();
+      col.style.outline = '';
+      if (!dragged || col.contains(dragged)) return;
+
+      const tgt = col.id.replace('cards-', '');
+      const colMap = { 'To Do': 'todo', 'In Progress': 'prog', 'In Review': 'rev', 'Done': 'done' };
+      const names = { todo: 'To Do', prog: 'In Progress', rev: 'In Review', done: 'Done' };
+
+      // Find card ID from board data
+      const cardTitle = dragged.querySelector('.b-card-title').textContent;
+      const card = board.columns.flatMap(c => c.cards).find(c => c.title === cardTitle);
+      
+      if (card) {
+        // Move card via API
+        const boardId = localStorage.getItem('teamops_workspace_id');
+        const targetCol = board.columns.find(c => colMap[c.title] === tgt);
+        
+        if (targetCol && boardId) {
+          try {
+            const token = getToken();
+            await fetch(`http://localhost:5001/api/boards/${boardId}/cards/${card.id}/move`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({ toColumnId: targetCol.id, newIndex: 0 }),
+            });
+            
+            col.appendChild(dragged);
+            showToast('bi-arrow-left-right', 'Card moved', `Moved to ${names[tgt]}`);
+            srcCol = tgt;
+          } catch (err) {
+            console.error('Move error:', err);
+            showToast('bi-exclamation-circle', 'Error', 'Failed to move card');
+          }
+        }
+      }
+    });
+  });
+}
+
+// Load board on dashboard open
+if (document.getElementById('dashboard')) {
+  setTimeout(() => loadBoardData(), 500);
+}
 
 // ── SCROLL NAV ───────────────────────────────────
 window.addEventListener('scroll', () => {
@@ -3361,10 +3883,33 @@ const ro = new IntersectionObserver(entries => {
 }, { threshold: 0.08 });
 document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
 
+function addColumn() {
+  showToast('bi-kanban', 'Create board first', 'Create a new board from the Members or Projects section to start organizing your work!');
+}
+
+// ── VERIFY EMAIL LINK ────────────────────────────
+const urlParams = new URLSearchParams(window.location.search);
+const verificationToken = urlParams.get('token');
+
 // ── BOOT TOAST ───────────────────────────────────
 initKpiSparklines();
 initDashboardParallax();
-setTimeout(() => showToast('bi-stars','TeamOps v2','New design loaded — open the dashboard!'), 1000);
+
+if (verificationToken) {
+  // Handle email verification link
+  setTimeout(() => {
+    showView('auth');
+    switchTab('signup');
+    document.getElementById('verificationEmail').textContent = 'your email';
+    document.getElementById('verificationCode').value = verificationToken;
+    document.getElementById('fSignup').style.display = 'none';
+    document.getElementById('fVerification').style.display = 'block';
+    showToast('bi-envelope-check', 'Verification link detected', 'Enter the code below to activate your account.');
+  }, 100);
+} else {
+  setTimeout(() => showToast('bi-stars','TeamOps v2','New design loaded — open the dashboard!'), 1000);
+  bootstrapSession();
+}
 </script>
 </body>
 </html>

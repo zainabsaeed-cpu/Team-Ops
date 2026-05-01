@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { Workspace, Column, User, formatWorkspace } = require('../models');
+const { Workspace, Column, User, formatWorkspace, formatUser } = require('../models');
 
 exports.createWorkspace = async (req, res) => {
     const { name } = req.body;
@@ -13,7 +13,7 @@ exports.createWorkspace = async (req, res) => {
             members: [{ user: ownerId, role: 'owner' }],
         });
 
-        const defaultColumns = ['To Do', 'In Progress', 'Done'];
+        const defaultColumns = ['To Do', 'In Progress', 'In Review', 'Done'];
         for (let i = 0; i < defaultColumns.length; i++) {
             await Column.create({ workspace: workspace._id, title: defaultColumns[i], position: i });
         }
@@ -38,6 +38,26 @@ exports.getWorkspaceById = async (req, res) => {
     const workspace = await Workspace.findById(workspaceId).lean();
     if (!workspace) return res.status(404).json({ error: 'Workspace not found' });
     res.json({ id: workspace._id.toString(), name: workspace.name, inviteCode: workspace.inviteCode });
+};
+
+exports.getWorkspaceMembers = async (req, res) => {
+    const { workspaceId } = req.params;
+
+    try {
+        const workspace = await Workspace.findById(workspaceId).populate('members.user').lean();
+        if (!workspace) return res.status(404).json({ error: 'Workspace not found' });
+
+        const members = (workspace.members || [])
+            .filter((member) => member.user)
+            .map((member) => ({
+                ...formatUser(member.user),
+                role: member.role,
+            }));
+
+        res.json({ members });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
 exports.addMember = async (req, res) => {

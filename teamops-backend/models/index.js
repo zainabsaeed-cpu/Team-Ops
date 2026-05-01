@@ -27,6 +27,16 @@ const userSchema = new Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
     avatarUrl: { type: String, default: null },
+    verified: { type: Boolean, default: false },
+  },
+  { timestamps: { createdAt: true, updatedAt: false } },
+)
+
+const verificationTokenSchema = new Schema(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    token: { type: String, required: true, unique: true },
+    expiresAt: { type: Date, required: true, index: { expireAfterSeconds: 0 } },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 )
@@ -87,6 +97,7 @@ const notificationSchema = new Schema(
 )
 
 const User = mongoose.models.User || mongoose.model('User', userSchema)
+const VerificationToken = mongoose.models.VerificationToken || mongoose.model('VerificationToken', verificationTokenSchema)
 const Workspace = mongoose.models.Workspace || mongoose.model('Workspace', workspaceSchema)
 const Column = mongoose.models.Column || mongoose.model('Column', columnSchema)
 const Card = mongoose.models.Card || mongoose.model('Card', cardSchema)
@@ -98,7 +109,15 @@ const toId = (value) => {
     return null
   }
 
-  return typeof value === 'string' ? value : value.toString()
+  if (typeof value === 'string') {
+    return value
+  }
+
+  if (value._id) {
+    return value._id.toString()
+  }
+
+  return value.toString()
 }
 
 const formatDate = (value) => {
@@ -170,15 +189,20 @@ async function seedDatabase() {
 
   const userCount = await User.countDocuments()
   if (userCount > 0) {
+    await User.updateMany(
+      { email: { $in: ['zainab@teamops.dev', 'ahmed@teamops.dev', 'zunairah@teamops.dev', 'hassan@teamops.dev'] } },
+      { $set: { verified: true } }
+    )
+    await Column.updateMany({ title: 'Review' }, { $set: { title: 'In Review' } })
     return
   }
 
   const passwordHash = await bcrypt.hash('123456', 10)
   const [zainab, ahmed, zunairah, hassan] = await User.insertMany([
-    { name: 'Zainab Saeed', email: 'zainab@teamops.dev', passwordHash },
-    { name: 'Ahmed Khan', email: 'ahmed@teamops.dev', passwordHash },
-    { name: 'Zunairah Sarwar', email: 'zunairah@teamops.dev', passwordHash },
-    { name: 'Hassan Ali', email: 'hassan@teamops.dev', passwordHash },
+    { name: 'Zainab Saeed', email: 'zainab@teamops.dev', passwordHash, verified: true },
+    { name: 'Ahmed Khan', email: 'ahmed@teamops.dev', passwordHash, verified: true },
+    { name: 'Zunairah Sarwar', email: 'zunairah@teamops.dev', passwordHash, verified: true },
+    { name: 'Hassan Ali', email: 'hassan@teamops.dev', passwordHash, verified: true },
   ])
 
   const [workspaceOne, workspaceTwo] = await Workspace.insertMany([
@@ -208,14 +232,15 @@ async function seedDatabase() {
   const columns = await Column.insertMany([
     { workspace: workspaceOne._id, title: 'To Do', position: 0 },
     { workspace: workspaceOne._id, title: 'In Progress', position: 1 },
-    { workspace: workspaceOne._id, title: 'Review', position: 2 },
+    { workspace: workspaceOne._id, title: 'In Review', position: 2 },
     { workspace: workspaceOne._id, title: 'Done', position: 3 },
     { workspace: workspaceTwo._id, title: 'To Do', position: 0 },
     { workspace: workspaceTwo._id, title: 'In Progress', position: 1 },
-    { workspace: workspaceTwo._id, title: 'Done', position: 2 },
+    { workspace: workspaceTwo._id, title: 'In Review', position: 2 },
+    { workspace: workspaceTwo._id, title: 'Done', position: 3 },
   ])
 
-  const [todo, inProgress, review, done, demoTodo, demoProgress, demoDone] = columns
+  const [todo, inProgress, review, done, demoTodo, demoProgress, demoReview, demoDone] = columns
 
   await Card.insertMany([
     {
@@ -335,6 +360,7 @@ module.exports = {
   connectDB,
   seedDatabase,
   User,
+  VerificationToken,
   Workspace,
   Column,
   Card,

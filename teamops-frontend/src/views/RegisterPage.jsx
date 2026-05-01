@@ -6,28 +6,63 @@ import { useTheme } from '../state/ThemeContext.jsx'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const { register, token } = useAuth()
+  const { register, token, authReady } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [validationErrors, setValidationErrors] = useState({})
+
+  if (!authReady) {
+    return null
+  }
 
   if (token) {
     return <Navigate to="/app" replace />
   }
 
+  const validateForm = () => {
+    const errors = {}
+    
+    if (!name || name.trim() === '') {
+      errors.name = 'Full name is required'
+    } else if (name.trim().length < 2) {
+      errors.name = 'Name must be at least 2 characters'
+    }
+    
+    if (!email || email.trim() === '') {
+      errors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = 'Please enter a valid email address'
+    }
+    
+    if (!password || password.trim() === '') {
+      errors.password = 'Password is required'
+    } else if (password.length < 6) {
+      errors.password = 'Password must be at least 6 characters'
+    }
+    
+    setValidationErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const onSubmit = async (event) => {
     event.preventDefault()
     setError('')
+    
+    if (!validateForm()) {
+      return
+    }
+    
     setLoading(true)
 
     try {
       await register(name, email, password)
       navigate('/app')
-    } catch {
-      setError('Unable to register. Please try again.')
+    } catch (err) {
+      setError(err.response?.data?.error || 'Unable to register. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -45,30 +80,51 @@ export default function RegisterPage() {
 
         <div className="form-grid">
           <input
-            className="input"
+            className={`input ${validationErrors.name ? 'error-input' : ''}`}
             type="text"
             value={name}
-            onChange={(event) => setName(event.target.value)}
+            onChange={(event) => {
+              setName(event.target.value)
+              setValidationErrors({...validationErrors, name: ''})
+            }}
             placeholder="Full name"
-            required
           />
+          {validationErrors.name && <span className="validation-error">{validationErrors.name}</span>}
+          
           <input
-            className="input"
+            className={`input ${validationErrors.email ? 'error-input' : ''}`}
             type="email"
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(event) => {
+              setEmail(event.target.value)
+              setValidationErrors({...validationErrors, email: ''})
+            }}
             placeholder="Email"
-            required
+            onBlur={() => {
+              if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                setValidationErrors({...validationErrors, email: 'Invalid email format'})
+              }
+            }}
           />
+          {validationErrors.email && <span className="validation-error">{validationErrors.email}</span>}
+          
           <input
-            className="input"
+            className={`input ${validationErrors.password ? 'error-input' : ''}`}
             type="password"
-            minLength={6}
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="Password"
-            required
+            onChange={(event) => {
+              setPassword(event.target.value)
+              setValidationErrors({...validationErrors, password: ''})
+            }}
+            placeholder="Password (minimum 6 characters)"
+            onBlur={() => {
+              if (password && password.length < 6) {
+                setValidationErrors({...validationErrors, password: 'Password must be at least 6 characters'})
+              }
+            }}
           />
+          {validationErrors.password && <span className="validation-error">{validationErrors.password}</span>}
+          
           <button className="btn interactive-btn" disabled={loading}>
             {loading ? 'Creating...' : 'Register'}
           </button>

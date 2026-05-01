@@ -18,7 +18,11 @@ import { useAuth } from './state/AuthContext.jsx'
 import AppLayout from './views/AppLayout.jsx'
 
 function Protected({ children }) {
-  const { token } = useAuth()
+  const { token, authReady } = useAuth()
+  if (!authReady) {
+    return null
+  }
+
   if (!token) {
     return <Navigate to="/login" replace />
   }

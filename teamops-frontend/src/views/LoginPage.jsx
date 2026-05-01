@@ -6,27 +6,56 @@ import { useTheme } from '../state/ThemeContext.jsx'
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const { login, token } = useAuth()
+  const { login, token, authReady } = useAuth()
   const { theme, toggleTheme } = useTheme()
-  const [email, setEmail] = useState('zainab@teamops.dev')
-  const [password, setPassword] = useState('123456')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [validationErrors, setValidationErrors] = useState({})
+
+  if (!authReady) {
+    return null
+  }
 
   if (token) {
     return <Navigate to="/app" replace />
   }
 
+  const validateForm = () => {
+    const errors = {}
+    
+    if (!email || email.trim() === '') {
+      errors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = 'Please enter a valid email address'
+    }
+    
+    if (!password || password.trim() === '') {
+      errors.password = 'Password is required'
+    } else if (password.length < 6) {
+      errors.password = 'Password must be at least 6 characters'
+    }
+    
+    setValidationErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const onSubmit = async (event) => {
     event.preventDefault()
     setError('')
+    
+    if (!validateForm()) {
+      return
+    }
+    
     setLoading(true)
 
     try {
       await login(email, password)
       navigate('/app')
-    } catch {
-      setError('Unable to login. Check credentials or backend connection.')
+    } catch (err) {
+      setError(err.response?.data?.error || 'Unable to login. Check credentials or backend connection.')
     } finally {
       setLoading(false)
     }
@@ -57,27 +86,43 @@ export default function LoginPage() {
               <label className="login-input-row">
                 <span className="input-icon"><Mail size={14} /></span>
                 <input
-                  className="input"
+                  className={`input ${validationErrors.email ? 'error-input' : ''}`}
                   type="email"
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value)
+                    setValidationErrors({...validationErrors, email: ''})
+                  }}
                   placeholder="e-mail address"
-                  required
+                  onBlur={() => {
+                    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                      setValidationErrors({...validationErrors, email: 'Invalid email format'})
+                    }
+                  }}
                 />
               </label>
+              {validationErrors.email && <span className="validation-error">{validationErrors.email}</span>}
 
               <label className="login-input-row">
                 <span className="input-icon"><LockKeyhole size={14} /></span>
                 <input
-                  className="input"
+                  className={`input ${validationErrors.password ? 'error-input' : ''}`}
                   type="password"
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(event) => {
+                    setPassword(event.target.value)
+                    setValidationErrors({...validationErrors, password: ''})
+                  }}
                   placeholder="password"
-                  required
+                  onBlur={() => {
+                    if (password && password.length < 6) {
+                      setValidationErrors({...validationErrors, password: 'Password must be at least 6 characters'})
+                    }
+                  }}
                 />
                 <span className="forgot-pill">I forgot</span>
               </label>
+              {validationErrors.password && <span className="validation-error">{validationErrors.password}</span>}
 
               <div className="login-actions-row">
                 <span className="auth-legal-text">
