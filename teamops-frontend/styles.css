@@ -25,37 +25,12 @@
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+[id] { scroll-margin-top: 88px; }
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   background: var(--cream);
   color: var(--ink);
   overflow-x: hidden;
-  cursor: none;
-}
-
-/* ══ CUSTOM CURSOR ══════════════════════════════ */
-#cursor-blob {
-  position: fixed; z-index: 9999; pointer-events: none;
-  width: 20px; height: 20px; border-radius: 50%;
-  background: var(--violet);
-  mix-blend-mode: multiply;
-  transition: width 0.4s var(--spring), height 0.4s var(--spring), opacity 0.3s;
-  transform: translate(-50%, -50%);
-  will-change: transform;
-}
-#cursor-dot {
-  position: fixed; z-index: 10000; pointer-events: none;
-  width: 5px; height: 5px; border-radius: 50%;
-  background: var(--ink);
-  transform: translate(-50%, -50%);
-  transition: transform 0.1s, opacity 0.3s;
-}
-body.on-light #cursor-blob { background: var(--violet); }
-body.cursor-hover #cursor-blob {
-  width: 52px; height: 52px; opacity: 0.5;
-}
-body.cursor-text #cursor-blob {
-  width: 3px; height: 28px; border-radius: 2px; opacity: 0.4;
 }
 
 /* ══ MESH GRADIENTS ════════════════════════════ */
@@ -3451,6 +3426,27 @@ footer {
   outline: 2px solid var(--violet);
   box-shadow: 0 0 0 4px rgba(124,92,252,0.2), var(--shadow);
   transition: outline 0.2s, box-shadow 0.2s;
+}
+
+html body,
+html body * {
+  cursor: auto !important;
+}
+
+html body a,
+html body button,
+html body select,
+html body summary,
+html body [role="button"],
+html body [onclick],
+html body .b-card[draggable="true"] {
+  cursor: pointer !important;
+}
+
+html body input,
+html body textarea,
+html body [contenteditable="true"] {
+  cursor: text !important;
 }
 
 @media (max-width: 900px) {

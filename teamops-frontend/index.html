@@ -11,10 +11,6 @@
 </head>
 <body>
 
-<!-- CURSOR -->
-<div id="cursor-blob"></div>
-<div id="cursor-dot"></div>
-
 <!-- TOASTS -->
 <div class="toast-wrap" id="toasts"></div>
 
@@ -54,14 +50,12 @@
   <nav id="mainNav">
     <div class="nav-logo">Team<span>Ops</span></div>
     <div class="nav-links">
-      <a href="#">Features</a>
-      <a href="#">How it works</a>
-      <a href="#">Pricing</a>
-      <a href="#">Docs</a>
+      <a href="#workflow">Workflow</a>
+      <a href="#features">Features</a>
+      <a href="#reviews">Reviews</a>
     </div>
     <div class="nav-end">
-      <button class="btn-outline" onclick="showView('auth')">Log in</button>
-      <button class="btn-fill" onclick="showView('auth')">Get started free</button>
+      <button class="btn-fill" onclick="showView('auth')">Log in</button>
     </div>
   </nav>
 
@@ -72,15 +66,11 @@
       <div class="mesh-orb orb2"></div>
       <div class="mesh-orb orb3"></div>
     </div>
-    <div class="hero-eyebrow"><span class="eyebrow-chip">New</span> Real-time sync with WebSockets</div>
     <h1>Your team,<br><em>finally</em> in sync.</h1>
     <p class="hero-sub">TeamOps is a real-time collaborative Kanban platform — every card move, comment, and assignment appears instantly on every screen.</p>
     <div class="hero-cta">
       <button class="cta-main" onclick="showView('auth')">
         Start for free <span class="cta-arrow">→</span>
-      </button>
-      <button class="cta-ghost" onclick="openDashboardFromDemo()">
-        <i class="bi bi-play-circle icon-inline"></i>Live demo
       </button>
     </div>
     <div class="hero-float-area">
@@ -147,20 +137,8 @@
     </div>
   </section>
 
-  <!-- LOGOS -->
-  <div class="logos-strip">
-    <div class="logos-label">Trusted by teams at</div>
-    <div class="logos-row">
-      <div class="logo-item">NUST</div>
-      <div class="logo-item">SEECS</div>
-      <div class="logo-item">Alpha Corp</div>
-      <div class="logo-item">Devhive</div>
-      <div class="logo-item">Stackify</div>
-    </div>
-  </div>
-
   <!-- HOW IT WORKS -->
-  <section class="how-section">
+  <section class="how-section" id="workflow">
     <div class="section-pill"><i class="bi bi-stars"></i> Our workflow</div>
     <h2 class="section-h2">How TeamOps makes your<br>workflow <em>effortless</em></h2>
     <div class="how-grid reveal">
@@ -212,7 +190,7 @@
   </section>
 
   <!-- FEATURES DARK -->
-  <section class="features-section">
+  <section class="features-section" id="features">
     <div class="section-pill">Core features</div>
     <h2 class="section-h2 u-style-20">Built for teams who<br><em>ship fast</em></h2>
     <div class="features-grid reveal">
@@ -250,7 +228,7 @@
   </section>
 
   <!-- SOCIAL PROOF -->
-  <section class="social-section">
+  <section class="social-section" id="reviews">
     <div class="social-inner">
       <div class="section-pill"><i class="bi bi-stars"></i> What teams say</div>
       <h2 class="section-h2">Loved by people who<br><em>build together</em></h2>
@@ -280,46 +258,6 @@
     </div>
   </section>
 
-  <!-- TECH STACK -->
-  <section class="tech-section">
-    <div class="tech-inner">
-      <div class="tech-left">
-        <div class="section-pill"><i class="bi bi-tools"></i> Tech stack</div>
-        <h2 class="section-h2">Built on modern,<br><em>proven</em> technology</h2>
-        <p>React for the frontend, Node.js + Express for the API, Socket.io for real-time broadcasting, and PostgreSQL for bulletproof relational storage.</p>
-        <div class="tech-pills">
-          <div class="tech-pill">React.js</div>
-          <div class="tech-pill">Node.js</div>
-          <div class="tech-pill">Express</div>
-          <div class="tech-pill">Socket.io</div>
-          <div class="tech-pill">PostgreSQL</div>
-          <div class="tech-pill">JWT</div>
-          <div class="tech-pill">bcrypt</div>
-          <div class="tech-pill">dnd-kit</div>
-        </div>
-      </div>
-      <div class="tech-right reveal">
-        <div class="db-schema-visual">
-          <div class="schema-header">
-            <div class="schema-dot u-style-21"></div>
-            <div class="schema-dot u-style-22"></div>
-            <div class="schema-dot u-style-23"></div>
-            <div class="schema-title">database schema</div>
-          </div>
-          <div class="schema-body">
-            <div class="schema-row"><div class="schema-table">Users</div><div class="schema-fields">id, name, email, password_hash</div></div>
-            <div class="schema-row"><div class="schema-table">Workspaces</div><div class="schema-fields">id, name, owner_id</div><span class="schema-fk">FK</span></div>
-            <div class="schema-row"><div class="schema-table">Members</div><div class="schema-fields">workspace_id, user_id, role</div><span class="schema-fk">FK</span></div>
-            <div class="schema-row"><div class="schema-table">Boards</div><div class="schema-fields">id, workspace_id, title</div><span class="schema-fk">FK</span></div>
-            <div class="schema-row"><div class="schema-table">Cards</div><div class="schema-fields">id, column_id, priority, position</div><span class="schema-fk">FK</span></div>
-            <div class="schema-row"><div class="schema-table">Comments</div><div class="schema-fields">id, card_id, user_id, content</div><span class="schema-fk">FK</span></div>
-            <div class="schema-row"><div class="schema-table">Notifications</div><div class="schema-fields">id, user_id, message, is_read</div><span class="schema-fk">FK</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- CTA BAND -->
   <section class="cta-band">
     <h2>Ready to<br><em>build together?</em></h2>
@@ -330,9 +268,8 @@
   <footer>
     <div>
       <div class="footer-logo">Team<span>Ops</span></div>
-      <div class="footer-sub">Real-Time Collaborative Project Management · CS-343 Web Technologies</div>
+      <div class="footer-sub">Real-Time Collaborative Project Management</div>
     </div>
-    <div class="footer-credits">Zainab Saeed (509170) & Zunairah Sarwar (502506)<br>NUST SEECS · 2026</div>
   </footer>
 </div>
 
@@ -1482,30 +1419,6 @@
 
 <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 <script>
-// ── CURSOR ─────────────────────────────────────
-const blob = document.getElementById('cursor-blob');
-const dot2 = document.getElementById('cursor-dot');
-let bx = 0, by = 0, mx2 = 0, my2 = 0;
-document.addEventListener('mousemove', e => {
-  mx2 = e.clientX; my2 = e.clientY;
-  dot2.style.left = mx2 + 'px'; dot2.style.top = my2 + 'px';
-});
-function lerpCursor() {
-  bx += (mx2 - bx) * 0.1; by += (my2 - by) * 0.1;
-  blob.style.left = bx + 'px'; blob.style.top = by + 'px';
-  requestAnimationFrame(lerpCursor);
-}
-lerpCursor();
-const hoverEls = 'button, a, .b-card, .aside-board-item, .feature-card, .how-card, .proof-card, .schema-row, .tech-pill, .logo-item, .float-card, .aside-nav-btn';
-document.addEventListener('mouseover', e => {
-  if (e.target.closest(hoverEls)) document.body.classList.add('cursor-hover');
-});
-document.addEventListener('mouseout', e => {
-  if (e.target.closest(hoverEls)) document.body.classList.remove('cursor-hover');
-});
-document.addEventListener('mousedown', () => { blob.style.transform = 'translate(-50%,-50%) scale(0.8)'; });
-document.addEventListener('mouseup', () => { blob.style.transform = 'translate(-50%,-50%) scale(1)'; });
-
 // ── VIEWS ───────────────────────────────────────
 function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
