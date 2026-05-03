@@ -942,46 +942,28 @@
             <h3>Projects & Workspaces</h3>
             <p class="db-page-sub">Centralized view of all active initiatives with team allocation, budget, and progress tracking at a glance.</p>
             <div class="db-hero-badges">
-              <span class="db-badge"><i class="bi bi-lightning-charge"></i> 7 Active</span>
-              <span class="db-badge"><i class="bi bi-people"></i> 18 Contributors</span>
-              <span class="db-badge"><i class="bi bi-graph-up"></i> On budget</span>
+              <span class="db-badge"><i class="bi bi-lightning-charge"></i> <span id="dbProjectsActiveBadge">0 Active</span></span>
+              <span class="db-badge"><i class="bi bi-people"></i> <span id="dbProjectsContributorsBadge">0 Contributors</span></span>
+              <span class="db-badge"><i class="bi bi-graph-up"></i> <span id="dbProjectsBudgetBadge">Live data</span></span>
             </div>
           </div>
           <div class="db-hero-metric">
             <div class="db-hero-metric-label">Avg. completion</div>
-            <div class="db-hero-metric-value" data-countup="72">72%</div>
-            <div class="db-hero-metric-note">+8% from last month</div>
+            <div class="db-hero-metric-value" id="dbProjectsAvgCompletion" data-countup="0">0%</div>
+            <div class="db-hero-metric-note" id="dbProjectsAvgCompletionNote">Waiting for workspace data</div>
           </div>
           <button class="db-solid-btn" onclick="createBoardFromSidebar()"><i class="bi bi-kanban"></i> New board</button>
         </div>
       </div>
-      <div class="db-projects-grid db-anim db-delay-2">
+      <div class="db-projects-shell db-anim db-delay-2" id="dbProjectsGrid">
         <div class="db-project-card">
           <div class="db-project-head">
-            <div><h4>Sprint 4 Mobile</h4><div class="db-project-status">In Progress</div></div>
-            <div class="db-project-meta">4 weeks • 12 members</div>
+            <div><h4>Loading projects...</h4><div class="db-project-status">Live</div></div>
+            <div class="db-project-meta">Syncing data</div>
           </div>
-          <div class="db-project-desc">Native iOS/Android release with offline sync.</div>
-          <div class="db-project-tags"><span>Mobile</span><span>Q2</span></div>
-          <div class="db-project-progress"><div class="db-progress-bar u-style-66"></div></div>
-        </div>
-        <div class="db-project-card">
-          <div class="db-project-head">
-            <div><h4>API Redesign</h4><div class="db-project-status u-style-67">Planned</div></div>
-            <div class="db-project-meta">6 weeks • 5 members</div>
-          </div>
-          <div class="db-project-desc">RESTful to GraphQL migration with backward compatibility layer.</div>
-          <div class="db-project-tags"><span>Backend</span><span>Q3</span></div>
-          <div class="db-project-progress"><div class="db-progress-bar u-style-68"></div></div>
-        </div>
-        <div class="db-project-card">
-          <div class="db-project-head">
-            <div><h4>Design System v2</h4><div class="db-project-status u-style-67">Review</div></div>
-            <div class="db-project-meta">3 weeks • 8 members</div>
-          </div>
-          <div class="db-project-desc">Component library refresh with accessibility audit and token system.</div>
-          <div class="db-project-tags"><span>Design</span><span>Q2</span></div>
-          <div class="db-project-progress"><div class="db-progress-bar u-style-63"></div></div>
+          <div class="db-project-desc">Fetching boards, cards, and member activity from your workspace.</div>
+          <div class="db-project-tags"><span>Realtime</span><span>MongoDB</span></div>
+          <div class="db-project-progress"><div class="db-progress-bar" style="width:20%"></div></div>
         </div>
       </div>
     </div>
@@ -1512,6 +1494,9 @@ function switchDashboardView(viewId, btnEl) {
   }
   if (viewId === 'members') {
     try { loadWorkspaceMembers(); } catch (e) { console.warn('loadWorkspaceMembers failed:', e); }
+  }
+  if (viewId === 'projects') {
+    try { loadProjectsOverview(); } catch (e) { console.warn('loadProjectsOverview failed:', e); }
   }
   if (viewId === 'audit') {
     try { loadAuditLog(); } catch (e) { console.warn('loadAuditLog failed:', e); }
@@ -2162,6 +2147,9 @@ function renderNoWorkspaceState() {
   localStorage.removeItem('teamops_invite_code');
   localStorage.removeItem('teamops_invite_link');
   renderInviteCodePanels(null);
+  projectBoardStats = [];
+  projectAllBoards = [];
+  renderProjectsOverview();
 }
 
 function boardDotClass(index) {
@@ -2219,6 +2207,8 @@ async function loadWorkspaceBoards(workspaceId, role = currentWorkspaceRole) {
       renderSprintProgress();
       refreshAnalyticsBoardSelector();
     }
+
+    await loadProjectsOverview();
   } catch (error) {
     console.error('Load boards error:', error);
     boardList.innerHTML = '<button class="aside-board-item active"><div class="b-dot u-style-4"></div>Could not load boards</button>';
@@ -2962,6 +2952,224 @@ function renderSprintProgress() {
   list.innerHTML = progressRow('Completed', overall, 'pf-v') + (columnRows || progressRow('In progress', 0, 'pf-g'));
 }
 
+function projectStatusFromCompletion(completion = 0, totalCards = 0) {
+  if (!totalCards) return { label: 'Planned', color: 'var(--muted2)' };
+  if (completion >= 100) return { label: 'Completed', color: 'var(--teal)' };
+  if (completion >= 70) return { label: 'Review', color: 'var(--teal)' };
+  return { label: 'In Progress', color: 'var(--violet)' };
+}
+
+function projectBoardCard(workspace, board, stat) {
+  const status = projectStatusFromCompletion(stat.completion, stat.totalCards);
+  const boardName = board?.name || board?.title || 'Board';
+  const members = stat.assigneeCount || workspace?.memberCount || 1;
+  const weeksEstimate = Math.max(1, Math.ceil(stat.totalCards / Math.max(1, members * 2)));
+  const techStack = Array.isArray(workspace?.tech_stack) ? workspace.tech_stack : [];
+  const tagOne = techStack[0] || 'Workspace';
+  const tagTwo = `${stat.totalCards} cards`;
+  const safeProgress = Math.max(0, Math.min(100, Math.round(stat.completion || 0)));
+  const description = `${stat.openCards} open card${stat.openCards === 1 ? '' : 's'}, ${stat.doneCards} done, ${stat.overdueCards} overdue.`;
+
+  return `
+    <div class="db-project-card" onclick="openProjectBoard('${workspace?.id || ''}','${board.id}')">
+      <div class="db-project-head">
+        <div><h4>${escapeHtml(boardName)}</h4><div class="db-project-status" style="color:${status.color}">${status.label}</div></div>
+        <div class="db-project-meta">${weeksEstimate} week${weeksEstimate === 1 ? '' : 's'} • ${members} member${members === 1 ? '' : 's'}</div>
+      </div>
+      <div class="db-project-desc">${escapeHtml(description)}</div>
+      <div class="db-project-tags"><span>${escapeHtml(tagOne)}</span><span>${escapeHtml(tagTwo)}</span></div>
+      <div class="db-project-progress"><div class="db-progress-bar" style="width:${safeProgress}%"></div></div>
+    </div>
+  `;
+}
+
+function renderProjectsOverview() {
+  const activeBadge = document.getElementById('dbProjectsActiveBadge');
+  const contributorBadge = document.getElementById('dbProjectsContributorsBadge');
+  const budgetBadge = document.getElementById('dbProjectsBudgetBadge');
+  const avgMetric = document.getElementById('dbProjectsAvgCompletion');
+  const avgNote = document.getElementById('dbProjectsAvgCompletionNote');
+  const grid = document.getElementById('dbProjectsGrid');
+
+  const workspaces = Array.isArray(userWorkspaces) ? userWorkspaces : [];
+  const boards = Array.isArray(projectAllBoards) ? projectAllBoards : [];
+  const stats = Array.isArray(projectBoardStats) ? projectBoardStats : [];
+
+  const totals = stats.reduce((acc, stat) => {
+    acc.totalCards += stat.totalCards || 0;
+    acc.doneCards += stat.doneCards || 0;
+    acc.overdueCards += stat.overdueCards || 0;
+    return acc;
+  }, { totalCards: 0, doneCards: 0, overdueCards: 0 });
+
+  const avgCompletion = stats.length
+    ? Math.round(stats.reduce((sum, stat) => sum + (stat.completion || 0), 0) / stats.length)
+    : 0;
+
+  if (activeBadge) activeBadge.textContent = `${boards.length} Active`;
+  if (contributorBadge) {
+    const totalContributors = workspaces.reduce((sum, workspace) => sum + (Number(workspace.memberCount) || 0), 0);
+    contributorBadge.textContent = `${totalContributors} Contributors`;
+  }
+  if (budgetBadge) budgetBadge.textContent = totals.overdueCards ? `${totals.overdueCards} Overdue` : 'On budget';
+  if (avgMetric) {
+    avgMetric.textContent = `${avgCompletion}%`;
+    avgMetric.dataset.countup = String(avgCompletion);
+    avgMetric.dataset.finalText = `${avgCompletion}%`;
+  }
+  if (avgNote) {
+    avgNote.textContent = `${totals.doneCards}/${totals.totalCards} cards completed`;
+  }
+
+  if (!grid) return;
+  if (!workspaces.length) {
+    grid.innerHTML = `
+      <div class="db-project-card">
+        <div class="db-project-head">
+          <div><h4>No workspaces yet</h4><div class="db-project-status">Planned</div></div>
+          <div class="db-project-meta">Create or join a workspace</div>
+        </div>
+        <div class="db-project-desc">Workspace summaries and live board progress will appear here once you join a workspace.</div>
+        <div class="db-project-tags"><span>Workspace</span><span>Realtime</span></div>
+        <div class="db-project-progress"><div class="db-progress-bar" style="width:0%"></div></div>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = workspaces.map(workspace => {
+    const workspaceBoardsList = boards.filter(item => String(item.workspaceId) === String(workspace.id));
+    const workspaceStats = stats.filter(item => String(item.workspaceId) === String(workspace.id));
+    const workspaceTotal = workspaceStats.reduce((sum, item) => sum + (item.totalCards || 0), 0);
+    const workspaceDone = workspaceStats.reduce((sum, item) => sum + (item.doneCards || 0), 0);
+    const workspaceCompletion = workspaceTotal ? Math.round((workspaceDone / workspaceTotal) * 100) : 0;
+    const workspaceOverdue = workspaceStats.reduce((sum, item) => sum + (item.overdueCards || 0), 0);
+
+    const boardsHtml = workspaceBoardsList.length
+      ? workspaceBoardsList.map(board => {
+          const fallback = { totalCards: 0, doneCards: 0, openCards: 0, assigneeCount: 0, overdueCards: 0, completion: 0 };
+          const stat = stats.find(item => String(item.boardId) === String(board.id)) || fallback;
+          return projectBoardCard(workspace, board, stat);
+        }).join('')
+      : `
+        <div class="db-project-card">
+          <div class="db-project-head">
+            <div><h4>No boards yet</h4><div class="db-project-status">Planned</div></div>
+            <div class="db-project-meta">Create a board to start tracking</div>
+          </div>
+          <div class="db-project-desc">This workspace has no boards yet.</div>
+          <div class="db-project-tags"><span>${escapeHtml(workspace.name || 'Workspace')}</span><span>0 cards</span></div>
+          <div class="db-project-progress"><div class="db-progress-bar" style="width:0%"></div></div>
+        </div>
+      `;
+
+    return `
+      <section class="db-workspace-group ${currentWorkspace && String(currentWorkspace.id) === String(workspace.id) ? 'active' : ''}">
+        <div class="db-workspace-head">
+          <div>
+            <div class="db-workspace-title">${escapeHtml(workspace.name || 'Workspace')}</div>
+            <div class="db-workspace-sub">${Number(workspace.memberCount) || 0} member${Number(workspace.memberCount) === 1 ? '' : 's'} • ${workspaceBoardsList.length} board${workspaceBoardsList.length === 1 ? '' : 's'} • ${workspaceCompletion}% complete</div>
+          </div>
+          <div class="db-workspace-health ${workspaceOverdue ? 'warn' : ''}">${workspaceOverdue ? `${workspaceOverdue} overdue` : 'On track'}</div>
+        </div>
+        <div class="db-projects-grid db-projects-subgrid">${boardsHtml}</div>
+      </section>
+    `;
+  }).join('');
+
+  const projectsView = document.getElementById('dbView-projects');
+  if (projectsView?.classList.contains('active')) {
+    runCountUps(projectsView);
+  }
+}
+
+async function loadProjectsOverview() {
+  if (!userWorkspaces.length) {
+    try {
+      const workspacesPayload = await apiRequest('/workspaces');
+      userWorkspaces = Array.isArray(workspacesPayload) ? workspacesPayload : [];
+    } catch (_) {
+      userWorkspaces = [];
+    }
+  }
+
+  if (!userWorkspaces.length) {
+    projectBoardStats = [];
+    projectAllBoards = [];
+    renderProjectsOverview();
+    return;
+  }
+
+  try {
+    const boardPayloads = await Promise.all(userWorkspaces.map(async workspace => {
+      try {
+        const payload = await apiRequest(`/workspaces/${workspace.id}/boards`);
+        const boards = Array.isArray(payload?.boards) ? payload.boards : [];
+        return boards.map(board => ({ ...board, workspaceId: workspace.id }));
+      } catch (_) {
+        return [];
+      }
+    }));
+
+    const allBoards = boardPayloads.flat();
+    projectAllBoards = allBoards;
+
+    if (currentWorkspace?.id) {
+      workspaceBoards = allBoards.filter(board => String(board.workspaceId) === String(currentWorkspace.id));
+    }
+
+    projectBoardStats = await Promise.all(allBoards.map(async board => {
+      try {
+        const analytics = await apiRequest(`/boards/${board.id}/analytics`);
+        const cardsPerColumn = Array.isArray(analytics?.cardsPerColumn) ? analytics.cardsPerColumn : [];
+        const doneCards = cardsPerColumn
+          .filter(row => isDoneColumnTitle(row.columnTitle))
+          .reduce((sum, row) => sum + (Number(row.count) || 0), 0);
+        const totalCards = cardsPerColumn.reduce((sum, row) => sum + (Number(row.count) || 0), 0);
+        const completion = totalCards ? Math.round((doneCards / totalCards) * 100) : 0;
+        const assigneeCount = (Array.isArray(analytics?.cardsPerAssignee) ? analytics.cardsPerAssignee : [])
+          .filter(row => row.assigneeId !== 'unassigned' && (Number(row.count) || 0) > 0)
+          .length;
+
+        return {
+          workspaceId: board.workspaceId,
+          boardId: board.id,
+          totalCards,
+          doneCards,
+          openCards: Math.max(0, totalCards - doneCards),
+          assigneeCount,
+          overdueCards: Number(analytics?.overdueCardsCount) || 0,
+          completion,
+        };
+      } catch (_) {
+        return {
+          workspaceId: board.workspaceId,
+          boardId: board.id,
+          totalCards: 0,
+          doneCards: 0,
+          openCards: 0,
+          assigneeCount: 0,
+          overdueCards: 0,
+          completion: 0,
+        };
+      }
+    }));
+
+    renderProjectsOverview();
+  } catch (error) {
+    console.error('Projects overview error:', error);
+    renderProjectsOverview();
+  }
+}
+
+async function openProjectBoard(workspaceId, boardId) {
+  if (!workspaceId || !boardId) return;
+  if (!currentWorkspace || String(currentWorkspace.id) !== String(workspaceId)) {
+    await selectWorkspace(workspaceId);
+  }
+  await selectBoard(boardId);
+}
+
 function getPanelBlockByTitle(title) {
   return Array.from(document.querySelectorAll('.panel-block')).find(block =>
     block.querySelector('.panel-title')?.textContent.trim() === title
@@ -2993,6 +3201,7 @@ async function loadWorkspaceMembers(options = {}) {
     const payload = await apiRequest(`/workspaces/${workspaceId}/members`);
     workspaceMembers = Array.isArray(payload?.members) ? payload.members : [];
     renderWorkspaceMembers(payload);
+    loadProjectsOverview();
   } catch (error) {
     console.error('Load members error:', error);
     if (!options.silent) {
@@ -3521,6 +3730,8 @@ let activityFeed = [];
 let workspaceMembers = [];
 let notificationFeed = [];
 let notificationImportantOnly = false;
+let projectBoardStats = [];
+let projectAllBoards = [];
 const boardColors = ['#7c5cfc', '#14b8a6', '#ff4d6d', '#f59e0b', '#38bdf8', '#22c55e'];
 
 function todayISO() {
@@ -3788,6 +3999,7 @@ async function loadBoardData() {
     setupDragDrop(board);
     renderSprintProgress();
     renderMemberLoadBars();
+    loadProjectsOverview();
   } catch (error) {
     console.error('Load board error:', error);
     showToast('bi-exclamation-circle', 'Board error', error.message);
