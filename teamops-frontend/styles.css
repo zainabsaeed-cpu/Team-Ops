@@ -2365,6 +2365,7 @@ footer {
 .card-comment-compose .u-style-44 { min-height: 64px; margin: 0; }
 .card-comment-compose .u-style-47 { flex-shrink: 0; }
 .c-comment-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--muted); white-space: nowrap; }
+.comments-modal-body { display: flex; flex-direction: column; gap: 12px; max-height: calc(100vh - 200px); overflow-y: auto; padding: 16px; }
 .u-style-45 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 .u-style-46 { display:flex; gap:12px; margin-top:8px; }
 .u-style-47 { flex:1; padding:12px; background:var(--violet); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:14px; }

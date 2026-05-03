@@ -496,10 +496,6 @@
     <div class="aside-section">
       <div class="aside-sec-label">Manage</div>
       <button class="aside-nav-btn" data-db-view="projects" onclick="switchDashboardView('projects', this)"><span class="anb-icon"><i class="bi bi-briefcase"></i></span> Projects</button>
-      <button class="aside-nav-btn" data-db-view="search" onclick="switchDashboardView('search', this)"><span class="anb-icon"><i class="bi bi-search"></i></span> Search</button>
-      <button class="aside-nav-btn" data-db-view="roadmap" onclick="switchDashboardView('roadmap', this)"><span class="anb-icon"><i class="bi bi-timeline"></i></span> Roadmap</button>
-      <button class="aside-nav-btn" data-db-view="integrations" onclick="switchDashboardView('integrations', this)"><span class="anb-icon"><i class="bi bi-puzzle"></i></span> Integrations</button>
-      <button class="aside-nav-btn" data-db-view="channels" onclick="switchDashboardView('channels', this)"><span class="anb-icon"><i class="bi bi-diagram-3"></i></span> Channels</button>
       <button class="aside-nav-btn" data-db-view="audit" onclick="switchDashboardView('audit', this)"><span class="anb-icon"><i class="bi bi-clipboard-check"></i></span> Audit Log</button>
       <button class="aside-nav-btn" data-db-view="help" onclick="switchDashboardView('help', this)"><span class="anb-icon"><i class="bi bi-question-circle"></i></span> Help</button>
       <button class="aside-nav-btn" data-db-view="saved" onclick="switchDashboardView('saved', this)"><span class="anb-icon"><i class="bi bi-bookmark"></i></span> Saved Views</button>
@@ -648,22 +644,31 @@
               <option value="">No one assigned</option>
             </select>
           </div>
-          <div id="cardCommentsSection" class="card-comments-section hidden">
-            <div class="card-comments-head">Comments</div>
-            <div id="cardCommentsList" class="card-comments-list">
-              <div class="notif-loading">Loading comments...</div>
-            </div>
-            <div class="card-comment-compose">
-              <textarea id="cardCommentInput" class="u-style-44" placeholder="Add a comment..." onkeydown="if(event.key==='Enter'&&event.ctrlKey)submitCardComment()"></textarea>
-              <button type="button" id="cardCommentSubmitBtn" class="u-style-47" onclick="submitCardComment()">Post comment</button>
-            </div>
-          </div>
           <div class="u-style-46">
             <button type="submit" id="cardSubmitBtn" class="u-style-47">Create card</button>
             <button type="button" id="cardDeleteBtn" onclick="deleteCurrentCard()" class="u-style-48 danger-btn hidden">Delete</button>
             <button type="button" onclick="closeCardModal()" class="u-style-48">Cancel</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- COMMENTS MODAL -->
+    <div id="commentsModal" class="u-style-36">
+      <div class="u-style-37">
+        <div class="u-style-38">
+          <h3 class="u-style-39" id="commentsModalTitle">Comments on "Card Title"</h3>
+          <button onclick="closeCommentsModal()" class="u-style-40">✕</button>
+        </div>
+        <div class="comments-modal-body">
+          <div id="commentsList" class="card-comments-list">
+            <div class="notif-loading">Loading comments...</div>
+          </div>
+          <div class="card-comment-compose">
+            <textarea id="commentInput" class="u-style-44" placeholder="Add a comment..." onkeydown="if(event.key==='Enter'&&event.ctrlKey)postCommentFromModal()"></textarea>
+            <button type="button" id="commentSubmitBtn" class="u-style-47" onclick="postCommentFromModal()">Post comment</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -3747,6 +3752,7 @@ function openCard(title, tagClasses, desc, assignee, due, status, prio) {
 }
 function closeModal() { document.getElementById('cardModal').classList.remove('open'); }
 document.getElementById('cardModal').addEventListener('click', e => { if (e.target.id==='cardModal') closeModal(); });
+document.getElementById('commentsModal').addEventListener('click', e => { if (e.target.id==='commentsModal') closeCommentsModal(); });
 function sendComment(btn) {
   const ta = btn.previousElementSibling;
   if (ta.value.trim()) { showToast('bi-chat-dots','Comment posted','Broadcast to all board members'); ta.value = ''; }
@@ -3803,23 +3809,24 @@ function openCardModal(columnId = '', card = null) {
     const field = document.getElementById(id);
     if (field) field.disabled = isReadOnly;
   });
-  const commentsSection = document.getElementById('cardCommentsSection');
-  const commentInput = document.getElementById('cardCommentInput');
-  const commentSubmit = document.getElementById('cardCommentSubmitBtn');
-  if (commentsSection) commentsSection.classList.toggle('hidden', !card);
-  if (commentInput) {
-    commentInput.disabled = !card;
-    commentInput.value = '';
-  }
-  if (commentSubmit) commentSubmit.disabled = !card;
-  if (card?.id) {
-    loadCardComments(card.id);
-  } else {
-    cardComments = [];
-  }
   document.getElementById('cardCreateModal').style.display = 'flex';
   loadAssigneeOptions(card?.assignee_id || '');
-  (isReadOnly ? document.getElementById('cardCommentInput') : document.getElementById('cardTitle'))?.focus();
+  document.getElementById('cardTitle')?.focus();
+  
+  // If viewing existing card, show a "View Comments" option
+  if (card?.id) {
+    const commentBadge = document.createElement('button');
+    commentBadge.type = 'button';
+    commentBadge.className = 'u-style-47';
+    commentBadge.textContent = `💬 Comments (${card.comment_count || 0})`;
+    commentBadge.style.marginTop = '12px';
+    commentBadge.onclick = () => openCommentsModal(card);
+    const form = document.getElementById('cardForm');
+    const existingBtn = form.querySelector('[data-comments-btn]');
+    if (existingBtn) existingBtn.remove();
+    commentBadge.setAttribute('data-comments-btn', 'true');
+    form.appendChild(commentBadge);
+  }
 }
 
 function populateCardColumnOptions(selectedColumnId = '') {
@@ -3839,24 +3846,30 @@ function closeCardModal() {
     const field = document.getElementById(id);
     if (field) field.disabled = false;
   });
-  document.getElementById('cardCommentsSection')?.classList.add('hidden');
-  const commentsList = document.getElementById('cardCommentsList');
-  if (commentsList) commentsList.innerHTML = '<div class="notif-loading">Loading comments...</div>';
-  const commentInput = document.getElementById('cardCommentInput');
-  if (commentInput) {
-    commentInput.value = '';
-    commentInput.disabled = false;
-  }
-  const commentSubmit = document.getElementById('cardCommentSubmitBtn');
-  if (commentSubmit) commentSubmit.disabled = false;
   currentCardColumn = null;
   currentEditingCardId = null;
   currentModalCardId = null;
+}
+
+function openCommentsModal(card) {
+  if (!card?.id) return;
+  currentModalCardId = card.id;
+  document.getElementById('commentsModalTitle').textContent = `Comments on "${escapeHtml(card.title)}"`;
+  document.getElementById('commentInput').value = '';
+  document.getElementById('commentInput').focus();
+  document.getElementById('commentsModal').style.display = 'flex';
+  loadCardComments(card.id);
+}
+
+function closeCommentsModal() {
+  document.getElementById('commentsModal').style.display = 'none';
+  document.getElementById('commentInput').value = '';
   cardComments = [];
+  currentModalCardId = null;
 }
 
 function renderCardComments() {
-  const list = document.getElementById('cardCommentsList');
+  const list = document.getElementById('commentsList');
   if (!list) return;
   if (!cardComments.length) {
     list.innerHTML = '<div class="notif-empty">No comments yet</div>';
@@ -3885,7 +3898,7 @@ function renderCardComments() {
 async function loadCardComments(cardId = currentModalCardId) {
   const boardId = localStorage.getItem('teamops_board_id');
   if (!boardId || !cardId) return;
-  const list = document.getElementById('cardCommentsList');
+  const list = document.getElementById('commentsList');
   if (list) list.innerHTML = '<div class="notif-loading">Loading comments...</div>';
 
   try {
@@ -3916,12 +3929,12 @@ async function deleteComment(commentId) {
   }
 }
 
-async function submitCardComment() {
+async function postCommentFromModal() {
   const boardId = localStorage.getItem('teamops_board_id');
   if (!boardId || !currentModalCardId) return;
 
-  const input = document.getElementById('cardCommentInput');
-  const commentSubmit = document.getElementById('cardCommentSubmitBtn');
+  const input = document.getElementById('commentInput');
+  const commentSubmit = document.getElementById('commentSubmitBtn');
   const content = String(input?.value || '').trim();
   if (!content) return;
 
