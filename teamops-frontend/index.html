@@ -301,7 +301,8 @@
         <div id="authError" class="auth-error u-style-28"></div>
         <button class="auth-submit" onclick="doLogin()">Log in →</button>
         <div class="auth-or">or</div>
-        <button class="social-login" onclick="handleGoogleAuth()">
+        <div id="googleSignInButton" class="google-signin-button"></div>
+        <button id="googleFallbackButton" class="social-login" onclick="handleGoogleAuth()">
           <svg width="15" height="15" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
           Continue with Google
         </button>
@@ -1418,6 +1419,7 @@
 <!-- NEW VIEWS STYLING -->
 
 <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer onload="window.TeamOpsGoogleReady = true; window.initializeGoogleAuth && window.initializeGoogleAuth();"></script>
 <script>
 // ── VIEWS ───────────────────────────────────────
 function showView(id) {
@@ -1705,7 +1707,22 @@ function switchTab(t) {
   document.getElementById('fVerification').style.display = t==='verification'?'block':'none';
   hideAuthError();
 }
-const API_BASE = 'http://localhost:5002/api';
+function readViteEnv(value, fallback = '') {
+  return value && !value.startsWith('%') ? value : fallback;
+}
+
+function trimTrailingSlash(value) {
+  return String(value || '').replace(/\/+$/, '');
+}
+
+const API_BASE = trimTrailingSlash(readViteEnv('%VITE_API_URL%', 'http://localhost:5002/api'));
+const SOCKET_BASE = trimTrailingSlash(readViteEnv('%VITE_SOCKET_URL%', 'http://localhost:5002'));
+const GOOGLE_CLIENT_ID = readViteEnv(
+  '%VITE_GOOGLE_CLIENT_ID%',
+  '175739577750-6pglkgnai3nha232d8js957jl529ep5i.apps.googleusercontent.com'
+);
+const backendReachabilityMessage = `Cannot reach backend. Check that the server is running at ${API_BASE}.`;
+let googleAuthInitialized = false;
 const TOKEN_KEY = 'teamops_token';
 const USER_KEY = 'teamops_user';
 const SAVED_VIEWS_KEY = 'teamops_saved_views';
@@ -1953,7 +1970,7 @@ async function apiRequest(path, options = {}) {
 
 function connectRealtime(userId = '') {
   if (!window.io || teamopsSocket) return;
-  teamopsSocket = window.io('http://localhost:5002', {
+  teamopsSocket = window.io(SOCKET_BASE, {
     transports: ['websocket'],
     auth: { token: getToken() },
   });
@@ -2862,7 +2879,7 @@ async function doForgotPassword() {
     showResetPassword(email);
     showToast('bi-envelope-check', 'Check your email', payload?.message || 'Enter the reset code to create a new password.');
   } catch (err) {
-    showAuthError('Cannot reach backend. Check that server is running on port 5002.', 'forgotError');
+    showAuthError(backendReachabilityMessage, 'forgotError');
   }
 }
 
@@ -2908,7 +2925,7 @@ async function doResetPassword() {
     switchTab('login');
     showToast('bi-check-circle', 'Password reset', 'You can now log in with your new password.');
   } catch (err) {
-    showAuthError('Cannot reach backend. Check that server is running on port 5002.', 'resetError');
+    showAuthError(backendReachabilityMessage, 'resetError');
   }
 }
 
@@ -2951,7 +2968,7 @@ async function doLogin() {
     if (inviteCodeParam) showJoinWorkspace(inviteCodeParam);
     setTimeout(() => showToast('bi-person-check', `Welcome back, ${payload.user?.name || 'User'}!`, 'You are now signed in.'), 700);
   } catch (err) {
-    showAuthError('Cannot reach backend. Check that server is running on port 5002.');
+    showAuthError(backendReachabilityMessage);
   }
 }
 
@@ -3002,7 +3019,7 @@ async function doSignup() {
     switchTab('verification');
     showToast('bi-envelope-check', 'Check your email', 'Enter the verification code to finish registration.');
   } catch (err) {
-    showAuthError('Cannot reach backend. Check that server is running on port 5002.', 'signupError');
+    showAuthError(backendReachabilityMessage, 'signupError');
   }
 }
 
@@ -3041,7 +3058,7 @@ async function doVerify() {
     }
     setTimeout(() => showToast('bi-check-circle', 'Email verified!', 'Create your workspace to open the board.'), 700);
   } catch (err) {
-    showAuthError('Cannot reach backend. Check that server is running on port 5002.', 'verificationError');
+    showAuthError(backendReachabilityMessage, 'verificationError');
   }
 }
 
@@ -3103,13 +3120,82 @@ function doLogout() {
   setTimeout(() => showToast('bi-box-arrow-right','Logged out','You have been signed out of Alpha workspace'), 350);
 }
 
+async function handleGoogleCredential(response) {
+  hideAuthError();
+  const credential = response?.credential;
+  if (!credential) {
+    showAuthError('Google did not return a sign-in credential. Please try again.');
+    return;
+  }
+
+  try {
+    const apiResponse = await fetch(`${API_BASE}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential }),
+    });
+
+    const payload = await apiResponse.json();
+    if (!apiResponse.ok) {
+      showAuthError(payload?.error || 'Google sign-in failed. Please try again.');
+      return;
+    }
+
+    saveSession(payload);
+    await bootstrapSession();
+    if (inviteCodeParam) showJoinWorkspace(inviteCodeParam);
+    setTimeout(() => showToast('bi-person-check', `Welcome, ${payload.user?.name || 'User'}!`, 'You are now signed in with Google.'), 700);
+  } catch (err) {
+    showAuthError(backendReachabilityMessage);
+  }
+}
+
+function initializeGoogleAuth() {
+  if (googleAuthInitialized || !GOOGLE_CLIENT_ID || !window.google?.accounts?.id) return;
+  const googleButton = document.getElementById('googleSignInButton');
+  const fallbackButton = document.getElementById('googleFallbackButton');
+
+  try {
+    window.google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleCredential,
+      ux_mode: 'popup',
+    });
+
+    if (googleButton) {
+      window.google.accounts.id.renderButton(googleButton, {
+        theme: 'filled_black',
+        size: 'large',
+        text: 'continue_with',
+        shape: 'rectangular',
+        logo_alignment: 'center',
+        width: Math.min(340, Math.max(220, googleButton.offsetWidth || 320)),
+      });
+      googleButton.style.display = 'flex';
+    }
+
+    if (fallbackButton) fallbackButton.style.display = 'none';
+
+    googleAuthInitialized = true;
+  } catch (err) {
+    console.warn('Google sign-in initialization failed:', err);
+  }
+}
+
 function handleGoogleAuth() {
-  // Google OAuth integration
-  // To enable this feature:
-  // 1. Create a Google Cloud project and OAuth 2.0 credentials (Client ID)
-  // 2. Add the Client ID to your .env.local file
-  // 3. Implement the OAuth flow with the backend
-  showToast('bi-info-circle', 'Google OAuth', 'Coming soon! Configure Google credentials in your .env file.');
+  hideAuthError();
+
+  if (!GOOGLE_CLIENT_ID) {
+    showAuthError('Google sign-in needs VITE_GOOGLE_CLIENT_ID in teamops-frontend/.env.local.');
+    return;
+  }
+
+  if (!window.google?.accounts?.id) {
+    showAuthError('Google sign-in is still loading. Please try again in a moment.');
+    return;
+  }
+
+  initializeGoogleAuth();
 }
 
 // ── LIVE ACTIVITY ────────────────────────────────────────
@@ -3561,6 +3647,16 @@ function memberInitial(name = '') {
 
 function memberAvatarClass(index) {
   return ['u-style-4', 'u-style-11', 'u-style-5', 'u-style-59'][index % 4];
+}
+
+function commentAvatarClass(seed = '') {
+  const palette = ['u-style-4', 'u-style-11', 'u-style-5', 'u-style-59'];
+  const text = String(seed || '').trim().toLowerCase();
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+  }
+  return palette[hash % palette.length];
 }
 
 function getCurrentUserId() {
@@ -4255,9 +4351,10 @@ function renderBoardComments() {
   list.innerHTML = boardComments.map((comment, index) => {
     const isAuthor = String(comment.user_id) === String(currentUserId);
     const refs = Array.isArray(comment.tagged_cards) ? comment.tagged_cards.filter(card => card?.id) : [];
+    const avatarSeed = comment.user_id || comment.user_name || comment.userName || comment.id || '';
     return `
       <div class="board-comment-item">
-        <div class="card-comment-avatar ${memberAvatarClass(index)}">${escapeHtml(memberInitial(comment.user_name || 'U'))}</div>
+        <div class="card-comment-avatar ${commentAvatarClass(avatarSeed)}">${escapeHtml(memberInitial(comment.user_name || 'U'))}</div>
         <div class="board-comment-main">
           <div class="board-comment-meta">
             <span class="board-comment-author">${escapeHtml(comment.user_name || 'Teammate')}</span>
@@ -4451,9 +4548,10 @@ function renderCardComments() {
   const currentUserId = getCurrentUserId();
   list.innerHTML = cardComments.map((comment) => {
     const isAuthor = String(comment.user_id) === String(currentUserId);
+    const avatarSeed = comment.user_id || comment.user_name || comment.userName || comment.id || '';
     return `
       <div class="card-comment-item">
-        <div class="card-comment-avatar ${memberAvatarClass(comment.user_id)}">${escapeHtml(memberInitial(comment.user_name || 'U'))}</div>
+        <div class="card-comment-avatar ${commentAvatarClass(avatarSeed)}">${escapeHtml(memberInitial(comment.user_name || 'U'))}</div>
         <div class="card-comment-main">
           <div class="card-comment-meta">
             <span class="card-comment-author">${escapeHtml(comment.user_name || 'Teammate')}</span>
@@ -5332,6 +5430,7 @@ initKpiSparklines();
 initDashboardParallax();
 enhanceAllSelects();
 initFaqPage();
+initializeGoogleAuth();
 
 if (verificationToken) {
   // Handle email verification link
