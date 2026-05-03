@@ -548,61 +548,7 @@
       <button class="h-add-btn" onclick="addCard()">+ Add Card</button>
       <div class="h-uav">Z</div>
     </div>
-    <div class="db-board db-content-view active" id="dbView-board">
-      <!-- TO DO -->
-      <div class="b-col">
-        <div class="b-col-head">
-          <div class="b-col-ind ci-todo"></div>
-          <div class="b-col-title">To Do</div>
-          <div class="b-col-count" id="ct-todo">0</div>
-          <button class="b-col-add" onclick="addCard('todo')">+</button>
-        </div>
-        <div class="b-cards" id="cards-todo">
-          <!-- Cards will be loaded from API -->
-        </div>
-        <button class="b-add-card" onclick="addCard('todo')">+ Add a card</button>
-      </div>
-      <!-- IN PROGRESS -->
-      <div class="b-col">
-        <div class="b-col-head">
-          <div class="b-col-ind ci-prog"></div>
-          <div class="b-col-title">In Progress</div>
-          <div class="b-col-count" id="ct-prog">0</div>
-          <button class="b-col-add" onclick="addCard('prog')">+</button>
-        </div>
-        <div class="b-cards" id="cards-prog">
-          <!-- Cards will be loaded from API -->
-        </div>
-        <button class="b-add-card" onclick="addCard('prog')">+ Add a card</button>
-      </div>
-      <!-- IN REVIEW -->
-      <div class="b-col">
-        <div class="b-col-head">
-          <div class="b-col-ind ci-rev"></div>
-          <div class="b-col-title">In Review</div>
-          <div class="b-col-count" id="ct-rev">0</div>
-          <button class="b-col-add" onclick="addCard('rev')">+</button>
-        </div>
-        <div class="b-cards" id="cards-rev">
-          <!-- Cards will be loaded from API -->
-        </div>
-        <button class="b-add-card" onclick="addCard('rev')">+ Add a card</button>
-      </div>
-      <!-- DONE -->
-      <div class="b-col">
-        <div class="b-col-head">
-          <div class="b-col-ind ci-done"></div>
-          <div class="b-col-title">Done</div>
-          <div class="b-col-count" id="ct-done">0</div>
-          <button class="b-col-add" onclick="addCard('done')">+</button>
-        </div>
-        <div class="b-cards" id="cards-done">
-          <!-- Cards will be loaded from API -->
-        </div>
-        <button class="b-add-card" onclick="addCard('done')">+ Add a card</button>
-      </div>
-      <button class="add-col-btn" onclick="addColumn()">+ Add Column</button>
-    </div>
+    <div class="db-board db-content-view active" id="dbView-board"></div>
 
     <button class="board-comments-fab" id="boardCommentsFab" onclick="toggleBoardCommentsPane()" title="Board comments">
       <i class="bi bi-chat-dots"></i>
@@ -755,6 +701,25 @@
           <button type="button" id="confirmModalAction" onclick="closeConfirmDialog(true)" class="u-style-48 danger-btn">Delete</button>
           <button type="button" onclick="closeConfirmDialog(false)" class="u-style-49">Cancel</button>
         </div>
+      </div>
+    </div>
+
+    <div id="saveViewModal" class="u-style-36">
+      <div class="u-style-37">
+        <div class="u-style-38">
+          <h3 class="u-style-39">Save view</h3>
+          <button type="button" onclick="closeSaveViewModal()" class="u-style-40">&times;</button>
+        </div>
+        <form id="saveViewForm" onsubmit="saveCurrentView(event)" class="u-style-41">
+          <div>
+            <label class="u-style-42">View name *</label>
+            <input id="saveViewNameInput" type="text" required class="u-style-43" placeholder="e.g., High priority this week">
+          </div>
+          <div class="u-style-46">
+            <button type="submit" class="u-style-47">Save view</button>
+            <button type="button" onclick="closeSaveViewModal()" class="u-style-48">Cancel</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -1304,53 +1269,15 @@
             <h3>Saved Views & Filters</h3>
             <p class="db-page-sub">Create, organize, and reuse custom filters and board views for faster workflows.</p>
             <div class="db-hero-badges">
-              <span class="db-badge"><i class="bi bi-bookmark-fill"></i> 12 Saved</span>
+              <span class="db-badge"><i class="bi bi-bookmark-fill"></i> 0 Saved</span>
               <span class="db-badge"><i class="bi bi-star-fill"></i> 4 Starred</span>
               <span class="db-badge"><i class="bi bi-share"></i> 2 Shared</span>
             </div>
           </div>
         </div>
       </div>
-      <div class="db-saved-list db-anim db-delay-2">
-        <div class="db-saved-item">
-          <div class="db-saved-header">
-            <div class="db-saved-icon"><i class="bi bi-fire"></i></div>
-            <div class="db-saved-name">My High Priority</div>
-          </div>
-          <div class="db-saved-desc">All assigned cards ranked High, due this week</div>
-          <div class="db-saved-stats">
-            <span class="db-saved-stat">7 cards</span>
-            <span class="db-saved-stat">3 boards</span>
-            <span class="db-saved-stat">Last used 2h ago</span>
-          </div>
-          <button class="db-saved-action" onclick="showToast('bi-eye','View loaded','Showing 7 cards')">Open View</button>
-        </div>
-        <div class="db-saved-item">
-          <div class="db-saved-header">
-            <div class="db-saved-icon"><i class="bi bi-rocket"></i></div>
-            <div class="db-saved-name">Ready to Ship</div>
-          </div>
-          <div class="db-saved-desc">All cards in In Review + Done from current sprint</div>
-          <div class="db-saved-stats">
-            <span class="db-saved-stat">4 cards</span>
-            <span class="db-saved-stat">2 boards</span>
-            <span class="db-saved-stat">Last used yesterday</span>
-          </div>
-          <button class="db-saved-action" onclick="showToast('bi-eye','View loaded','Showing 4 cards')">Open View</button>
-        </div>
-        <div class="db-saved-item">
-          <div class="db-saved-header">
-            <div class="db-saved-icon"><i class="bi bi-graph-up"></i></div>
-            <div class="db-saved-name">Team Velocity</div>
-          </div>
-          <div class="db-saved-desc">Summary view: cards per member, completion rates</div>
-          <div class="db-saved-stats">
-            <span class="db-saved-stat">Dashboard</span>
-            <span class="db-saved-stat">All members</span>
-            <span class="db-saved-stat">Last used 3 days ago</span>
-          </div>
-          <button class="db-saved-action" onclick="showToast('bi-eye','View loaded','Team analytics')">Open View</button>
-        </div>
+      <div class="db-saved-list db-anim db-delay-2" id="savedViewsList">
+        <div class="db-saved-empty">No saved views yet</div>
       </div>
     </div>
 
@@ -1540,6 +1467,9 @@ function switchDashboardView(viewId, btnEl) {
   }
   if (viewId === 'projects') {
     try { loadProjectsOverview(); } catch (e) { console.warn('loadProjectsOverview failed:', e); }
+  }
+  if (viewId === 'saved') {
+    try { renderSavedViews(); } catch (e) { console.warn('renderSavedViews failed:', e); }
   }
   if (viewId === 'audit') {
     try { loadAuditLog(); } catch (e) { console.warn('loadAuditLog failed:', e); }
@@ -1748,6 +1678,7 @@ function switchTab(t) {
 const API_BASE = 'http://localhost:5002/api';
 const TOKEN_KEY = 'teamops_token';
 const USER_KEY = 'teamops_user';
+const SAVED_VIEWS_KEY = 'teamops_saved_views';
 const defaultTechStackOptions = [
   'React', 'Node', 'MongoDB', 'PostgreSQL', 'Express', 'Vue', 'Angular', 'Python',
   'Django', 'TypeScript', 'JavaScript', 'Next.js', 'Nuxt', 'Svelte', 'Laravel',
@@ -2338,8 +2269,11 @@ async function loadWorkspaceBoards(workspaceId, role = currentWorkspaceRole) {
   }
 }
 
-async function selectBoard(boardId) {
+async function selectBoard(boardId, options = {}) {
   if (!boardId) return;
+  boardFilters = options.filters ? normalizeBoardFilters(options.filters) : normalizeBoardFilters();
+  activeSavedViewId = options.savedViewId || '';
+  activeSavedViewName = options.savedViewName || '';
   localStorage.setItem('teamops_board_id', boardId);
   joinBoardRoom(boardId);
   setActiveSidebarBoard(boardId);
@@ -2348,6 +2282,7 @@ async function selectBoard(boardId) {
   await loadActivityFeed({ silent: true });
   renderSprintProgress();
   refreshAnalyticsBoardSelector();
+  renderSavedViews();
   showToast('bi-kanban', 'Board opened', 'Loaded columns and cards from MongoDB');
 }
 
@@ -4108,6 +4043,9 @@ let boardMentionMatches = [];
 let boardMentionActiveIndex = 0;
 let projectBoardStats = [];
 let projectAllBoards = [];
+let boardFilters = { assignee: 'all', priority: 'all', dueDate: 'all' };
+let activeSavedViewId = '';
+let activeSavedViewName = '';
 const boardColors = ['#7c5cfc', '#14b8a6', '#ff4d6d', '#f59e0b', '#38bdf8', '#22c55e'];
 
 function todayISO() {
@@ -4498,11 +4436,262 @@ async function loadBoardData() {
     setupDragDrop(board);
     renderSprintProgress();
     renderMemberLoadBars();
+    renderSavedViews();
     loadProjectsOverview();
   } catch (error) {
     console.error('Load board error:', error);
     showToast('bi-exclamation-circle', 'Board error', error.message);
   }
+}
+
+function normalizeBoardFilters(filters = {}) {
+  return {
+    assignee: filters.assignee || 'all',
+    priority: filters.priority || 'all',
+    dueDate: filters.dueDate || 'all',
+  };
+}
+
+function hasActiveBoardFilters(filters = boardFilters) {
+  const normalized = normalizeBoardFilters(filters);
+  return normalized.assignee !== 'all' || normalized.priority !== 'all' || normalized.dueDate !== 'all';
+}
+
+function getBoardMembersForFilters(board = activeBoardData) {
+  const members = new Map();
+  workspaceMembers.forEach(member => {
+    const id = member.id || member._id;
+    if (!id) return;
+    members.set(String(id), member.name || member.email || 'Member');
+  });
+  (board?.columns || []).forEach(column => {
+    (column.cards || []).forEach(card => {
+      if (!card.assignee_id) return;
+      members.set(String(card.assignee_id), card.assignee_name || 'Assigned member');
+    });
+  });
+  return Array.from(members.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function isCardDueInRange(card, dueDateFilter) {
+  if (dueDateFilter === 'all') return true;
+  if (!card.due_date) return false;
+
+  const due = new Date(`${card.due_date}T00:00:00`);
+  if (Number.isNaN(due.getTime())) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (dueDateFilter === 'overdue') return due < today;
+
+  if (dueDateFilter === 'week') {
+    const weekEnd = new Date(today);
+    weekEnd.setDate(today.getDate() + 7);
+    return due >= today && due <= weekEnd;
+  }
+
+  if (dueDateFilter === 'month') {
+    return due >= today && due.getFullYear() === today.getFullYear() && due.getMonth() === today.getMonth();
+  }
+
+  return true;
+}
+
+function cardMatchesBoardFilters(card, filters = boardFilters) {
+  const normalized = normalizeBoardFilters(filters);
+  if (normalized.assignee !== 'all' && String(card.assignee_id || '') !== String(normalized.assignee)) return false;
+  if (normalized.priority !== 'all' && String(card.priority || 'medium').toLowerCase() !== normalized.priority) return false;
+  return isCardDueInRange(card, normalized.dueDate);
+}
+
+function renderBoardFilterBar(board) {
+  const active = hasActiveBoardFilters();
+  const members = getBoardMembersForFilters(board);
+  const allCards = (board?.columns || []).flatMap(column => column.cards || []);
+  const visibleCards = allCards.filter(card => cardMatchesBoardFilters(card));
+  const activeFilterCount = ['assignee', 'priority', 'dueDate'].filter(key => boardFilters[key] !== 'all').length;
+  const assigneeOptions = [
+    '<option value="all">All assignees</option>',
+    ...members.map(member => `<option value="${escapeHtml(member.id)}" ${String(boardFilters.assignee) === String(member.id) ? 'selected' : ''}>${escapeHtml(member.name)}</option>`),
+  ].join('');
+
+  return `
+    <div class="board-filter-bar">
+      <div class="board-filter-meta">
+        <div class="board-filter-kicker"><i class="bi bi-funnel"></i> Filters</div>
+        <div class="board-filter-count">${activeSavedViewName ? `Viewing "${escapeHtml(activeSavedViewName)}"` : active ? `${activeFilterCount} active • ${visibleCards.length} of ${allCards.length} cards` : `${allCards.length} card${allCards.length === 1 ? '' : 's'} on this board`}</div>
+      </div>
+      <div class="board-filter-group">
+        <label for="boardFilterAssignee">Assignee</label>
+        <select id="boardFilterAssignee" onchange="updateBoardFilter('assignee', this.value)">
+          ${assigneeOptions}
+        </select>
+      </div>
+      <div class="board-filter-group">
+        <label for="boardFilterPriority">Priority</label>
+        <select id="boardFilterPriority" onchange="updateBoardFilter('priority', this.value)">
+          <option value="all">All priorities</option>
+          <option value="high" ${boardFilters.priority === 'high' ? 'selected' : ''}>High</option>
+          <option value="medium" ${boardFilters.priority === 'medium' ? 'selected' : ''}>Medium</option>
+          <option value="low" ${boardFilters.priority === 'low' ? 'selected' : ''}>Low</option>
+        </select>
+      </div>
+      <div class="board-filter-group">
+        <label for="boardFilterDueDate">Due date</label>
+        <select id="boardFilterDueDate" onchange="updateBoardFilter('dueDate', this.value)">
+          <option value="all">All due dates</option>
+          <option value="overdue" ${boardFilters.dueDate === 'overdue' ? 'selected' : ''}>Overdue</option>
+          <option value="week" ${boardFilters.dueDate === 'week' ? 'selected' : ''}>Due this week</option>
+          <option value="month" ${boardFilters.dueDate === 'month' ? 'selected' : ''}>Due this month</option>
+        </select>
+      </div>
+      <div class="board-filter-actions">
+        <button type="button" class="board-filter-original ${activeSavedViewId ? '' : 'hidden'}" onclick="returnToOriginalBoard()"><i class="bi bi-kanban"></i><span>Original Board</span></button>
+        <button type="button" class="board-filter-save ${active ? '' : 'hidden'}" onclick="openSaveViewModal()"><i class="bi bi-bookmark-plus"></i><span>Save View</span></button>
+        <button type="button" class="board-filter-clear ${active ? '' : 'hidden'}" onclick="clearBoardFilters()"><i class="bi bi-x-circle"></i><span>Clear Filters</span></button>
+      </div>
+    </div>
+  `;
+}
+
+function updateBoardFilter(key, value) {
+  boardFilters = normalizeBoardFilters({ ...boardFilters, [key]: value || 'all' });
+  activeSavedViewId = '';
+  activeSavedViewName = '';
+  if (activeBoardData) {
+    renderBoard(activeBoardData);
+    setupDragDrop(activeBoardData);
+  }
+}
+
+function clearBoardFilters() {
+  boardFilters = normalizeBoardFilters();
+  activeSavedViewId = '';
+  activeSavedViewName = '';
+  if (activeBoardData) {
+    renderBoard(activeBoardData);
+    setupDragDrop(activeBoardData);
+  }
+}
+
+function returnToOriginalBoard() {
+  clearBoardFilters();
+  showToast('bi-kanban', 'Original board', 'Saved view filters cleared.');
+}
+
+function readSavedViews() {
+  try {
+    const views = JSON.parse(localStorage.getItem(SAVED_VIEWS_KEY) || '[]');
+    return Array.isArray(views) ? views : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function writeSavedViews(views) {
+  localStorage.setItem(SAVED_VIEWS_KEY, JSON.stringify(Array.isArray(views) ? views : []));
+}
+
+function getCurrentBoardSavedViews() {
+  const boardId = localStorage.getItem('teamops_board_id');
+  if (!boardId) return [];
+  return readSavedViews().filter(view => String(view.boardId) === String(boardId));
+}
+
+function boardFilterLabel(filters = {}) {
+  const normalized = normalizeBoardFilters(filters);
+  const parts = [];
+  if (normalized.assignee !== 'all') {
+    const member = getBoardMembersForFilters().find(item => String(item.id) === String(normalized.assignee));
+    parts.push(member ? member.name : 'Selected assignee');
+  }
+  if (normalized.priority !== 'all') parts.push(`${normalized.priority.charAt(0).toUpperCase() + normalized.priority.slice(1)} priority`);
+  if (normalized.dueDate === 'overdue') parts.push('Overdue');
+  if (normalized.dueDate === 'week') parts.push('Due this week');
+  if (normalized.dueDate === 'month') parts.push('Due this month');
+  return parts.join(' • ') || 'All cards';
+}
+
+function renderSavedViews() {
+  const list = document.getElementById('savedViewsList');
+  if (!list) return;
+
+  const views = getCurrentBoardSavedViews();
+  const badge = document.querySelector('#dbView-saved .db-hero-badges .db-badge');
+  if (badge) badge.innerHTML = `<i class="bi bi-bookmark-fill"></i> ${views.length} Saved`;
+
+  if (!views.length) {
+    list.innerHTML = '<div class="db-saved-empty">No saved views yet</div>';
+    return;
+  }
+
+  list.innerHTML = views.map(view => `
+    <div class="db-saved-item saved-view-row" onclick="openSavedView('${escapeHtml(view.id)}')">
+      <div class="db-saved-header">
+        <div class="db-saved-icon"><i class="bi bi-bookmark"></i></div>
+        <div class="db-saved-name">${escapeHtml(view.name)}</div>
+        <button type="button" class="saved-view-delete" onclick="deleteSavedView(event, '${escapeHtml(view.id)}')" title="Delete view"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="db-saved-desc">${escapeHtml(boardFilterLabel(view.filters))}</div>
+    </div>
+  `).join('');
+}
+
+function openSaveViewModal() {
+  if (!hasActiveBoardFilters()) return;
+  const modal = document.getElementById('saveViewModal');
+  const input = document.getElementById('saveViewNameInput');
+  if (!modal || !input) return;
+  input.value = '';
+  modal.style.display = 'flex';
+  setTimeout(() => input.focus(), 0);
+}
+
+function closeSaveViewModal() {
+  const modal = document.getElementById('saveViewModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function saveCurrentView(event) {
+  event.preventDefault();
+  const boardId = localStorage.getItem('teamops_board_id');
+  const input = document.getElementById('saveViewNameInput');
+  const name = input?.value?.trim();
+  if (!boardId || !name || !hasActiveBoardFilters()) return;
+
+  const views = readSavedViews();
+  views.push({
+    id: `view_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    name,
+    boardId,
+    filters: normalizeBoardFilters(boardFilters),
+  });
+  writeSavedViews(views);
+  closeSaveViewModal();
+  renderSavedViews();
+  showToast('bi-bookmark-check', 'View saved', name);
+}
+
+async function openSavedView(viewId) {
+  const view = readSavedViews().find(item => String(item.id) === String(viewId));
+  if (!view) return;
+  await selectBoard(view.boardId, { filters: view.filters, savedViewId: view.id, savedViewName: view.name });
+  switchDashboardView('board');
+  showToast('bi-bookmark', 'View loaded', view.name);
+}
+
+function deleteSavedView(event, viewId) {
+  event.stopPropagation();
+  const views = readSavedViews().filter(view => String(view.id) !== String(viewId));
+  writeSavedViews(views);
+  if (String(activeSavedViewId) === String(viewId)) {
+    activeSavedViewId = '';
+    activeSavedViewName = '';
+    if (activeBoardData) renderBoard(activeBoardData);
+  }
+  renderSavedViews();
+  showToast('bi-trash', 'View deleted', 'Saved view removed');
 }
 
 function renderBoard(board) {
@@ -4512,24 +4701,33 @@ function renderBoard(board) {
   const canManageColumns = ['owner', 'admin'].includes(currentWorkspaceRole);
   const canManageCards = ['owner', 'admin', 'member'].includes(currentWorkspaceRole);
   const columns = Array.isArray(board.columns) ? [...board.columns].sort((a, b) => (a.position || 0) - (b.position || 0)) : [];
+  const columnsHtml = columns.map((column, index) => {
+    const cards = (column.cards || []).filter(card => cardMatchesBoardFilters(card));
+    return `
+      <div class="b-col" data-column-id="${column.id}">
+        <div class="b-col-head">
+          <div class="b-col-ind ${columnIndicatorClass(column.title, index)}"></div>
+          <div class="b-col-title">${escapeHtml(column.title)}</div>
+          <div class="b-col-count">${cards.length}</div>
+          ${canManageColumns ? `<button class="column-edit-btn" onclick="openColumnModal('${column.id}')" title="Edit column"><i class="bi bi-pencil"></i></button>` : ''}
+          ${canManageCards ? `<button class="b-col-add" onclick="addCard('${column.id}')">+</button>` : ''}
+        </div>
+        <div class="b-cards" data-column-id="${column.id}">
+          ${cards.map(renderCard).join('')}
+        </div>
+        ${canManageCards ? `<button class="b-add-card" onclick="addCard('${column.id}')">+ Add a card</button>` : ''}
+      </div>
+    `;
+  }).join('');
 
-  boardContainer.innerHTML = columns.map((column, index) => `
-    <div class="b-col" data-column-id="${column.id}">
-      <div class="b-col-head">
-        <div class="b-col-ind ${columnIndicatorClass(column.title, index)}"></div>
-        <div class="b-col-title">${escapeHtml(column.title)}</div>
-        <div class="b-col-count">${column.cards?.length || 0}</div>
-        ${canManageColumns ? `<button class="column-edit-btn" onclick="openColumnModal('${column.id}')" title="Edit column"><i class="bi bi-pencil"></i></button>` : ''}
-        ${canManageCards ? `<button class="b-col-add" onclick="addCard('${column.id}')">+</button>` : ''}
-      </div>
-      <div class="b-cards" data-column-id="${column.id}">
-        ${(column.cards || []).map(renderCard).join('')}
-      </div>
-      ${canManageCards ? `<button class="b-add-card" onclick="addCard('${column.id}')">+ Add a card</button>` : ''}
+  boardContainer.innerHTML = `
+    ${renderBoardFilterBar(board)}
+    <div class="board-columns">
+      ${columnsHtml}
+      ${canManageColumns ? '<button class="add-col-btn" onclick="addColumn()">+ Add Column</button>' : ''}
     </div>
-  `).join('') + `
-    ${canManageColumns ? '<button class="add-col-btn" onclick="addColumn()">+ Add Column</button>' : ''}
   `;
+  enhanceAllSelects();
 }
 
 function columnIndicatorClass(title, index) {
