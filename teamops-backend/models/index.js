@@ -108,8 +108,10 @@ const cardSchema = new Schema(
 
 const commentSchema = new Schema(
   {
-    card: { type: Schema.Types.ObjectId, ref: 'Card', required: true, index: true },
+    board: { type: Schema.Types.ObjectId, ref: 'Board', default: null, index: true },
+    card: { type: Schema.Types.ObjectId, ref: 'Card', default: null, index: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    taggedCards: [{ type: Schema.Types.ObjectId, ref: 'Card' }],
     content: { type: String, required: true, trim: true, maxlength: 2000 },
   },
   { timestamps: true },
@@ -239,10 +241,17 @@ const formatActivityLog = (activity) => ({
 
 const formatComment = (comment) => ({
   id: toId(comment._id),
+  board_id: toId(comment.board),
   card_id: toId(comment.card),
   user_id: toId(comment.user?._id || comment.user),
   user_name: comment.user?.name || '',
   content: comment.content,
+  tagged_cards: Array.isArray(comment.taggedCards)
+    ? comment.taggedCards.map((card) => ({
+        id: toId(card?._id || card),
+        title: card?.title || '',
+      }))
+    : [],
   created_at: comment.createdAt,
 })
 

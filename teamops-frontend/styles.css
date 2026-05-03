@@ -2366,6 +2366,194 @@ footer {
 .card-comment-compose .u-style-47 { flex-shrink: 0; }
 .c-comment-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--muted); white-space: nowrap; }
 .comments-modal-body { display: flex; flex-direction: column; gap: 12px; max-height: calc(100vh - 200px); overflow-y: auto; padding: 16px; }
+.board-comments-fab {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 1400;
+  width: 58px;
+  height: 58px;
+  border: none;
+  border-radius: 50%;
+  background: var(--violet);
+  color: #fff;
+  box-shadow: 0 18px 38px rgba(124, 92, 252, 0.34);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.board-comments-fab:hover { transform: translateY(-2px); box-shadow: 0 22px 44px rgba(124, 92, 252, 0.42); }
+.board-comments-fab i { font-size: 24px; }
+.board-comments-fab span {
+  position: absolute;
+  top: -5px;
+  right: -4px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--rose);
+  color: #fff;
+  border: 2px solid #fff;
+  font-size: 11px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+.board-comments-pane {
+  position: fixed;
+  right: 28px;
+  bottom: 98px;
+  z-index: 1390;
+  width: min(420px, calc(100vw - 32px));
+  height: min(620px, calc(100vh - 130px));
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(18px) scale(0.98);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.board-comments-pane.open { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+.board-comments-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.board-comments-title { font-size: 18px; font-weight: 800; color: var(--ink); }
+.board-comments-sub { margin-top: 4px; font-size: 12px; color: var(--muted2); }
+.board-comments-close {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--cream);
+  color: var(--muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.board-card-tags, .board-selected-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 18px 0;
+}
+.board-card-tags:empty, .board-selected-tags:empty { display: none; }
+.board-tag-chip {
+  border: 1px solid var(--border);
+  background: var(--cream);
+  color: var(--ink2);
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.board-tag-chip.active, .board-tag-chip:hover { border-color: var(--violet); background: var(--violet-soft); color: var(--violet); }
+.board-comments-list {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.board-comment-item { display: flex; align-items: flex-start; gap: 10px; }
+.board-comment-main {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fafbff;
+  padding: 10px 12px;
+}
+.board-comment-meta { display: flex; align-items: center; gap: 6px; color: var(--muted2); font-size: 11px; margin-bottom: 5px; }
+.board-comment-author { color: var(--ink); font-weight: 800; }
+.board-comment-delete { margin-left: auto; border: none; background: transparent; color: var(--muted2); cursor: pointer; }
+.board-comment-delete:hover { color: var(--rose); }
+.board-comment-text { color: var(--ink2); font-size: 13px; white-space: pre-wrap; word-break: break-word; line-height: 1.45; }
+.board-comment-refs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.board-comment-ref { border-radius: 999px; background: #eef2ff; color: var(--violet); padding: 4px 8px; font-size: 11px; font-weight: 800; }
+.board-comment-compose { border-top: 1px solid var(--border); padding: 12px 18px 16px; background: #fff; }
+.board-comment-input-wrap { position: relative; }
+.board-comment-input {
+  width: 100%;
+  min-height: 86px;
+  resize: none;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+.board-comment-input:focus { border-color: var(--violet); box-shadow: 0 0 0 4px rgba(124,92,252,0.08); }
+.board-mention-menu {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: calc(100% + 8px);
+  max-height: 184px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(31, 24, 54, 0.16);
+  padding: 6px;
+  display: none;
+  z-index: 3;
+}
+.board-mention-menu.open { display: block; }
+.board-mention-option {
+  width: 100%;
+  border: none;
+  background: transparent;
+  border-radius: 9px;
+  padding: 9px 10px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.board-mention-option:hover, .board-mention-option.active { background: var(--violet-soft); }
+.board-mention-title { font-size: 13px; font-weight: 800; color: var(--ink); }
+.board-mention-column { font-size: 11px; color: var(--muted2); }
+.board-comment-compose button#boardCommentSubmitBtn {
+  margin-top: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  background: var(--violet);
+  color: #fff;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+@media (max-width: 720px) {
+  .board-comments-fab { right: 18px; bottom: 18px; }
+  .board-comments-pane { right: 12px; left: 12px; bottom: 86px; width: auto; height: min(620px, calc(100vh - 104px)); }
+}
 .u-style-45 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 .u-style-46 { display:flex; gap:12px; margin-top:8px; }
 .u-style-47 { flex:1; padding:12px; background:var(--violet); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:14px; }

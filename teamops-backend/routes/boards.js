@@ -9,6 +9,9 @@ router.get('/:boardId', auth, requireRole('owner', 'admin', 'member', 'viewer'),
 router.get('/:boardId/analytics', auth, requireRole('owner', 'admin', 'member', 'viewer'), boardController.getBoardAnalytics);
 router.patch('/:boardId', auth, requireRole('owner', 'admin'), boardController.updateBoard);
 router.delete('/:boardId', auth, requireRole('owner', 'admin'), boardController.deleteBoard);
+router.get('/:boardId/comments', auth, requireRole('owner', 'admin', 'member', 'viewer'), boardController.getBoardComments);
+router.post('/:boardId/comments', auth, requireRole('owner', 'admin', 'member'), boardController.addBoardComment);
+router.delete('/:boardId/comments/:commentId', auth, requireRole('owner', 'admin', 'member'), boardController.deleteBoardComment);
 router.post('/:boardId/columns', auth, requireRole('owner', 'admin'), boardController.createColumn);
 router.patch('/:boardId/columns/:columnId', auth, requireRole('owner', 'admin'), boardController.updateColumn);
 router.delete('/:boardId/columns/:columnId', auth, requireRole('owner', 'admin'), boardController.deleteColumn);
