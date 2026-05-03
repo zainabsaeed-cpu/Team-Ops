@@ -182,7 +182,7 @@ const formatWorkspace = (workspace, role, memberCount) => ({
   role,
   memberCount,
   inviteCode: workspace.inviteCode,
-  inviteLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/register?inviteCode=${encodeURIComponent(workspace.inviteCode || '')}`,
+  inviteLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/join?code=${encodeURIComponent(workspace.inviteCode || '')}`,
   boardId: toId(workspace._id),
 })
 

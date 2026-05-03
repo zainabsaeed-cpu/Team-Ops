@@ -81,8 +81,10 @@ exports.register = async (req, res) => {
             await sendVerificationEmail(normalizedEmail, otp);
 
             return res.status(200).json({
-                ...issueSession(user),
-                message: 'Account created. Continue to workspace setup.'
+                user: formatUser(user),
+                email: user.email,
+                requiresVerification: true,
+                message: 'Verification code sent. Verify your email to finish registration.'
             });
         }
 
@@ -100,8 +102,10 @@ exports.register = async (req, res) => {
         await sendVerificationEmail(normalizedEmail, otp);
 
         res.status(201).json({
-            ...issueSession(user),
-            message: 'Account created. Continue to workspace setup.'
+            user: formatUser(user),
+            email: user.email,
+            requiresVerification: true,
+            message: 'Verification code sent. Verify your email to finish registration.'
         });
     } catch (err) {
         console.error('Register error:', err);

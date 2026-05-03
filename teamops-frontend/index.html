@@ -396,6 +396,47 @@
 </div>
 
 <!-- ══════════════════════════
+     WORKSPACE ONBOARDING
+══════════════════════════ -->
+<div id="workspaceSetup" class="view workspace-onboarding">
+  <div class="workspace-shell">
+    <button class="auth-back" id="workspaceSetupBackBtn" onclick="handleWorkspaceSetupBack()">← Back to dashboard</button>
+    <div class="workspace-card">
+      <div class="auth-logo">Team<span>Ops</span></div>
+      <div class="workspace-kicker">Create Your Workspace</div>
+      <h1>Set up the place your team will work from.</h1>
+      <p class="workspace-copy">Name the workspace, add a short description, and choose the technologies your team uses most.</p>
+      <label class="auth-label">Workspace name</label>
+      <input id="workspaceName" type="text" class="auth-input" placeholder="Product Engineering">
+      <label class="auth-label">Description</label>
+      <textarea id="workspaceDescription" class="auth-input workspace-textarea" placeholder="A shared board for product, design, and engineering work."></textarea>
+      <label class="auth-label">Tech stack</label>
+      <div id="techStackTags" class="tech-stack-picker"></div>
+      <input id="customTechStack" type="text" class="auth-input" placeholder="Add another technology and press Enter">
+      <div id="workspaceError" class="auth-error u-style-28"></div>
+      <button class="auth-submit" onclick="submitWorkspaceSetup()">Create workspace →</button>
+      <button class="workspace-link-btn" onclick="showJoinWorkspace()">Join an existing workspace instead</button>
+    </div>
+  </div>
+</div>
+
+<div id="joinWorkspace" class="view workspace-onboarding">
+  <div class="workspace-shell">
+    <button class="auth-back" onclick="showCreateWorkspace()">← Create workspace</button>
+    <div class="workspace-card compact">
+      <div class="auth-logo">Team<span>Ops</span></div>
+      <div class="workspace-kicker">Join Workspace</div>
+      <h1>Enter your invite code.</h1>
+      <p class="workspace-copy">Ask a workspace owner for the code. New teammates join as members by default.</p>
+      <label class="auth-label">Invite code or join link</label>
+      <input id="joinWorkspaceCode" type="text" class="auth-input workspace-code-input" placeholder="TEAM-XK92 or http://localhost:5173/join?code=TEAM-XK92" autocomplete="off">
+      <div id="joinWorkspaceError" class="auth-error u-style-28"></div>
+      <button class="auth-submit" onclick="submitJoinWorkspace()">Join workspace →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
      DASHBOARD
 ══════════════════════════ -->
 <div id="dashboard" class="view">
@@ -403,7 +444,10 @@
   <div class="db-aside">
     <div class="aside-head">
       <div class="aside-logo">Team<span>Ops</span></div>
-      <button class="ws-switcher" id="workspaceSwitcher">Alpha ▾</button>
+      <div class="workspace-switcher-wrap">
+        <button class="ws-switcher" id="workspaceSwitcher" onclick="toggleWorkspaceMenu()">Workspace ▾</button>
+        <div class="workspace-menu" id="workspaceMenu"></div>
+      </div>
     </div>
     <div class="aside-section">
       <div class="aside-sec-label">Main</div>
@@ -793,6 +837,19 @@
           </div>
         </div>
       </div>
+      <div class="db-slab db-anim db-delay-2 workspace-invite-panel">
+        <div class="db-slab-head">
+          <div>
+            <div class="db-slab-title u-style-50">Workspace invite code</div>
+            <div class="db-slab-note">Share this code with teammates who need to join this workspace.</div>
+          </div>
+          <button class="db-ghost-btn" onclick="copyCurrentInviteCode()">Copy code</button>
+        </div>
+        <div class="invite-code-box">
+          <span id="membersInviteCode">TEAM-----</span>
+          <button onclick="copyCurrentInviteLink()">Copy join link</button>
+        </div>
+      </div>
       <div class="db-member-grid db-anim db-delay-2">
         <div class="db-member-card"><div class="db-member-av u-style-4">Z</div><div><div class="db-member-name">Zainab Saeed</div><div class="db-member-role">Owner</div></div><div class="db-member-meta"><div class="db-mini-track"><div class="db-mini-fill u-style-55"></div></div><div class="db-pill">Online</div></div></div>
         <div class="db-member-card"><div class="db-member-av u-style-11">U</div><div><div class="db-member-name">Zunairah Sarwar</div><div class="db-member-role">Admin</div></div><div class="db-member-meta"><div class="db-mini-track"><div class="db-mini-fill u-style-56"></div></div><div class="db-pill">Online</div></div></div>
@@ -826,6 +883,14 @@
         </div>
       </div>
       <div class="db-settings-list db-anim db-delay-2">
+        <div class="db-setting-row invite-setting-row">
+          <div>
+            <div class="db-setting-title">Invite code</div>
+            <div class="db-setting-desc">Anyone signed in with this code joins the current workspace as a member.</div>
+            <div class="settings-invite-code" id="settingsInviteCode">TEAM-----</div>
+          </div>
+          <button class="db-ghost-btn" onclick="copyCurrentInviteCode()">Copy</button>
+        </div>
         <div class="db-setting-row">
           <div><div class="db-setting-title">Real-time desktop notifications</div><div class="db-setting-desc">Show browser alerts when cards are assigned or moved.</div></div>
           <button class="db-toggle on" onclick="this.classList.toggle('on')"></button>
@@ -1654,16 +1719,23 @@ function initDashboardParallax() {
 function switchTab(t) {
   document.getElementById('tabLogin').classList.toggle('active', t==='login');
   document.getElementById('tabSignup').classList.toggle('active', t==='signup');
-  document.getElementById('fLogin').style.display = t==='login'?'':'none';
-  document.getElementById('fSignup').style.display = t==='signup'?'':'none';
-  if (t !== 'verification') {
-    document.getElementById('fVerification').style.display = 'none';
-  }
+  document.getElementById('fLogin').style.display = t==='login'?'block':'none';
+  document.getElementById('fSignup').style.display = t==='signup'?'block':'none';
+  document.getElementById('fVerification').style.display = t==='verification'?'block':'none';
   hideAuthError();
 }
 const API_BASE = 'http://localhost:5002/api';
 const TOKEN_KEY = 'teamops_token';
 const USER_KEY = 'teamops_user';
+const defaultTechStackOptions = [
+  'React', 'Node', 'MongoDB', 'PostgreSQL', 'Express', 'Vue', 'Angular', 'Python',
+  'Django', 'TypeScript', 'JavaScript', 'Next.js', 'Nuxt', 'Svelte', 'Laravel',
+  'PHP', 'Ruby on Rails', 'Go', 'Java', 'Spring Boot', 'C#', '.NET', 'Kotlin',
+  'Swift', 'Flutter', 'React Native', 'GraphQL', 'REST API', 'Redis', 'MySQL',
+  'SQLite', 'Firebase', 'Supabase', 'Docker', 'Kubernetes', 'AWS', 'Azure',
+  'Google Cloud', 'Tailwind', 'Bootstrap', 'Figma', 'Jest', 'Playwright'
+];
+const selectedTechStack = new Set();
 
 function showAuthError(message, target = 'authError') {
   const el = document.getElementById(target);
@@ -1688,6 +1760,13 @@ function hideAuthError() {
     verificationError.textContent = '';
     verificationError.style.display = 'none';
   }
+  ['workspaceError', 'joinWorkspaceError'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = '';
+      el.style.display = 'none';
+    }
+  });
 }
 
 function getToken() {
@@ -1702,6 +1781,127 @@ function saveSession(payload) {
 function clearSession() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  localStorage.removeItem('teamops_workspace_id');
+  localStorage.removeItem('teamops_board_id');
+}
+
+function showFormError(id, message) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = message;
+  el.style.display = 'block';
+}
+
+function renderTechStackOptions() {
+  const picker = document.getElementById('techStackTags');
+  if (!picker) return;
+  const allOptions = [...new Set([...defaultTechStackOptions, ...selectedTechStack])];
+  picker.innerHTML = allOptions.map(item => `
+    <button type="button" class="tech-stack-tag ${selectedTechStack.has(item) ? 'active' : ''}" onclick="toggleTechStack(decodeURIComponent('${encodeURIComponent(item)}'))">${escapeHtml(item)}</button>
+  `).join('');
+}
+
+function toggleTechStack(item) {
+  if (!item) return;
+  if (selectedTechStack.has(item)) {
+    selectedTechStack.delete(item);
+  } else {
+    selectedTechStack.add(item);
+  }
+  renderTechStackOptions();
+}
+
+function setupCustomTechStackInput() {
+  const input = document.getElementById('customTechStack');
+  if (!input || input.dataset.bound === 'true') return;
+  input.dataset.bound = 'true';
+  input.addEventListener('keydown', event => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    const value = input.value.trim();
+    if (!value) return;
+    selectedTechStack.add(value);
+    input.value = '';
+    renderTechStackOptions();
+  });
+}
+
+function showCreateWorkspace() {
+  if (!getToken()) {
+    showView('auth');
+    switchTab('login');
+    return;
+  }
+  hideAuthError();
+  renderTechStackOptions();
+  setupCustomTechStackInput();
+  updateWorkspaceSetupBackButton();
+  showView('workspaceSetup');
+  document.getElementById('workspaceName')?.focus();
+}
+
+function updateWorkspaceSetupBackButton() {
+  const button = document.getElementById('workspaceSetupBackBtn');
+  if (!button) return;
+  const hasWorkspace = userWorkspaces.length > 0 || Boolean(localStorage.getItem('teamops_workspace_id'));
+  button.textContent = hasWorkspace ? '← Back to dashboard' : '← Sign out';
+}
+
+function handleWorkspaceSetupBack() {
+  if (userWorkspaces.length > 0 || localStorage.getItem('teamops_workspace_id')) {
+    showDashboard(true);
+    return;
+  }
+  doLogout();
+}
+
+function showJoinWorkspace(prefillCode = '') {
+  if (!getToken()) {
+    showView('auth');
+    switchTab('login');
+    return;
+  }
+  hideAuthError();
+  showView('joinWorkspace');
+  const input = document.getElementById('joinWorkspaceCode');
+  if (input && prefillCode) input.value = prefillCode.toUpperCase();
+  input?.focus();
+}
+
+function extractInviteCode(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  try {
+    const parsed = new URL(raw);
+    const queryCode = parsed.searchParams.get('code') || parsed.searchParams.get('inviteCode');
+    if (queryCode) return queryCode.trim().toUpperCase();
+  } catch (_) {
+  }
+
+  const match = raw.match(/TEAM-[A-Z0-9]{4,}/i);
+  return (match ? match[0] : raw).trim().toUpperCase();
+}
+
+function storeWorkspaceContext(workspace) {
+  if (!workspace) return;
+  currentWorkspace = workspace;
+  localStorage.setItem('teamops_workspace_id', workspace.id);
+  if (workspace.boardId || workspace.board_id) {
+    localStorage.setItem('teamops_board_id', workspace.boardId || workspace.board_id);
+  }
+  currentWorkspaceRole = workspace.role || workspace.currentUserRole || 'member';
+  renderInviteCodePanels(workspace);
+}
+
+async function openWorkspaceBoard(workspace) {
+  if (workspace && !userWorkspaces.some(item => String(item.id) === String(workspace.id))) {
+    userWorkspaces = [workspace, ...userWorkspaces];
+  }
+  storeWorkspaceContext(workspace);
+  const user = JSON.parse(localStorage.getItem(USER_KEY) || '{}');
+  await applyWorkspaceContext(user, userWorkspaces.length ? userWorkspaces : [workspace]);
+  showDashboard(true);
 }
 
 async function apiRequest(path, options = {}) {
@@ -1775,8 +1975,117 @@ function joinBoardRoom(boardId) {
   teamopsSocket.emit('join:board', boardId);
 }
 
+function getActiveWorkspace(workspaces) {
+  const list = Array.isArray(workspaces) ? workspaces : [];
+  const storedWorkspaceId = localStorage.getItem('teamops_workspace_id');
+  return list.find(workspace => String(workspace.id) === String(storedWorkspaceId)) || list[0] || null;
+}
+
+function renderWorkspaceMenu(workspaces = userWorkspaces) {
+  const menu = document.getElementById('workspaceMenu');
+  if (!menu) return;
+  if (!workspaces.length) {
+    menu.innerHTML = '<div class="workspace-menu-empty">No workspaces yet</div>';
+    return;
+  }
+  menu.innerHTML = workspaces.map(workspace => `
+    <div class="workspace-menu-row ${currentWorkspace && String(currentWorkspace.id) === String(workspace.id) ? 'active' : ''}">
+      <button class="workspace-menu-item" onclick="selectWorkspace('${workspace.id}')">
+        <strong>${escapeHtml(workspace.name || 'Workspace')}</strong>
+        <span>${escapeHtml(workspace.role || 'member')} · ${escapeHtml(workspace.inviteCode || '')}</span>
+      </button>
+      ${workspace.inviteCode ? `<button class="workspace-copy-code-btn" onclick="copyWorkspaceInviteCode('${encodeURIComponent(workspace.inviteCode)}')" title="Copy invite code"><i class="bi bi-copy"></i></button>` : ''}
+    </div>
+  `).join('') + `
+    <button class="workspace-menu-item" onclick="showCreateWorkspace()">
+      <strong>+ Create workspace</strong>
+      <span>Start a separate team space</span>
+    </button>
+    <button class="workspace-menu-item" onclick="showJoinWorkspace()">
+      <strong>Join workspace</strong>
+      <span>Use an invite code</span>
+    </button>
+  `;
+}
+
+function toggleWorkspaceMenu() {
+  renderWorkspaceMenu();
+  document.getElementById('workspaceMenu')?.classList.toggle('open');
+}
+
+async function selectWorkspace(workspaceId) {
+  const workspace = userWorkspaces.find(item => String(item.id) === String(workspaceId));
+  if (!workspace) return;
+  document.getElementById('workspaceMenu')?.classList.remove('open');
+  localStorage.removeItem('teamops_board_id');
+  storeWorkspaceContext(workspace);
+  const user = JSON.parse(localStorage.getItem(USER_KEY) || '{}');
+  await applyWorkspaceContext(user, userWorkspaces);
+  switchDashboardView('board');
+  showToast('bi-building', 'Workspace switched', workspace.name || 'Workspace');
+}
+
+function renderInviteCodePanels(workspace = currentWorkspace) {
+  const code = workspace?.inviteCode || '';
+  const link = workspace?.inviteLink || (code ? `${window.location.origin}/join?code=${encodeURIComponent(code)}` : '');
+  const membersCode = document.getElementById('membersInviteCode');
+  const settingsCode = document.getElementById('settingsInviteCode');
+  if (membersCode) membersCode.textContent = code || 'TEAM-----';
+  if (settingsCode) settingsCode.textContent = code || 'TEAM-----';
+  if (code) {
+    localStorage.setItem('teamops_invite_code', code);
+    localStorage.setItem('teamops_invite_link', link);
+  }
+}
+
+async function copyTextToClipboard(text) {
+  if (!text) return false;
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (_) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    const copied = document.execCommand('copy');
+    textarea.remove();
+    return copied;
+  }
+}
+
+async function copyCurrentInviteCode() {
+  const code = currentWorkspace?.inviteCode || localStorage.getItem('teamops_invite_code') || '';
+  if (!code) {
+    showToast('bi-exclamation-circle', 'No invite code', 'Create or select a workspace first.');
+    return;
+  }
+  await copyTextToClipboard(code);
+  showToast('bi-link-45deg', 'Invite code copied', code);
+}
+
+async function copyWorkspaceInviteCode(encodedCode) {
+  const code = decodeURIComponent(encodedCode || '');
+  if (!code) return;
+  await copyTextToClipboard(code);
+  showToast('bi-copy', 'Invite code copied', code);
+}
+
+async function copyCurrentInviteLink() {
+  const code = currentWorkspace?.inviteCode || localStorage.getItem('teamops_invite_code') || '';
+  const link = currentWorkspace?.inviteLink || localStorage.getItem('teamops_invite_link') || (code ? `${window.location.origin}/join?code=${encodeURIComponent(code)}` : '');
+  if (!link) {
+    showToast('bi-exclamation-circle', 'No invite link', 'Create or select a workspace first.');
+    return;
+  }
+  await copyTextToClipboard(link);
+  showToast('bi-link-45deg', 'Join link copied', link);
+}
+
 function applyWorkspaceContext(sessionUser, workspaces) {
-  const primaryWorkspace = Array.isArray(workspaces) && workspaces.length > 0 ? workspaces[0] : null;
+  userWorkspaces = Array.isArray(workspaces) ? workspaces : [];
+  const primaryWorkspace = getActiveWorkspace(userWorkspaces);
+  if (primaryWorkspace) storeWorkspaceContext(primaryWorkspace);
   const role = primaryWorkspace?.role || 'member';
   const workspaceName = primaryWorkspace?.name || 'Workspace';
   currentWorkspaceRole = role;
@@ -1788,6 +2097,8 @@ function applyWorkspaceContext(sessionUser, workspaces) {
   if (userNameEl) userNameEl.textContent = sessionUser?.name || 'User';
   if (userRoleEl) userRoleEl.textContent = role.charAt(0).toUpperCase() + role.slice(1);
   if (workspaceSwitcher) workspaceSwitcher.textContent = `${workspaceName} ▾`;
+  renderWorkspaceMenu(userWorkspaces);
+  renderInviteCodePanels(primaryWorkspace);
 
   const canManage = role === 'owner' || role === 'admin';
   const newBoardBtn = document.getElementById('newBoardBtn');
@@ -1820,8 +2131,12 @@ function renderNoWorkspaceState() {
   if (boardList) {
     boardList.innerHTML = '<button class="aside-board-item active"><div class="b-dot u-style-4"></div>Create or join a workspace first</button>';
   }
+  currentWorkspace = null;
   localStorage.removeItem('teamops_workspace_id');
   localStorage.removeItem('teamops_board_id');
+  localStorage.removeItem('teamops_invite_code');
+  localStorage.removeItem('teamops_invite_link');
+  renderInviteCodePanels(null);
 }
 
 function boardDotClass(index) {
@@ -2113,19 +2428,20 @@ async function bootstrapSession() {
       localStorage.setItem(USER_KEY, JSON.stringify(me.user));
       connectRealtime(me.user.id);
       
-      // Store the primary workspace ID for API calls
       if (workspaces && workspaces.length > 0) {
-        localStorage.setItem('teamops_workspace_id', workspaces[0].id);
-        if (!localStorage.getItem('teamops_board_id')) {
-          localStorage.setItem('teamops_board_id', workspaces[0].boardId || workspaces[0].id);
-        }
+        userWorkspaces = workspaces;
       } else {
+        userWorkspaces = [];
         localStorage.removeItem('teamops_workspace_id');
         localStorage.removeItem('teamops_board_id');
       }
       
       applyWorkspaceContext(me.user, workspaces);
       loadNotifications();
+    }
+    if (!workspaces || workspaces.length === 0) {
+      showCreateWorkspace();
+      return true;
     }
     showDashboard(true);
     return true;
@@ -2173,6 +2489,7 @@ async function doLogin() {
 
     saveSession(payload);
     await bootstrapSession();
+    if (inviteCodeParam) showJoinWorkspace(inviteCodeParam);
     setTimeout(() => showToast('bi-person-check', `Welcome back, ${payload.user?.name || 'User'}!`, 'You are now signed in.'), 700);
   } catch (err) {
     showAuthError('Cannot reach backend. Check that server is running on port 5002.');
@@ -2217,15 +2534,14 @@ async function doSignup() {
       return;
     }
 
-    // Account created, now show verification form
-    document.getElementById('verificationEmail').textContent = email;
+    document.getElementById('verificationEmail').textContent = payload?.email || email;
     document.getElementById('signupFirstName').value = '';
     document.getElementById('signupLastName').value = '';
     document.getElementById('signupEmail').value = '';
     document.getElementById('signupPassword').value = '';
-    document.getElementById('fSignup').style.display = 'none';
-    document.getElementById('fVerification').style.display = 'block';
-    sessionStorage.setItem('pendingVerificationEmail', email);
+    sessionStorage.setItem('pendingVerificationEmail', payload?.email || email);
+    switchTab('verification');
+    showToast('bi-envelope-check', 'Check your email', 'Enter the verification code to finish registration.');
   } catch (err) {
     showAuthError('Cannot reach backend. Check that server is running on port 5002.', 'signupError');
   }
@@ -2233,6 +2549,7 @@ async function doSignup() {
 
 async function doVerify() {
   const verificationCode = document.getElementById('verificationCode')?.value?.trim() || '';
+  const email = sessionStorage.getItem('pendingVerificationEmail') || document.getElementById('verificationEmail')?.textContent?.trim() || '';
 
   if (!verificationCode) {
     showAuthError('Please enter the verification code from your email.', 'verificationError');
@@ -2240,10 +2557,13 @@ async function doVerify() {
   }
 
   try {
+    const verifyPayload = { token: verificationCode };
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) verifyPayload.email = email;
+
     const response = await fetch(`${API_BASE}/auth/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: verificationCode }),
+      body: JSON.stringify(verifyPayload),
     });
 
     const payload = await response.json();
@@ -2255,12 +2575,66 @@ async function doVerify() {
     saveSession(payload);
     document.getElementById('verificationCode').value = '';
     sessionStorage.removeItem('pendingVerificationEmail');
-    await bootstrapSession();
-    showView('auth');
-    switchTab('login');
-    setTimeout(() => showToast('bi-check-circle', 'Email verified!', 'Your account is ready. You can now log in.'), 700);
+    if (inviteCodeParam) {
+      showJoinWorkspace(inviteCodeParam);
+    } else {
+      showCreateWorkspace();
+    }
+    setTimeout(() => showToast('bi-check-circle', 'Email verified!', 'Create your workspace to open the board.'), 700);
   } catch (err) {
     showAuthError('Cannot reach backend. Check that server is running on port 5002.', 'verificationError');
+  }
+}
+
+async function submitWorkspaceSetup() {
+  hideAuthError();
+  const name = document.getElementById('workspaceName')?.value?.trim() || '';
+  const description = document.getElementById('workspaceDescription')?.value?.trim() || '';
+  const customTech = document.getElementById('customTechStack')?.value?.trim() || '';
+  if (customTech) selectedTechStack.add(customTech);
+
+  if (!name) {
+    showFormError('workspaceError', 'Workspace name is required.');
+    return;
+  }
+
+  try {
+    const workspace = await apiRequest('/workspaces', {
+      method: 'POST',
+      body: JSON.stringify({
+        name,
+        description,
+        techStack: [...selectedTechStack],
+      }),
+    });
+    document.getElementById('workspaceName').value = '';
+    document.getElementById('workspaceDescription').value = '';
+    document.getElementById('customTechStack').value = '';
+    selectedTechStack.clear();
+    await openWorkspaceBoard(workspace);
+    showToast('bi-building-check', 'Workspace created', `${workspace.name} is ready. Invite code: ${workspace.inviteCode || 'created'}`);
+  } catch (error) {
+    showFormError('workspaceError', error.message || 'Could not create workspace.');
+  }
+}
+
+async function submitJoinWorkspace() {
+  hideAuthError();
+  const rawCode = document.getElementById('joinWorkspaceCode')?.value?.trim() || '';
+  const code = extractInviteCode(rawCode);
+
+  if (!code) {
+    showFormError('joinWorkspaceError', 'Invite code is required.');
+    return;
+  }
+
+  try {
+    const payload = await apiRequest(`/workspaces/join/${encodeURIComponent(code)}`);
+    const workspace = payload?.workspace || payload;
+    await openWorkspaceBoard(workspace);
+    showToast('bi-people', 'Workspace joined', `You joined ${workspace.name || 'the workspace'} as a member.`);
+  } catch (error) {
+    showFormError('joinWorkspaceError', error.message || 'Could not join workspace.');
   }
 }
 function doLogout() {
@@ -2485,6 +2859,8 @@ let currentEditingColumnId = null;
 let currentEditingBoardId = null;
 let selectedBoardColor = '#7c5cfc';
 let workspaceBoards = [];
+let userWorkspaces = [];
+let currentWorkspace = null;
 let teamopsSocket = null;
 let joinedBoardId = '';
 let notificationFeed = [];
@@ -2926,6 +3302,9 @@ document.addEventListener('click', event => {
   if (!event.target.closest('.teamops-select') && !event.target.closest('.teamops-select-menu')) {
     document.querySelectorAll('.teamops-select.open').forEach(closeCustomSelect);
   }
+  if (!event.target.closest('.workspace-switcher-wrap')) {
+    document.getElementById('workspaceMenu')?.classList.remove('open');
+  }
 });
 
 window.addEventListener('resize', () => {
@@ -3034,6 +3413,7 @@ function addColumn() {
 // ── VERIFY EMAIL LINK ────────────────────────────
 const urlParams = new URLSearchParams(window.location.search);
 const verificationToken = urlParams.get('token');
+const inviteCodeParam = urlParams.get('inviteCode') || urlParams.get('code');
 
 // ── BOOT TOAST ───────────────────────────────────
 initKpiSparklines();
@@ -3044,16 +3424,17 @@ if (verificationToken) {
   // Handle email verification link
   setTimeout(() => {
     showView('auth');
-    switchTab('signup');
-    document.getElementById('verificationEmail').textContent = 'your email';
+    switchTab('verification');
+    document.getElementById('verificationEmail').textContent = urlParams.get('email') || 'your email';
+    if (urlParams.get('email')) sessionStorage.setItem('pendingVerificationEmail', urlParams.get('email'));
     document.getElementById('verificationCode').value = verificationToken;
-    document.getElementById('fSignup').style.display = 'none';
-    document.getElementById('fVerification').style.display = 'block';
     showToast('bi-envelope-check', 'Verification link detected', 'Enter the code below to activate your account.');
   }, 100);
 } else {
   setTimeout(() => showToast('bi-stars','TeamOps v2','New design loaded — open the dashboard!'), 1000);
-  bootstrapSession();
+  bootstrapSession().then(() => {
+    if (inviteCodeParam && getToken()) showJoinWorkspace(inviteCodeParam);
+  });
 }
 
 // ── PROFILE ─────────────────────────────────────────────────────────────────

@@ -131,7 +131,7 @@ async function sendVerificationEmail(toEmail, otp) {
 
 async function sendInvitationEmail(toEmail, inviteCode, workspaceName = 'TeamOps Workspace') {
     const transporter = await getTransporter();
-    const inviteUrl = `${frontendBaseUrl}/register?inviteCode=${encodeURIComponent(inviteCode)}&email=${encodeURIComponent(toEmail)}`;
+    const inviteUrl = `${frontendBaseUrl}/join?code=${encodeURIComponent(inviteCode)}&email=${encodeURIComponent(toEmail)}`;
 
     const info = await transporter.sendMail({
         from: process.env.EMAIL_FROM || `"TeamOps" <no-reply@teamops.dev>`,

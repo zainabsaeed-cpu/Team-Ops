@@ -155,7 +155,7 @@ exports.getWorkspaceById = async (req, res) => {
         description: workspace.description || '',
         tech_stack: Array.isArray(workspace.techStack) ? workspace.techStack : [],
         inviteCode: workspace.inviteCode,
-        inviteLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/register?inviteCode=${encodeURIComponent(workspace.inviteCode || '')}`,
+        inviteLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/join?code=${encodeURIComponent(workspace.inviteCode || '')}`,
         currentUserRole: member.role,
         boardId: (await ensureWorkspaceBoard(workspace))?._id?.toString() || workspace._id.toString(),
     });
@@ -185,7 +185,7 @@ exports.getWorkspaceMembers = async (req, res) => {
 
         res.json({
             inviteCode: workspace.inviteCode,
-            inviteLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/register?inviteCode=${encodeURIComponent(workspace.inviteCode || '')}`,
+            inviteLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/join?code=${encodeURIComponent(workspace.inviteCode || '')}`,
             currentUserRole: currentMember.role,
             members,
         });
