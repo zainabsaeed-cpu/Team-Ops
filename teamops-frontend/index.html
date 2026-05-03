@@ -4050,6 +4050,11 @@ function formatTimeAgo(date) {
   return date.toLocaleDateString();
 }
 
+function isErrorToast(iconClass = '', title = '', msg = '') {
+  const text = `${iconClass} ${title} ${msg}`;
+  return /exclamation|error|failed|could not|cannot reach|delete failed|board error/i.test(text);
+}
+
 setInterval(() => {
   if (activityFeed.length) renderActivityFeed();
   if (notificationFeed.length) renderNotifications();
@@ -4057,6 +4062,8 @@ setInterval(() => {
 
 // ── TOAST ────────────────────────────────────────
 function showToast(iconClass, title, msg) {
+  if (isErrorToast(iconClass, title, msg)) return;
+
   const wrap = document.getElementById('toasts');
   const t = document.createElement('div');
   t.className = 'toast';
@@ -4752,7 +4759,9 @@ async function loadBoardData() {
     loadProjectsOverview();
   } catch (error) {
     console.error('Load board error:', error);
-    showToast('bi-exclamation-circle', 'Board error', error.message);
+    if (document.getElementById('dashboard')?.classList.contains('active')) {
+      showToast('bi-exclamation-circle', 'Board error', error.message);
+    }
   }
 }
 
@@ -5279,7 +5288,11 @@ function setupDragDrop(board) {
 
 // Load board on dashboard open
 if (document.getElementById('dashboard')) {
-  setTimeout(() => loadBoardData(), 500);
+  setTimeout(() => {
+    if (document.getElementById('dashboard')?.classList.contains('active') && localStorage.getItem('teamops_board_id')) {
+      loadBoardData();
+    }
+  }, 500);
 }
 
 // ── SCROLL NAV ───────────────────────────────────
@@ -5337,7 +5350,6 @@ if (verificationToken) {
     showToast('bi-shield-lock', 'Reset code ready', 'Enter the code from your email and choose a new password.');
   }, 100);
 } else {
-  setTimeout(() => showToast('bi-stars','TeamOps v2','New design loaded — open the dashboard!'), 1000);
   bootstrapSession().then(() => {
     if (inviteCodeParam && getToken()) showJoinWorkspace(inviteCodeParam);
   });
