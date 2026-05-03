@@ -42,11 +42,12 @@ async function createNotification(firstArg, userIdArg, messageArg) {
   const options = typeof firstArg === 'object' && firstArg !== null && !firstArg.emit
     ? firstArg
     : { io: firstArg, userId: userIdArg, message: messageArg };
-  const { io, userId, message } = options;
+  const { io, userId, message, isImportant = false } = options;
 
   const notification = await Notification.create({
     user: userId,
     message,
+    is_important: Boolean(isImportant),
   });
 
   const payload = formatNotification(notification.toObject());

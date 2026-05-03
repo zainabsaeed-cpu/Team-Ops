@@ -17,6 +17,7 @@ const isDoneColumn = (title) => /done/i.test(title || '');
 const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const defaultBoardColors = ['#7c5cfc', '#14b8a6', '#ff4d6d', '#f59e0b', '#38bdf8', '#22c55e'];
 const defaultColumns = ['To Do', 'In Progress', 'In Review', 'Done'];
+const isImportantPriority = (priority) => ['high', 'urgent'].includes(String(priority || '').toLowerCase());
 
 // ── HELPER: Check if user has permission in workspace ──
 const checkWorkspaceAccess = async (userId, workspaceId, requiredRole = 'member') => {
@@ -461,6 +462,7 @@ exports.createCard = async (req, res) => {
                 io: req.app.get('io'),
                 userId: assigneeId,
                 message: `You were assigned to "${title}" by ${user?.name || 'Someone'}`,
+                isImportant: isImportantPriority(priority),
             });
         }
 
@@ -549,6 +551,7 @@ exports.updateCard = async (req, res) => {
                 io: req.app.get('io'),
                 userId: newAssignee,
                 message: `You were assigned to "${card.title}" by ${user?.name || 'Someone'}`,
+                isImportant: isImportantPriority(card.priority),
             });
         }
 
@@ -689,6 +692,7 @@ exports.moveCard = async (req, res) => {
                     io: req.app.get('io'),
                     userId: card.assignee,
                     message: `${user?.name || 'Someone'} moved your card "${card.title}"`,
+                    isImportant: isImportantPriority(card.priority),
                 });
             }
         } catch (e) {

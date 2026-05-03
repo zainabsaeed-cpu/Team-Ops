@@ -124,6 +124,7 @@ const notificationSchema = new Schema(
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     message: { type: String, required: true },
     is_read: { type: Boolean, default: false },
+    is_important: { type: Boolean, default: false, index: true },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 )
@@ -243,6 +244,7 @@ const formatNotification = (notification) => ({
   id: toId(notification._id),
   message: notification.message,
   is_read: notification.is_read,
+  is_important: notification.is_important || false,
   created_at: notification.createdAt,
 })
 

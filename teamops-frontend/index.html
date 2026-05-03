@@ -454,7 +454,21 @@
       <div class="db-header-title" id="dbHeaderTitle">Sprint 4 — April 2026</div>
       <div class="live-chip"><span class="on-dot"></span> 3 online</div>
       <div class="h-search"><span class="u-style-35">⌕</span><input type="text" placeholder="Search cards…"></div>
-      <button class="h-icon-btn" onclick="switchDashboardView('notifications')" aria-label="Open notifications"><i class="bi bi-bell"></i><div class="notif-pip"></div></button>
+      <div class="notif-container">
+        <button class="h-icon-btn" id="notifBellBtn" onclick="toggleNotificationDropdown()" aria-label="Open notifications"><i class="bi bi-bell"></i><div class="notif-pip" id="notifBadge">0</div></button>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-dropdown-header">
+            <div class="notif-dropdown-title">Notifications</div>
+            <button class="notif-dropdown-close" onclick="toggleNotificationDropdown()">✕</button>
+          </div>
+          <div class="notif-dropdown-list" id="notifList">
+            <div class="notif-empty">No notifications yet</div>
+          </div>
+          <div class="notif-dropdown-footer">
+            <button class="notif-dropdown-action" onclick="markAllNotificationsRead()">Mark all as read</button>
+          </div>
+        </div>
+      </div>
       <button class="h-icon-btn" onclick="switchDashboardView('settings')" aria-label="Open settings"><i class="bi bi-gear"></i></button>
       <button class="h-toggle-btn" onclick="toggleSide('right')" aria-label="Toggle right panel"><i class="bi bi-layout-sidebar-reverse"></i></button>
       <button class="h-add-btn" onclick="addCard()">+ Add Card</button>
@@ -747,23 +761,19 @@
           </div>
           <div class="db-hero-metric">
             <div class="db-hero-metric-label">Unread alerts</div>
-            <div class="db-hero-metric-value" data-countup="5">5</div>
-            <div class="db-hero-metric-note">2 require action</div>
+            <div class="db-hero-metric-value" id="notifHeroUnread" data-countup="5">5</div>
+            <div class="db-hero-metric-note" id="notifHeroNote">2 require action</div>
           </div>
         </div>
       </div>
       <div class="db-notif-toolbar db-anim db-delay-2">
-        <button class="db-notif-btn" onclick="showToast('bi-check2-all','Marked as read','All current notifications were marked as read')">Mark all read</button>
-        <button class="db-notif-btn" onclick="showToast('bi-funnel','Filter applied','Showing only mentions and assignments')">Filter important</button>
-        <button class="db-notif-btn" onclick="showToast('bi-archive','Notifications archived','Resolved items moved to archive')">Archive resolved</button>
+        <button class="db-notif-btn" onclick="markAllNotificationsRead()">Mark all read</button>
+        <button class="db-notif-btn" id="notifImportantFilterBtn" onclick="toggleImportantFilter()" aria-pressed="false">Filter important</button>
       </div>
       <div class="db-slab db-anim db-delay-3">
-        <div class="db-slab-head"><div class="db-slab-title u-style-50">Unread (5)</div><div class="db-slab-note">Realtime delivery enabled</div></div>
-        <div class="db-activity-list">
-          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-at"></i></div><div class="db-activity-msg"><b>@zainab</b> you were mentioned in <b>Design auth flow mockups</b></div><div class="db-activity-time">Just now</div></div>
-          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-check2-square"></i></div><div class="db-activity-msg"><b>Project setup + CI/CD</b> was marked as done</div><div class="db-activity-time">6 min ago</div></div>
-          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-person-plus"></i></div><div class="db-activity-msg"><b>Areeba</b> requested access to workspace <b>Alpha</b></div><div class="db-activity-time">20 min ago</div></div>
-          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-exclamation-circle"></i></div><div class="db-activity-msg"><b>JWT middleware setup</b> is due in <b>4 hours</b></div><div class="db-activity-time">34 min ago</div></div>
+        <div class="db-slab-head"><div class="db-slab-title u-style-50">Unread (<span id="notifUnreadCount">0</span>)</div><div class="db-slab-note">Realtime delivery enabled</div></div>
+        <div class="db-activity-list" id="notifCenterList">
+          <div class="notif-loading">Loading notifications...</div>
         </div>
       </div>
     </div>
@@ -1446,6 +1456,10 @@ function switchDashboardView(viewId, btnEl) {
     refreshAnalyticsBoardSelector();
     loadAnalyticsData();
   }
+  if (viewId === 'notifications') {
+    // ensure notifications are loaded when opening the Notifications view
+    try { loadNotifications(); } catch (e) { console.warn('loadNotifications failed:', e); }
+  }
   if (viewId === 'profile') loadProfileView();
 
   target.querySelectorAll('.db-kpi-card').forEach(card => card.classList.remove('kpi-finished'));
@@ -1494,9 +1508,12 @@ function runCountUps(rootEl) {
 
     const duration = 900;
     const start = performance.now();
+    const animationId = String(Date.now() + Math.random());
+    el.dataset.countupAnimation = animationId;
     el.classList.add('counting');
 
     function tick(now) {
+      if (el.dataset.countupAnimation !== animationId) return;
       const progress = Math.min(1, (now - start) / duration);
       const eased = 1 - Math.pow(1 - progress, 3);
       const current = target * eased;
@@ -1504,6 +1521,7 @@ function runCountUps(rootEl) {
       if (progress < 1) {
         requestAnimationFrame(tick);
       } else {
+        if (el.dataset.countupAnimation !== animationId) return;
         el.textContent = finalText;
         el.classList.remove('counting');
         const kpiCard = el.closest('.db-kpi-card');
@@ -1744,6 +1762,7 @@ function connectRealtime(userId = '') {
 
   teamopsSocket.on('notification:new', payload => {
     showToast('bi-bell', 'New notification', payload?.message || 'You have a new TeamOps notification.');
+    loadNotifications();
   });
 }
 
@@ -1895,8 +1914,10 @@ async function selectAnalyticsBoard(boardId) {
 function setAnalyticsText(id, value) {
   const el = document.getElementById(id);
   if (el) {
-    el.textContent = value;
-    el.dataset.countup = String(value).replace(/[^\d.]/g, '') || '0';
+    const displayValue = String(value);
+    el.textContent = displayValue;
+    el.dataset.finalText = displayValue;
+    el.dataset.countup = displayValue.replace(/[^\d.]/g, '') || '0';
   }
 }
 
@@ -1951,6 +1972,11 @@ async function loadAnalyticsData(boardId = localStorage.getItem('teamops_board_i
 
     renderAnalyticsBars('analyticsColumnBars', cardsPerColumn, 'columnTitle', 'count');
     renderAnalyticsBars('analyticsAssigneeBars', cardsPerAssignee, 'assigneeName', 'count');
+
+    const analyticsView = document.getElementById('dbView-analytics');
+    if (analyticsView?.classList.contains('active')) {
+      runCountUps(analyticsView);
+    }
   } catch (error) {
     showToast('bi-exclamation-circle', 'Analytics error', error.message);
   }
@@ -2099,6 +2125,7 @@ async function bootstrapSession() {
       }
       
       applyWorkspaceContext(me.user, workspaces);
+      loadNotifications();
     }
     showDashboard(true);
     return true;
@@ -2252,6 +2279,173 @@ function handleGoogleAuth() {
   showToast('bi-info-circle', 'Google OAuth', 'Coming soon! Configure Google credentials in your .env file.');
 }
 
+// ── NOTIFICATIONS ────────────────────────────────────────
+async function loadNotifications() {
+  try {
+    const notifications = await apiRequest('/notifications');
+    notificationFeed = Array.isArray(notifications) ? notifications : [];
+    renderNotifications();
+  } catch (error) {
+    console.error('Load notifications error:', error);
+  }
+}
+
+function getVisibleNotifications() {
+  return notificationImportantOnly
+    ? notificationFeed.filter(notification => notification.is_important)
+    : notificationFeed;
+}
+
+function renderNotifications() {
+  const notifications = notificationFeed;
+  const dropdownList = document.getElementById('notifList');
+  const centerList = document.getElementById('notifCenterList');
+  const unreadCount = document.getElementById('notifUnreadCount');
+  const filterBtn = document.getElementById('notifImportantFilterBtn');
+  const visibleNotifications = getVisibleNotifications();
+  const canPinNotifications = ['owner', 'admin'].includes(currentWorkspaceRole);
+    
+    if (!Array.isArray(notifications) || notifications.length === 0) {
+      const emptyHtml = '<div class="notif-empty">No notifications yet</div>';
+      if (dropdownList) dropdownList.innerHTML = emptyHtml;
+      if (centerList) centerList.innerHTML = emptyHtml;
+      if (unreadCount) unreadCount.textContent = '0';
+      updateNotificationBadge(0);
+      if (filterBtn) {
+        filterBtn.textContent = 'Filter important';
+        filterBtn.setAttribute('aria-pressed', 'false');
+        filterBtn.classList.remove('active');
+      }
+      updateNotificationHero(0, 0, canPinNotifications);
+      return;
+    }
+    
+    const unread = notifications.filter(n => !n.is_read).length;
+    if (unreadCount) unreadCount.textContent = unread;
+    updateNotificationBadge(unread);
+    if (filterBtn) {
+      filterBtn.textContent = notificationImportantOnly ? 'Show all' : 'Filter important';
+      filterBtn.setAttribute('aria-pressed', String(notificationImportantOnly));
+      filterBtn.classList.toggle('active', notificationImportantOnly);
+    }
+
+    const needsAction = notifications.filter(n => !n.is_read && /assign|approve|request|action|mention/i.test(n.message)).length;
+    updateNotificationHero(unread, needsAction, canPinNotifications);
+
+    if (visibleNotifications.length === 0) {
+      const emptyHtml = notificationImportantOnly
+        ? '<div class="notif-empty">No important notifications yet</div>'
+        : '<div class="notif-empty">No notifications yet</div>';
+      if (dropdownList) dropdownList.innerHTML = emptyHtml;
+      if (centerList) centerList.innerHTML = emptyHtml;
+      return;
+    }
+    
+    const notifHtml = visibleNotifications.map(notif => `
+      <div class="db-activity-item ${notif.is_read ? '' : 'unread'}">
+        <div class="db-activity-icon ${notif.is_important ? 'important' : ''}"><i class="bi ${notif.is_important ? 'bi-star-fill' : 'bi-bell'}"></i></div>
+        <div class="db-activity-msg">${escapeHtml(notif.message)}</div>
+        <div class="db-activity-time">${formatTimeAgo(new Date(notif.created_at))}</div>
+        ${canPinNotifications ? `<button class="notif-important-btn ${notif.is_important ? 'active' : ''}" onclick="toggleNotificationImportant('${notif.id}')" title="${notif.is_important ? 'Unpin notification' : 'Pin notification'}" aria-label="${notif.is_important ? 'Unpin notification' : 'Pin notification'}"><i class="bi ${notif.is_important ? 'bi-star-fill' : 'bi-star'}"></i></button>` : ''}
+        ${!notif.is_read ? `<button class="notif-mark-read-btn" onclick="markNotificationRead('${notif.id}')" title="Mark as read">✓</button>` : ''}
+      </div>
+    `).join('');
+    
+    if (dropdownList) dropdownList.innerHTML = notifHtml;
+    if (centerList) centerList.innerHTML = notifHtml;
+  }
+
+function toggleImportantFilter() {
+  notificationImportantOnly = !notificationImportantOnly;
+  renderNotifications();
+}
+
+function updateNotificationHero(unread, needsAction, canPinNotifications) {
+  const heroValue = document.getElementById('notifHeroUnread');
+  const heroNote = document.getElementById('notifHeroNote');
+  if (heroValue) {
+    heroValue.textContent = String(unread);
+    heroValue.setAttribute('data-countup', String(unread));
+  }
+  if (heroNote) {
+    heroNote.textContent = needsAction > 0
+      ? `${needsAction} require action`
+      : (canPinNotifications ? 'Owners and admins can pin alerts' : 'All caught up');
+  }
+}
+
+async function toggleNotificationImportant(notifId) {
+  try {
+    await apiRequest(`/notifications/${notifId}/important`, { method: 'PATCH' });
+    await loadNotifications();
+  } catch (error) {
+    console.error('Toggle notification important error:', error);
+  }
+}
+
+function updateNotificationBadge(count) {
+  const num = count !== undefined
+    ? count
+    : notificationFeed.filter(notification => !notification.is_read).length;
+  const badge = document.getElementById('notifBadge');
+  if (badge) {
+    badge.textContent = num;
+    badge.style.display = num > 0 ? 'flex' : 'none';
+  }
+  
+  // Update sidebar badge
+  const sidebarBtn = document.querySelector('[data-db-view="notifications"] .anb-badge');
+  if (sidebarBtn) {
+    sidebarBtn.textContent = num;
+    sidebarBtn.style.display = num > 0 ? 'inline-block' : 'none';
+  }
+}
+
+function toggleNotificationDropdown() {
+  const dropdown = document.getElementById('notifDropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('open');
+    if (dropdown.classList.contains('open')) {
+      loadNotifications();
+    }
+  }
+}
+
+async function markNotificationRead(notifId) {
+  try {
+    await apiRequest(`/notifications/${notifId}/read`, { method: 'PATCH' });
+    await loadNotifications();
+  } catch (error) {
+    console.error('Mark notification read error:', error);
+  }
+}
+
+async function markAllNotificationsRead() {
+  try {
+    await apiRequest('/notifications/read-all', { method: 'PATCH' });
+    await loadNotifications();
+    showToast('bi-check2-all', 'Marked as read', 'All notifications have been marked as read');
+  } catch (error) {
+    console.error('Mark all read error:', error);
+  }
+}
+
+function formatTimeAgo(date) {
+  const now = new Date();
+  const diffMs = now - date;
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  
+  if (diffSecs < 60) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  
+  return date.toLocaleDateString();
+}
+
 // ── TOAST ────────────────────────────────────────
 function showToast(iconClass, title, msg) {
   const wrap = document.getElementById('toasts');
@@ -2293,6 +2487,8 @@ let selectedBoardColor = '#7c5cfc';
 let workspaceBoards = [];
 let teamopsSocket = null;
 let joinedBoardId = '';
+let notificationFeed = [];
+let notificationImportantOnly = false;
 const boardColors = ['#7c5cfc', '#14b8a6', '#ff4d6d', '#f59e0b', '#38bdf8', '#22c55e'];
 
 function todayISO() {
