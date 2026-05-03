@@ -25,9 +25,13 @@ const userSchema = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    passwordHash: { type: String, required: true },
+    passwordHash: { type: String, default: null },
     avatarUrl: { type: String, default: null },
+    googleId: { type: String, unique: true, sparse: true },
+    authProvider: { type: String, enum: ['email', 'google'], default: 'email' },
     verified: { type: Boolean, default: false },
+    notifyEmail: { type: Boolean, default: true },
+    notifyPush: { type: Boolean, default: true },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 )
@@ -41,17 +45,40 @@ const verificationTokenSchema = new Schema(
   { timestamps: { createdAt: true, updatedAt: false } },
 )
 
+const workspaceInviteTokenSchema = new Schema(
+  {
+    token: { type: String, required: true, unique: true },
+    workspaceId: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true, index: true },
+    email: { type: String, required: true, lowercase: true, trim: true, index: true },
+    role: { type: String, enum: ['admin', 'member', 'viewer'], default: 'member' },
+    expiresAt: { type: Date, required: true, index: true },
+    used: { type: Boolean, default: false, index: true },
+  },
+  { timestamps: { createdAt: true, updatedAt: false } },
+)
+
 const workspaceSchema = new Schema(
   {
     name: { type: String, required: true },
+    description: { type: String, default: '' },
+    techStack: { type: [String], default: [] },
     owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     inviteCode: { type: String, required: true, unique: true },
     members: [
       {
         user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-        role: { type: String, enum: ['owner', 'admin', 'member'], default: 'member' },
+        role: { type: String, enum: ['owner', 'admin', 'member', 'viewer'], default: 'member' },
       },
     ],
+  },
+  { timestamps: { createdAt: true, updatedAt: false } },
+)
+
+const boardSchema = new Schema(
+  {
+    workspaceId: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true, index: true },
+    name: { type: String, required: true },
+    color: { type: String, default: '#7c5cfc' },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 )
@@ -59,6 +86,7 @@ const workspaceSchema = new Schema(
 const columnSchema = new Schema(
   {
     workspace: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true, index: true },
+    board: { type: Schema.Types.ObjectId, ref: 'Board', default: null, index: true },
     title: { type: String, required: true },
     position: { type: Number, required: true },
   },
@@ -81,7 +109,11 @@ const cardSchema = new Schema(
 const activitySchema = new Schema(
   {
     workspace: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true, index: true },
+    board: { type: Schema.Types.ObjectId, ref: 'Board', required: true, index: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },
+    workspaceId: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true, index: true },
+    boardId: { type: Schema.Types.ObjectId, ref: 'Board', required: true, index: true },
     action: { type: String, required: true },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
@@ -98,7 +130,9 @@ const notificationSchema = new Schema(
 
 const User = mongoose.models.User || mongoose.model('User', userSchema)
 const VerificationToken = mongoose.models.VerificationToken || mongoose.model('VerificationToken', verificationTokenSchema)
+const WorkspaceInviteToken = mongoose.models.WorkspaceInviteToken || mongoose.model('WorkspaceInviteToken', workspaceInviteTokenSchema)
 const Workspace = mongoose.models.Workspace || mongoose.model('Workspace', workspaceSchema)
+const Board = mongoose.models.Board || mongoose.model('Board', boardSchema)
 const Column = mongoose.models.Column || mongoose.model('Column', columnSchema)
 const Card = mongoose.models.Card || mongoose.model('Card', cardSchema)
 const Activity = mongoose.models.Activity || mongoose.model('Activity', activitySchema)
@@ -133,20 +167,36 @@ const formatUser = (user) => ({
   name: user.name,
   email: user.email,
   avatar_url: user.avatarUrl || null,
+  avatarUrl: user.avatarUrl || null,
+  auth_provider: user.authProvider || 'email',
   created_at: user.createdAt,
 })
 
 const formatWorkspace = (workspace, role, memberCount) => ({
   id: toId(workspace._id),
   name: workspace.name,
+  description: workspace.description || '',
+  tech_stack: Array.isArray(workspace.techStack) ? workspace.techStack : [],
   role,
   memberCount,
+  inviteCode: workspace.inviteCode,
+  inviteLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/register?inviteCode=${encodeURIComponent(workspace.inviteCode || '')}`,
   boardId: toId(workspace._id),
+})
+
+const formatBoard = (board) => ({
+  id: toId(board._id),
+  workspace_id: toId(board.workspaceId),
+  name: board.name,
+  title: board.name,
+  color: board.color || '#7c5cfc',
+  created_at: board.createdAt,
 })
 
 const formatColumn = (column) => ({
   id: toId(column._id),
   workspace_id: toId(column.workspace),
+  board_id: toId(column.board),
   title: column.title,
   position: column.position,
   created_at: column.createdAt,
@@ -167,13 +217,24 @@ const formatCard = (card) => ({
 
 const formatActivityLog = (activity) => ({
   id: toId(activity._id),
+  user_id: toId(activity.userId || activity.user),
+  workspace_id: toId(activity.workspaceId || activity.workspace),
+  board_id: toId(activity.boardId || activity.board || activity.workspace),
   action: activity.action,
+  message: activity.action,
   created_at: activity.createdAt,
 })
 
 const formatActivityFeed = (activity) => ({
   id: toId(activity._id),
+  user_id: toId(activity.userId || activity.user),
+  user_name: activity.user?.name || activity.userName || '',
+  userName: activity.user?.name || activity.userName || '',
+  workspace_id: toId(activity.workspaceId || activity.workspace),
+  board_id: toId(activity.boardId || activity.board || activity.workspace),
   message: activity.action,
+  action: activity.action,
+  created_at: activity.createdAt,
   time: new Date(activity.createdAt).toLocaleString(),
 })
 
@@ -187,171 +248,61 @@ const formatNotification = (notification) => ({
 async function seedDatabase() {
   await connectDB()
 
-  const userCount = await User.countDocuments()
-  if (userCount > 0) {
-    await User.updateMany(
-      { email: { $in: ['zainab@teamops.dev', 'ahmed@teamops.dev', 'zunairah@teamops.dev', 'hassan@teamops.dev'] } },
-      { $set: { verified: true } }
-    )
-    await Column.updateMany({ title: 'Review' }, { $set: { title: 'In Review' } })
+  const existingUsers = await User.countDocuments()
+  if (existingUsers > 0) {
+    console.log('Database already seeded')
     return
   }
 
-  const passwordHash = await bcrypt.hash('123456', 10)
-  const [zainab, ahmed, zunairah, hassan] = await User.insertMany([
-    { name: 'Zainab Saeed', email: 'zainab@teamops.dev', passwordHash, verified: true },
-    { name: 'Ahmed Khan', email: 'ahmed@teamops.dev', passwordHash, verified: true },
-    { name: 'Zunairah Sarwar', email: 'zunairah@teamops.dev', passwordHash, verified: true },
-    { name: 'Hassan Ali', email: 'hassan@teamops.dev', passwordHash, verified: true },
-  ])
+  const plainPassword = '123456'
+  const salt = await bcrypt.genSalt(10)
+  const passwordHash = await bcrypt.hash(plainPassword, salt)
 
-  const [workspaceOne, workspaceTwo] = await Workspace.insertMany([
-    {
-      name: 'Web Technologies Project',
-      owner: zainab._id,
-      inviteCode: 'teamops1',
-      members: [
-        { user: zainab._id, role: 'owner' },
-        { user: ahmed._id, role: 'admin' },
-        { user: zunairah._id, role: 'member' },
-        { user: hassan._id, role: 'member' },
-      ],
-    },
-    {
-      name: 'Final Demo Sprint',
-      owner: ahmed._id,
-      inviteCode: 'teamops2',
-      members: [
-        { user: ahmed._id, role: 'owner' },
-        { user: zainab._id, role: 'admin' },
-        { user: zunairah._id, role: 'member' },
-      ],
-    },
-  ])
+  const usersToCreate = [
+    { name: 'Zainab', email: 'zainab@teamops.dev', passwordHash, verified: true },
+    { name: 'Ahmed', email: 'ahmed@teamops.dev', passwordHash, verified: true },
+    { name: 'Zunairah', email: 'zunairah@teamops.dev', passwordHash, verified: true },
+    { name: 'Hassan', email: 'hassan@teamops.dev', passwordHash, verified: true },
+  ]
 
-  const columns = await Column.insertMany([
-    { workspace: workspaceOne._id, title: 'To Do', position: 0 },
-    { workspace: workspaceOne._id, title: 'In Progress', position: 1 },
-    { workspace: workspaceOne._id, title: 'In Review', position: 2 },
-    { workspace: workspaceOne._id, title: 'Done', position: 3 },
-    { workspace: workspaceTwo._id, title: 'To Do', position: 0 },
-    { workspace: workspaceTwo._id, title: 'In Progress', position: 1 },
-    { workspace: workspaceTwo._id, title: 'In Review', position: 2 },
-    { workspace: workspaceTwo._id, title: 'Done', position: 3 },
-  ])
+  const users = await User.insertMany(usersToCreate)
 
-  const [todo, inProgress, review, done, demoTodo, demoProgress, demoReview, demoDone] = columns
+  const owner = users[0]
+  const inviteCode = `TEAM-${Math.random().toString(36).slice(2, 6).toUpperCase()}`
 
-  await Card.insertMany([
-    {
-      column: todo._id,
-      title: 'Create login/register UI',
-      description: 'Build responsive auth pages for TeamOps',
-      priority: 'high',
-      assignee: zainab._id,
-      dueDate: new Date('2026-04-14'),
-      position: 0,
-    },
-    {
-      column: todo._id,
-      title: 'Integrate socket events',
-      description: 'Sync card moves in real-time',
-      priority: 'medium',
-      assignee: zunairah._id,
-      dueDate: new Date('2026-04-15'),
-      position: 1,
-    },
-    {
-      column: inProgress._id,
-      title: 'Build kanban drag-and-drop',
-      description: 'Use dnd-kit for sortable cards',
-      priority: 'high',
-      assignee: zainab._id,
-      dueDate: new Date('2026-04-12'),
-      position: 0,
-    },
-    {
-      column: review._id,
-      title: 'Activity log sidebar',
-      description: 'Live stream board actions',
-      priority: 'medium',
-      assignee: hassan._id,
-      dueDate: new Date('2026-04-16'),
-      position: 0,
-    },
-    {
-      column: done._id,
-      title: 'Set up backend project',
-      description: 'Create Node API and install dependencies',
-      priority: 'low',
-      assignee: zainab._id,
-      dueDate: new Date('2026-04-10'),
-      position: 0,
-    },
-    {
-      column: demoTodo._id,
-      title: 'Finalize demo checklist',
-      description: 'Prepare the final project walkthrough',
-      priority: 'medium',
-      assignee: ahmed._id,
-      dueDate: new Date('2026-04-20'),
-      position: 0,
-    },
-    {
-      column: demoProgress._id,
-      title: 'Record demo narration',
-      description: 'Capture short explanation clips',
-      priority: 'medium',
-      assignee: zainab._id,
-      dueDate: new Date('2026-04-21'),
-      position: 0,
-    },
-    {
-      column: demoDone._id,
-      title: 'Approve final slide deck',
-      description: 'Lock the submission materials',
-      priority: 'low',
-      assignee: ahmed._id,
-      dueDate: new Date('2026-04-18'),
-      position: 0,
-    },
-  ])
+  const workspace = await Workspace.create({
+    name: 'TeamOps Workspace',
+    owner: owner._id,
+    inviteCode,
+    members: users.map((u) => ({ user: u._id, role: u._id.equals(owner._id) ? 'owner' : 'member' })),
+  })
 
-  await Activity.insertMany([
-    {
-      workspace: workspaceOne._id,
-      user: zainab._id,
-      action: 'Zainab moved "Set up backend project" to Done',
-    },
-    {
-      workspace: workspaceOne._id,
-      user: ahmed._id,
-      action: 'Ahmed added a new socket integration task',
-    },
-    {
-      workspace: workspaceTwo._id,
-      user: zunairah._id,
-      action: 'Zunairah finished the demo narration script',
-    },
-  ])
+  const board = await Board.create({
+    workspaceId: workspace._id,
+    name: 'Sprint 4',
+    color: '#7c5cfc',
+  })
 
-  await Notification.insertMany([
-    {
-      user: zainab._id,
-      message: 'You were assigned to "Build kanban drag-and-drop"',
-      is_read: false,
-    },
-    {
-      user: zainab._id,
-      message: 'Ahmed commented on the demo checklist',
-      is_read: false,
-    },
-    {
-      user: ahmed._id,
-      message: 'Final Demo Sprint is ready for review',
-      is_read: true,
-    },
-  ])
+  const columnsToCreate = [
+    { workspace: workspace._id, board: board._id, title: 'To Do', position: 0 },
+    { workspace: workspace._id, board: board._id, title: 'In Progress', position: 1 },
+    { workspace: workspace._id, board: board._id, title: 'In Review', position: 2 },
+    { workspace: workspace._id, board: board._id, title: 'Done', position: 3 },
+  ]
+
+  const columns = await Column.insertMany(columnsToCreate)
+
+  const cardsToCreate = [
+    { column: columns[0]._id, title: 'Welcome to TeamOps', description: 'This is your first card', position: 0 },
+    { column: columns[0]._id, title: 'Invite teammates', description: 'Try inviting others via email or join code', position: 1 },
+    { column: columns[1]._id, title: 'Start collaborating', description: 'Move cards between columns to track progress', position: 0 },
+  ]
+
+  await Card.insertMany(cardsToCreate)
+
+  await Activity.create({ workspace: workspace._id, board: board._id, user: owner._id, userId: owner._id, workspaceId: workspace._id, boardId: board._id, action: 'Seeded initial workspace and sample data' })
+
+  console.log('Database seeded with sample users, workspace, columns, and cards')
 }
 
 module.exports = {
@@ -361,13 +312,16 @@ module.exports = {
   seedDatabase,
   User,
   VerificationToken,
+  WorkspaceInviteToken,
   Workspace,
+  Board,
   Column,
   Card,
   Activity,
   Notification,
   formatUser,
   formatWorkspace,
+  formatBoard,
   formatColumn,
   formatCard,
   formatActivityLog,

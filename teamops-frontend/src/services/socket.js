@@ -1,10 +1,11 @@
 import { io } from 'socket.io-client'
 
 let socketInstance = null
+const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5002'
 
 export function getSocket(token) {
   if (!socketInstance) {
-    socketInstance = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5001', {
+    socketInstance = io(socketUrl, {
       autoConnect: false,
       transports: ['websocket'],
       auth: { token },
@@ -15,3 +16,5 @@ export function getSocket(token) {
 
   return socketInstance
 }
+
+export const socket = getSocket()

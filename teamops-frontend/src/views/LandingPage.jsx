@@ -222,7 +222,7 @@ export default function LandingPage() {
   }
 
   if (token) {
-    return <Navigate to="/app" replace />
+    return <Navigate to="/dashboard" replace />
   }
 
   return (

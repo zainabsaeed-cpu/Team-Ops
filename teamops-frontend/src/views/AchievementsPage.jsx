@@ -38,11 +38,8 @@ export default function AchievementsPage() {
       <div className="workspace-grid" style={{ marginTop: 24 }}>
         {achievements.map((item) => (
           <article className="workspace-card" key={item.id}>
-            <h3>{item.title}</h3>
-            <span className="muted">{item.detail}</span>
-            <span className="muted" style={{ marginTop: 10 }}>
-              {item.unlocked ? 'Unlocked' : 'Locked'}
-            </span>
+            <h3>{item.icon} {item.title}</h3>
+            <span className="muted">{item.description}</span>
           </article>
         ))}
         {achievements.length === 0 && !error ? <p className="muted">No achievements yet.</p> : null}

@@ -31,3 +31,25 @@ exports.moveCard = async (req, res) => {
     });
     res.json({ message: 'Card moved' });
 };
+
+exports.updateCard = async (req, res) => {
+    const { cardId } = req.params;
+    const { title, description, priority, column } = req.body;
+    const updates = {};
+    if (title !== undefined) updates.title = title;
+    if (description !== undefined) updates.description = description;
+    if (priority !== undefined) updates.priority = priority;
+    if (column !== undefined) updates.column = column;
+    updates.updatedAt = new Date();
+    
+    const card = await Card.findByIdAndUpdate(cardId, updates, { new: true });
+    if (!card) return res.status(404).json({ error: 'Card not found' });
+    res.json(formatCard(card.toObject()));
+};
+
+exports.deleteCard = async (req, res) => {
+    const { cardId } = req.params;
+    const card = await Card.findByIdAndDelete(cardId);
+    if (!card) return res.status(404).json({ error: 'Card not found' });
+    res.json({ message: 'Card deleted' });
+};

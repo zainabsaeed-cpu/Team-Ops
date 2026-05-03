@@ -1,148 +1,182 @@
-import {
-  Activity,
-  Award,
-  CalendarDays,
-  CheckCircle2,
-  Clock3,
-  CreditCard,
-  Mail,
-  MapPin,
-  Phone,
-  Star,
-} from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { CalendarDays, LockKeyhole, Mail, Upload, UserRound } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { changePassword, getMyCards, getUserProfile, updateUserProfile } from '../services/api.js'
+import { useAuth } from '../state/AuthContext.jsx'
 
-const profile = {
-  name: 'Zainab Saeed',
-  joinedAt: '24 Nov 2022',
-  city: 'Islamabad, Pakistan',
-  birthDate: '08 Apr 1993',
-  email: 'zainab@teamops.dev',
-  phone: '+92 300 123 4567',
-  avatar: 'https://ui-avatars.com/api/?name=Zainab+Saeed&background=7c5cfc&color=fff&size=220',
+const formatDate = (value) => {
+  if (!value) return 'No date'
+  return new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-const courses = [
-  {
-    id: 1,
-    title: 'UX/UI Design - Web Experiences',
-    summary: 'Layout systems, typography and visual hierarchy.',
-    lessons: 68,
-    status: 'Completed',
-    tone: 'completed',
-    date: 'Apr 15',
-  },
-  {
-    id: 2,
-    title: 'UX/UI Design - Mobile Apps',
-    summary: 'Mobile interaction patterns and design components.',
-    lessons: 12,
-    status: 'Completed',
-    tone: 'completed',
-    date: 'Apr 17',
-  },
-  {
-    id: 3,
-    title: 'UX/UI Design - Motion and Microinteractions',
-    summary: 'Animation principles for expressive product feedback.',
-    lessons: 12,
-    status: 'In Progress',
-    tone: 'progress',
-    date: 'Started 13 Jun',
-  },
-]
-
-const subscriptionFeatures = [
-  '1 month premium free trial',
-  '2 months student discount',
-  'Cancel anytime with one click',
-  'Monthly perks and workshops',
-]
+const isOverdue = (date) => {
+  if (!date) return false
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return new Date(date) < today
+}
 
 export default function ProfilePage() {
+  const navigate = useNavigate()
+  const { user, updateCurrentUser } = useAuth()
+  const [activeTab, setActiveTab] = useState('profile')
+  const [profile, setProfile] = useState(user)
+  const [name, setName] = useState(user?.name || '')
+  const [avatar, setAvatar] = useState(user?.avatar_url || user?.avatarUrl || '')
+  const [cards, setCards] = useState([])
+  const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+
+    Promise.all([getUserProfile(), getMyCards()])
+      .then(([profilePayload, cardsPayload]) => {
+        if (!alive) return
+        const nextUser = profilePayload?.user || user
+        setProfile(nextUser)
+        setName(nextUser?.name || '')
+        setAvatar(nextUser?.avatar_url || nextUser?.avatarUrl || '')
+        setCards(cardsPayload?.cards || [])
+      })
+      .catch(() => {
+        if (alive) setError('Could not load profile')
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [user])
+
+  const groupedCards = useMemo(() => {
+    return cards.reduce((groups, card) => {
+      const key = card.workspace_id || card.workspace_name || 'workspace'
+      if (!groups[key]) {
+        groups[key] = { name: card.workspace_name || 'Workspace', cards: [] }
+      }
+      groups[key].cards.push(card)
+      return groups
+    }, {})
+  }, [cards])
+
+  const onAvatarUpload = (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = () => setAvatar(String(reader.result || ''))
+    reader.readAsDataURL(file)
+  }
+
+  const onSaveProfile = async (event) => {
+    event.preventDefault()
+    setSaving(true)
+    setError('')
+    setMessage('')
+    try {
+      const payload = await updateUserProfile({ name, avatar })
+      const nextUser = { ...profile, ...payload.user }
+      setProfile(nextUser)
+      updateCurrentUser(nextUser)
+      setMessage('Profile saved')
+    } catch (err) {
+      setError(err?.response?.data?.error || 'Could not save profile')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const onChangePassword = async (event) => {
+    event.preventDefault()
+    setError('')
+    setMessage('')
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      setError('New passwords do not match')
+      return
+    }
+
+    try {
+      await changePassword({ currentPassword: passwords.currentPassword, newPassword: passwords.newPassword })
+      setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' })
+      setMessage('Password updated')
+    } catch (err) {
+      setError(err?.response?.data?.error || 'Could not update password')
+    }
+  }
+
+  const userInitial = (profile?.name || profile?.email || 'U').charAt(0).toUpperCase()
+  const memberSince = formatDate(profile?.created_at || profile?.createdAt)
+
   return (
     <section className="profile-page">
-      <div className="profile-grid">
-        <article className="profile-main-card">
-          <div className="profile-user">
-            <img className="profile-avatar" src={profile.avatar} alt={profile.name} />
-            <div className="profile-details">
-              <h3>{profile.name}</h3>
-              <ul>
-                <li><CalendarDays size={14} /> Joined: {profile.joinedAt}</li>
-                <li><MapPin size={14} /> {profile.city}</li>
-                <li><Activity size={14} /> Birth date: {profile.birthDate}</li>
-                <li><Mail size={14} /> {profile.email}</li>
-                <li><Phone size={14} /> {profile.phone}</li>
-              </ul>
-              <div className="profile-socials">
-                <span>IG</span>
-                <span>FB</span>
-                <span>X</span>
-                <span>VK</span>
-                <span>TG</span>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <article className="payment-card">
-          <h3>Payment Data</h3>
-          <div className="payment-line">
-            <CreditCard size={14} />
-            <span>236 **** **** 265</span>
-          </div>
-          <div className="payment-brands">
-            <span>Western Union</span>
-            <span>G Pay</span>
-            <span>Mastercard</span>
-            <span>Visa</span>
-          </div>
-        </article>
+      <div className="settings-tabs profile-tabs">
+        <button className={`btn-ghost ${activeTab === 'profile' ? 'active' : ''}`} type="button" onClick={() => setActiveTab('profile')}>Profile</button>
+        <button className={`btn-ghost ${activeTab === 'work' ? 'active' : ''}`} type="button" onClick={() => setActiveTab('work')}>My Work</button>
       </div>
 
-      <div className="profile-grid lower">
-        <article className="courses-card">
-          <h3>My Courses</h3>
-          <div className="timeline-wrap">
-            <div className="timeline-rail" />
-            <div className="course-list">
-              {courses.map((course, index) => (
-                <article key={course.id} className={`course-item ${course.tone}`}>
-                  <div className={`timeline-dot ${index === courses.length - 1 ? 'last' : ''}`} />
-                  <div className="course-content">
-                    <div className="course-head">
-                      <h4>{course.title}</h4>
-                      <span className={`course-status ${course.tone}`}>{course.status}</span>
-                    </div>
-                    <p>{course.summary}</p>
-                    <div className="course-meta">
-                      <span>{course.lessons} lessons</span>
-                      <span>{course.date}</span>
-                    </div>
-                  </div>
-                </article>
+      {error ? <div className="error">{error}</div> : null}
+      {message ? <div className="success">{message}</div> : null}
+
+      {activeTab === 'profile' ? (
+        <div className="profile-grid">
+          <form className="profile-main-card profile-form-card" onSubmit={onSaveProfile}>
+            <label className="profile-avatar-upload">
+              {avatar ? <img className="profile-avatar" src={avatar} alt={profile?.name || 'User'} /> : <span className="profile-avatar profile-avatar-fallback">{userInitial}</span>}
+              <input type="file" accept="image/*" onChange={onAvatarUpload} />
+              <span><Upload size={14} /> Upload avatar</span>
+            </label>
+
+            <label className="board-modal-field">
+              <span>Name</span>
+              <input className="input" value={name} onChange={(event) => setName(event.target.value)} />
+            </label>
+            <label className="board-modal-field">
+              <span>Email</span>
+              <input className="input" value={profile?.email || ''} readOnly />
+            </label>
+            <p className="profile-meta-line"><CalendarDays size={14} /> Member since {memberSince}</p>
+            <button className="btn interactive-btn" type="submit" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+          </form>
+
+          <form className="workspace-card profile-password-card" onSubmit={onChangePassword}>
+            <h3><LockKeyhole size={16} /> Change Password</h3>
+            <input className="input" type="password" placeholder="Current password" value={passwords.currentPassword} onChange={(event) => setPasswords((current) => ({ ...current, currentPassword: event.target.value }))} />
+            <input className="input" type="password" placeholder="New password" value={passwords.newPassword} onChange={(event) => setPasswords((current) => ({ ...current, newPassword: event.target.value }))} />
+            <input className="input" type="password" placeholder="Confirm new password" value={passwords.confirmPassword} onChange={(event) => setPasswords((current) => ({ ...current, confirmPassword: event.target.value }))} />
+            <button className="btn interactive-btn" type="submit">Update password</button>
+          </form>
+        </div>
+      ) : (
+        <div className="my-work-list">
+          {Object.entries(groupedCards).map(([workspaceId, group]) => (
+            <section key={workspaceId} className="workspace-card my-work-group">
+              <h3>{group.name}</h3>
+              {group.cards.map((card) => (
+                <button
+                  type="button"
+                  key={card.id}
+                  className={`my-work-card ${isOverdue(card.due_date) ? 'overdue' : ''}`}
+                  onClick={() => navigate(`/board/${card.board_id}?card=${card.id}`)}
+                >
+                  <span className="my-work-title">{card.title}</span>
+                  <span>{card.board_name}</span>
+                  <span className={`priority ${card.priority || 'medium'}`}>{(card.priority || 'medium').toUpperCase()}</span>
+                  <span><CalendarDays size={13} /> {formatDate(card.due_date)}</span>
+                </button>
               ))}
-            </div>
-          </div>
-        </article>
-
-        <article className="subscription-card">
-          <h3>Success Premium</h3>
-          <ul>
-            {subscriptionFeatures.map((item) => (
-              <li key={item}>
-                <CheckCircle2 size={14} />
-                {item}
-              </li>
-            ))}
-          </ul>
-          <button className="btn subscribe-btn" type="button">
-            <Star size={14} />
-            Subscribe
-          </button>
-          <p className="muted trial-note"><Clock3 size={13} /> Starts immediately</p>
-        </article>
-      </div>
+            </section>
+          ))}
+          {cards.length === 0 ? (
+            <article className="workspace-card empty-work-card">
+              <UserRound size={20} />
+              <h3>No assigned cards</h3>
+              <p className="muted"><Mail size={13} /> Cards assigned to you will appear here.</p>
+            </article>
+          ) : null}
+        </div>
+      )}
     </section>
   )
 }

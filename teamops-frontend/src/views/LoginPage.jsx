@@ -1,25 +1,115 @@
-import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight, BadgeCheck, LockKeyhole, Mail, Moon, Sparkles, Sun } from 'lucide-react'
 import { useAuth } from '../state/AuthContext.jsx'
 import { useTheme } from '../state/ThemeContext.jsx'
+import { requestPasswordReset, resendVerificationEmail, resetPassword, verifyEmail } from '../services/api.js'
+
+const GOOGLE_CLIENT_ID = import.meta.env.PROD ? (import.meta.env.VITE_GOOGLE_CLIENT_ID || '') : ''
+const GOOGLE_SCRIPT_ID = 'google-identity-services'
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const { login, token, authReady } = useAuth()
+  const [searchParams] = useSearchParams()
+  const { login, loginWithGoogle, token, authReady } = useAuth()
   const { theme, toggleTheme } = useTheme()
+  const googleButtonRef = useRef(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [validationErrors, setValidationErrors] = useState({})
+  const [helperMode, setHelperMode] = useState('')
+  const [helperToken, setHelperToken] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [helperMessage, setHelperMessage] = useState('')
+  const redirectTo = useMemo(() => {
+    const requested = searchParams.get('redirect') || '/dashboard'
+    return requested.startsWith('/') && !requested.startsWith('//') ? requested : '/dashboard'
+  }, [searchParams])
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (!GOOGLE_CLIENT_ID) {
+      return () => {
+        cancelled = true
+      }
+    }
+
+    const renderGoogleButton = () => {
+      if (cancelled || !googleButtonRef.current || !window.google?.accounts?.id) {
+        return
+      }
+
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (response) => {
+          if (!response?.credential) {
+            return
+          }
+
+          setError('')
+          setGoogleLoading(true)
+
+          try {
+            await loginWithGoogle(response.credential)
+            navigate(redirectTo)
+          } catch (err) {
+            setError(err.response?.data?.error || 'Google sign-in failed. Please try again.')
+          } finally {
+            setGoogleLoading(false)
+          }
+        },
+      })
+
+      googleButtonRef.current.innerHTML = ''
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: theme === 'dark' ? 'outline' : 'filled_blue',
+        size: 'large',
+        width: 340,
+        shape: 'pill',
+        text: 'continue_with',
+        logo_alignment: 'left',
+      })
+    }
+
+    const existingScript = document.getElementById(GOOGLE_SCRIPT_ID)
+
+    if (window.google?.accounts?.id) {
+      renderGoogleButton()
+      return () => {
+        cancelled = true
+      }
+    }
+
+    if (!existingScript) {
+      const script = document.createElement('script')
+      script.id = GOOGLE_SCRIPT_ID
+      script.src = 'https://accounts.google.com/gsi/client'
+      script.async = true
+      script.defer = true
+      script.onload = renderGoogleButton
+      document.head.appendChild(script)
+    } else {
+      existingScript.addEventListener('load', renderGoogleButton)
+    }
+
+    return () => {
+      cancelled = true
+      if (existingScript) {
+        existingScript.removeEventListener('load', renderGoogleButton)
+      }
+    }
+  }, [loginWithGoogle, navigate, redirectTo, theme])
 
   if (!authReady) {
     return null
   }
 
   if (token) {
-    return <Navigate to="/app" replace />
+    return <Navigate to={redirectTo} replace />
   }
 
   const validateForm = () => {
@@ -53,12 +143,53 @@ export default function LoginPage() {
 
     try {
       await login(email, password)
-      navigate('/app')
+      navigate(redirectTo)
     } catch (err) {
       setError(err.response?.data?.error || 'Unable to login. Check credentials or backend connection.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const onForgotPassword = async () => {
+    setError('')
+    setHelperMessage('')
+    if (!email) {
+      setError('Enter your email first, then request a reset code.')
+      return
+    }
+    await requestPasswordReset(email.trim().toLowerCase())
+    setHelperMode('reset')
+    setHelperMessage('Password reset code sent if that email exists.')
+  }
+
+  const onResetPassword = async () => {
+    setError('')
+    await resetPassword({ email: email.trim().toLowerCase(), token: helperToken, password: newPassword })
+    setPassword(newPassword)
+    setHelperMode('')
+    setHelperToken('')
+    setNewPassword('')
+    setHelperMessage('Password reset. You can sign in now.')
+  }
+
+  const onResendVerification = async () => {
+    setError('')
+    if (!email) {
+      setError('Enter your email first, then request a verification code.')
+      return
+    }
+    await resendVerificationEmail(email.trim().toLowerCase())
+    setHelperMode('verify')
+    setHelperMessage('Verification code sent.')
+  }
+
+  const onVerifyEmail = async () => {
+    setError('')
+    await verifyEmail(helperToken, email.trim().toLowerCase())
+    setHelperMode('')
+    setHelperToken('')
+    setHelperMessage('Email verified. You can sign in now.')
   }
 
   return (
@@ -120,9 +251,48 @@ export default function LoginPage() {
                     }
                   }}
                 />
-                <span className="forgot-pill">I forgot</span>
+                <button className="forgot-pill" type="button" onClick={onForgotPassword}>I forgot</button>
               </label>
               {validationErrors.password && <span className="validation-error">{validationErrors.password}</span>}
+              <button className="btn-ghost" type="button" onClick={onResendVerification}>
+                Verify email
+              </button>
+              {helperMessage ? <span className="success">{helperMessage}</span> : null}
+              {helperMode ? (
+                <div className="form-grid">
+                  <input
+                    className="input"
+                    value={helperToken}
+                    onChange={(event) => setHelperToken(event.target.value)}
+                    placeholder={helperMode === 'reset' ? 'Reset code' : 'Verification code'}
+                  />
+                  {helperMode === 'reset' ? (
+                    <input
+                      className="input"
+                      type="password"
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      placeholder="New password"
+                    />
+                  ) : null}
+                  <button className="btn interactive-btn" type="button" onClick={helperMode === 'reset' ? onResetPassword : onVerifyEmail}>
+                    {helperMode === 'reset' ? 'Reset password' : 'Verify email'}
+                  </button>
+                </div>
+              ) : null}
+
+              <div className="google-signin-block">
+                <div className="auth-divider"><span>or</span></div>
+                {GOOGLE_CLIENT_ID ? (
+                  <div ref={googleButtonRef} className="google-button-slot">
+                    {googleLoading ? <span className="google-loading-text">Connecting Google account...</span> : null}
+                  </div>
+                ) : (
+                  <div className="google-button-slot">
+                    <span className="google-loading-text">Google sign-in is not configured for this environment.</span>
+                  </div>
+                )}
+              </div>
 
               <div className="login-actions-row">
                 <span className="auth-legal-text">

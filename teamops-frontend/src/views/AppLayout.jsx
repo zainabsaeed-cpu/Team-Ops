@@ -22,6 +22,9 @@ import {
 import { useAuth } from '../state/AuthContext.jsx'
 import { useNotifications } from '../state/NotificationsContext.jsx'
 import { useTheme } from '../state/ThemeContext.jsx'
+import { createBoard, getBoards, getWorkspace, getWorkspaces } from '../services/api.js'
+
+const boardColors = ['#7c5cfc', '#14b8a6', '#ff4d6d', '#f59e0b', '#38bdf8', '#22c55e']
 
 export default function AppLayout() {
   const navigate = useNavigate()
@@ -30,6 +33,15 @@ export default function AppLayout() {
   const [showPopover, setShowPopover] = useState(false)
   const [clickBursts, setClickBursts] = useState([])
   const [interactionNote, setInteractionNote] = useState('')
+  const [workspaceId, setWorkspaceId] = useState(() => localStorage.getItem('teamops_workspace_id') || '')
+  const [workspaceName, setWorkspaceName] = useState('TeamOps Workspace')
+  const [boards, setBoards] = useState([])
+  const [boardsLoading, setBoardsLoading] = useState(false)
+  const [boardModalOpen, setBoardModalOpen] = useState(false)
+  const [newBoardName, setNewBoardName] = useState('')
+  const [newBoardColor, setNewBoardColor] = useState(boardColors[0])
+  const [boardError, setBoardError] = useState('')
+  const [creatingBoard, setCreatingBoard] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') {
       return true
@@ -37,9 +49,10 @@ export default function AppLayout() {
 
     return window.innerWidth > 980
   })
-  const { logout, user } = useAuth()
-  const { notifications, unreadCount, markAllRead } = useNotifications()
+  const { logout, user, currentWorkspaceRole } = useAuth()
+  const { notifications, unreadCount, markAllRead, markRead } = useNotifications()
   const { theme, toggleTheme } = useTheme()
+  const activeBoardId = location.pathname.match(/\/board\/([^/]+)/)?.[1] || ''
 
   useEffect(() => {
     const shell = shellRef.current
@@ -62,6 +75,49 @@ export default function AppLayout() {
       shell.removeEventListener('pointermove', onMove)
     }
   }, [])
+
+  useEffect(() => {
+    let alive = true
+
+    const loadBoards = async () => {
+      setBoardsLoading(true)
+      setBoardError('')
+      try {
+        let nextWorkspaceId = workspaceId
+        if (!nextWorkspaceId) {
+          const workspaces = await getWorkspaces()
+          nextWorkspaceId = workspaces[0]?.id || ''
+          if (nextWorkspaceId) {
+            localStorage.setItem('teamops_workspace_id', nextWorkspaceId)
+          }
+        }
+
+        if (!nextWorkspaceId) {
+          if (alive) setBoards([])
+          return
+        }
+
+        const [payload, workspacePayload] = await Promise.all([
+          getBoards(nextWorkspaceId),
+          getWorkspace(nextWorkspaceId).catch(() => null),
+        ])
+        if (!alive) return
+        setWorkspaceId(nextWorkspaceId)
+        setBoards(payload?.boards || [])
+        if (workspacePayload?.name) setWorkspaceName(workspacePayload.name)
+      } catch {
+        if (alive) setBoardError('Could not load boards')
+      } finally {
+        if (alive) setBoardsLoading(false)
+      }
+    }
+
+    loadBoards()
+
+    return () => {
+      alive = false
+    }
+  }, [workspaceId])
 
   useEffect(() => {
     const handleInteractionMessage = (event) => {
@@ -90,6 +146,40 @@ export default function AppLayout() {
   const onNavClick = () => {
     if (typeof window !== 'undefined' && window.innerWidth <= 980) {
       setSidebarOpen(false)
+    }
+  }
+
+  const onOpenBoard = (board) => {
+    localStorage.setItem('teamops_workspace_id', board.workspace_id || workspaceId)
+    localStorage.setItem('teamops_board_id', board.id)
+    navigate(`/board/${board.id}`)
+    onNavClick()
+  }
+
+  const onCreateBoard = async (event) => {
+    event.preventDefault()
+    const trimmed = newBoardName.trim()
+    if (!trimmed) {
+      setBoardError('Board name is required')
+      return
+    }
+
+    setCreatingBoard(true)
+    setBoardError('')
+    try {
+      const payload = await createBoard({ workspaceId, name: trimmed, color: newBoardColor })
+      const board = payload?.board
+      if (board) {
+        setBoards((current) => [...current, board])
+        setBoardModalOpen(false)
+        setNewBoardName('')
+        setNewBoardColor(boardColors[0])
+        onOpenBoard(board)
+      }
+    } catch (error) {
+      setBoardError(error?.response?.data?.error || 'Could not create board')
+    } finally {
+      setCreatingBoard(false)
     }
   }
 
@@ -139,8 +229,11 @@ export default function AppLayout() {
                     ? 'Messages'
                     : location.pathname.includes('/settings')
                       ? 'Settings'
-      : 'TeamOps Workspace'
+            : location.pathname.includes('/projects')
+              ? 'Projects & Workspaces'
+              : 'TeamOps Workspace'
   const userInitial = user?.name?.charAt(0)?.toUpperCase() || 'U'
+  const canCreateBoard = ['owner', 'admin'].includes(currentWorkspaceRole)
 
   return (
     <div className="page-shell" ref={shellRef} onPointerDown={onCreateBurst}>
@@ -158,12 +251,18 @@ export default function AppLayout() {
           TeamOps
         </div>
 
-        <div className="sidebar-workspace-chip">Demo ready</div>
+        <div className="sidebar-workspace-chip">{workspaceName}</div>
 
         <p className="aside-section-label">Main</p>
-        <nav className="nav-links">
-          <NavLink
-            to="/app/profile"
+        <nav className="nav-links">          <NavLink
+            to="/projects"
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+            onClick={onNavClick}
+          >
+            <Sparkles size={18} className="nav-link-icon" />
+            Projects
+          </NavLink>          <NavLink
+            to="/profile"
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             onClick={onNavClick}
           >
@@ -171,7 +270,7 @@ export default function AppLayout() {
             Profile
           </NavLink>
           <NavLink 
-            to="/app" 
+            to="/dashboard" 
             end 
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             onClick={onNavClick}
@@ -180,7 +279,7 @@ export default function AppLayout() {
             Dashboard
           </NavLink>
           <NavLink
-            to="/app/analytics"
+            to="/analytics"
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             onClick={onNavClick}
           >
@@ -189,7 +288,7 @@ export default function AppLayout() {
             <span className="nav-badge">3</span>
           </NavLink>
           <NavLink
-            to="/app/activity"
+            to="/activity"
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             onClick={onNavClick}
           >
@@ -198,7 +297,7 @@ export default function AppLayout() {
             <span className="nav-badge">5</span>
           </NavLink>
           <NavLink
-            to="/app/members"
+            to="/members"
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             onClick={onNavClick}
           >
@@ -206,7 +305,7 @@ export default function AppLayout() {
             Members
           </NavLink>
           <NavLink 
-            to="/app/notifications" 
+            to="/notifications" 
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             onClick={onNavClick}
           >
@@ -215,7 +314,7 @@ export default function AppLayout() {
             {unreadCount > 0 ? <span className="nav-badge">{unreadCount}</span> : null}
           </NavLink>
           <NavLink
-            to="/app/achievements"
+            to="/achievements"
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             onClick={onNavClick}
           >
@@ -224,7 +323,7 @@ export default function AppLayout() {
             <span className="nav-badge">1</span>
           </NavLink>
           <NavLink
-            to="/app/schedule"
+            to="/schedule"
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             onClick={onNavClick}
           >
@@ -232,7 +331,7 @@ export default function AppLayout() {
             Schedule
           </NavLink>
           <NavLink
-            to="/app/messages"
+            to="/messages"
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             onClick={onNavClick}
           >
@@ -244,17 +343,34 @@ export default function AppLayout() {
 
         <p className="aside-section-label">Boards</p>
         <div className="board-mini-list">
-          <button type="button" className="board-mini-item active"><span className="dot violet" />Sprint 4</button>
-          <button type="button" className="board-mini-item"><span className="dot green" />Backend API</button>
-          <button type="button" className="board-mini-item"><span className="dot pink" />UI/UX Sprint</button>
-          <button type="button" className="board-mini-item"><span className="dot amber" />DB Migrations</button>
+          {boards.map((board) => (
+            <button
+              type="button"
+              key={board.id}
+              className={`board-mini-item ${String(activeBoardId) === String(board.id) ? 'active' : ''}`}
+              onClick={() => onOpenBoard(board)}
+            >
+              <span className="dot" style={{ background: board.color || boardColors[0] }} />
+              {board.name || board.title}
+            </button>
+          ))}
+          {boardsLoading ? <span className="board-mini-empty">Loading boards...</span> : null}
+          {!boardsLoading && boards.length === 0 ? <span className="board-mini-empty">No boards yet.</span> : null}
+          {canCreateBoard ? (
+            <button type="button" className="board-mini-item board-mini-add" onClick={() => setBoardModalOpen(true)}>
+              <Plus size={14} />
+              New Board
+            </button>
+          ) : (
+            <span className="board-mini-empty">Board creation requires admin access.</span>
+          )}
         </div>
 
         <div className="sidebar-user">
           <span className="sidebar-avatar">{userInitial}</span>
           <div>
             <div className="sidebar-user-name">{user?.name || 'Member'}</div>
-            <div className="sidebar-user-role">Owner</div>
+            <div className="sidebar-user-role">{currentWorkspaceRole || 'viewer'}</div>
           </div>
         </div>
       </aside>
@@ -299,7 +415,7 @@ export default function AppLayout() {
                   </div>
                   <ul className="notification-list">
                     {notifications.slice(0, 5).map((item) => (
-                      <li key={item.id} className={`notification-item ${item.is_read ? '' : 'unread'}`}>
+                      <li key={item.id} className={`notification-item ${item.is_read ? '' : 'unread'}`} onClick={() => !item.is_read && markRead(item.id)}>
                         <div>{item.message}</div>
                         <small className="muted">
                           {new Date(item.created_at).toLocaleString()}
@@ -311,7 +427,7 @@ export default function AppLayout() {
                 </div>
               ) : null}
             </div>
-            <button className="icon-btn" type="button" onClick={() => navigate('/app/settings')}>
+            <button className="icon-btn" type="button" onClick={() => navigate('/settings')}>
               <Settings size={16} />
             </button>
             <button
@@ -335,6 +451,43 @@ export default function AppLayout() {
       </div>
 
       {sidebarOpen ? <button className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} aria-label="Close sidebar" /> : null}
+
+      {boardModalOpen ? (
+        <div className="board-modal-backdrop" role="presentation" onClick={() => setBoardModalOpen(false)}>
+          <form className="new-board-modal" onSubmit={onCreateBoard} onClick={(event) => event.stopPropagation()}>
+            <div className="board-modal-header">
+              <div>
+                <p className="board-modal-kicker">New board</p>
+                <h3>Create board</h3>
+              </div>
+              <button type="button" className="icon-btn board-modal-close" onClick={() => setBoardModalOpen(false)} aria-label="Close dialog">
+                <X size={16} />
+              </button>
+            </div>
+            {boardError ? <div className="error board-modal-error">{boardError}</div> : null}
+            <label className="board-modal-field">
+              <span>Board name</span>
+              <input className="input" value={newBoardName} autoFocus onChange={(event) => setNewBoardName(event.target.value)} />
+            </label>
+            <div className="board-color-grid" aria-label="Board color">
+              {boardColors.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  className={`board-color-swatch ${newBoardColor === color ? 'active' : ''}`}
+                  style={{ background: color }}
+                  onClick={() => setNewBoardColor(color)}
+                  aria-label={`Use ${color}`}
+                />
+              ))}
+            </div>
+            <div className="board-modal-actions">
+              <button type="button" className="btn-ghost" onClick={() => setBoardModalOpen(false)} disabled={creatingBoard}>Cancel</button>
+              <button type="submit" className="btn interactive-btn" disabled={creatingBoard}>{creatingBoard ? 'Creating...' : 'Create'}</button>
+            </div>
+          </form>
+        </div>
+      ) : null}
     </div>
   )
 }

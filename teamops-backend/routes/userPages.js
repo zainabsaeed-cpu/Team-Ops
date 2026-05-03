@@ -11,5 +11,9 @@ router.get('/schedule', auth, userPagesController.getSchedule);
 router.get('/messages', auth, userPagesController.getMessages);
 router.get('/settings', auth, userPagesController.getSettings);
 router.patch('/settings', auth, userPagesController.updateSettings);
+router.get('/profile', auth, userPagesController.getProfile);
+router.patch('/profile', auth, userPagesController.updateProfile);
+router.get('/my-cards', auth, userPagesController.getMyCards);
+router.patch('/password', auth, userPagesController.changePassword);
 
 module.exports = router;

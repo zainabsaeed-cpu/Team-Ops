@@ -1,10 +1,14 @@
 import axios from 'axios'
-import { createLocalNotification, mockState } from './mockData.js'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001/api',
-  timeout: 4000,
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5002/api',
+  timeout: 15000,
 })
+
+const storedToken = typeof localStorage === 'undefined' ? '' : localStorage.getItem('teamops_token')
+if (storedToken) {
+  api.defaults.headers.common.Authorization = `Bearer ${storedToken}`
+}
 
 export const setAuthToken = (token) => {
   if (token) {
@@ -14,157 +18,73 @@ export const setAuthToken = (token) => {
   }
 }
 
-const clone = (value) => JSON.parse(JSON.stringify(value))
+const data = (request) => request.then((response) => response.data)
 
-async function tryBackend(request, fallback) {
-  console.log('Attempting real API call...');
-  const response = await request();
-  console.log('API success:', response.data);
-  return response.data;
+export const loginUser = (payload) => data(api.post('/auth/login', payload))
+export const loginWithGoogle = (payload) => data(api.post('/auth/google', payload))
+export const registerUser = (payload) => data(api.post('/auth/register', payload))
+export const getCurrentUser = () => data(api.get('/auth/me'))
+export const verifyEmail = (token, email) => data(api.post('/auth/verify', { token, email }))
+export const resendVerificationEmail = (email) => data(api.post('/auth/resend-verification', { email }))
+export const requestPasswordReset = (email) => data(api.post('/auth/forgot-password', { email }))
+export const resetPassword = ({ email, token, password }) => data(api.post('/auth/reset-password', { email, token, password }))
+
+export const getWorkspaces = () => data(api.get('/workspaces'))
+export const createWorkspace = (payload) => data(api.post('/workspaces', payload))
+export const getWorkspace = (workspaceId) => data(api.get(`/workspaces/${workspaceId}`))
+export const updateWorkspace = ({ workspaceId, name, description, techStack }) =>
+  data(api.patch(`/workspaces/${workspaceId}`, { name, description, techStack }))
+export const deleteWorkspace = (workspaceId) => data(api.delete(`/workspaces/${workspaceId}`))
+export const joinWorkspaceByCode = (payload) => {
+  const inviteCode = typeof payload === 'string' ? payload : payload?.inviteCode
+  return data(api.get(`/workspaces/join/${encodeURIComponent(inviteCode || '')}`))
 }
-export const loginUser = (payload) =>
-  tryBackend(
-    () => api.post('/auth/login', payload),
-    () => ({ token: 'mock-token', user: clone(mockState.user) }),
-  )
+export const joinWorkspaceByInviteToken = (token) => data(api.get('/workspaces/join/invite', { params: { token } }))
+export const inviteWorkspaceMember = ({ workspaceId, email, role = 'member' }) =>
+  data(api.post(`/workspaces/${workspaceId}/members`, { email, role }))
+export const inviteWorkspaceMemberByEmail = ({ workspaceId, email, role = 'member' }) =>
+  data(api.post(`/workspaces/${workspaceId}/invite-email`, { email, role }))
+export const getWorkspaceMembers = (workspaceId) => data(api.get(`/workspaces/${workspaceId}/members`))
+export const updateWorkspaceMemberRole = ({ workspaceId, memberId, role }) =>
+  data(api.patch(`/workspaces/${workspaceId}/members/${memberId}/role`, { role }))
+export const removeWorkspaceMember = ({ workspaceId, memberId }) =>
+  data(api.delete(`/workspaces/${workspaceId}/members/${memberId}`))
 
-export const registerUser = (payload) =>
-  tryBackend(
-    () => api.post('/auth/register', payload),
-    () => ({
-      token: 'mock-token',
-      user: {
-        id: Date.now(),
-        name: payload.name,
-        email: payload.email,
-      },
-    }),
-  )
+export const getBoards = (workspaceId) => data(api.get(`/workspaces/${workspaceId}/boards`))
+export const createBoard = ({ workspaceId, name, color }) => data(api.post(`/workspaces/${workspaceId}/boards`, { name, color }))
+export const updateBoard = ({ boardId, name, color }) => data(api.patch(`/boards/${boardId}`, { name, color }))
+export const deleteBoard = (boardId) => data(api.delete(`/boards/${boardId}`))
+export const getBoard = (boardId) => data(api.get(`/boards/${boardId}`))
+export const getBoardAnalytics = (boardId) => data(api.get(`/boards/${boardId}/analytics`))
 
-export const getCurrentUser = () =>
-  tryBackend(
-    () => api.get('/auth/me'),
-    () => ({ user: clone(mockState.user) }),
-  )
+export const createColumn = ({ boardId, title }) => data(api.post(`/boards/${boardId}/columns`, { title }))
+export const updateColumn = ({ boardId, columnId, title }) => data(api.patch(`/boards/${boardId}/columns/${columnId}`, { title }))
+export const deleteColumn = ({ boardId, columnId }) => data(api.delete(`/boards/${boardId}/columns/${columnId}`))
 
-export const getWorkspaces = () =>
-  tryBackend(
-    () => api.get('/workspaces'),
-    () => clone(mockState.workspaces),
-  )
-
-export const getBoard = (boardId) =>
-  tryBackend(
-    () => api.get(`/boards/${boardId}`),
-    () => {
-      const board = mockState.boards[boardId]
-      if (!board) {
-        throw new Error('Board not found')
-      }
-      return clone(board)
-    },
-  )
-
+export const createCard = ({ boardId, columnId, title, description, priority, assigneeId, dueDate }) =>
+  data(api.post(`/boards/${boardId}/cards`, { columnId, title, description, priority, assigneeId, dueDate }))
+export const updateCard = ({ boardId, cardId, title, description, priority, assigneeId, dueDate }) =>
+  data(api.patch(`/boards/${boardId}/cards/${cardId}`, { title, description, priority, assigneeId, dueDate }))
+export const deleteCard = ({ boardId, cardId }) => data(api.delete(`/boards/${boardId}/cards/${cardId}`))
 export const moveCard = ({ boardId, cardId, toColumnId, newIndex }) =>
-  tryBackend(
-    () => api.patch(`/boards/${boardId}/cards/${cardId}/move`, { toColumnId, newIndex }),
-    () => {
-      const board = mockState.boards[boardId]
-      if (!board) {
-        return null
-      }
+  data(api.patch(`/boards/${boardId}/cards/${cardId}/move`, { toColumnId, newIndex }))
 
-      let card = null
-      board.columns.forEach((column) => {
-        const cardIndex = column.cards.findIndex((item) => item.id === cardId)
-        if (cardIndex >= 0) {
-          card = column.cards.splice(cardIndex, 1)[0]
-        }
-      })
+export const getNotifications = () => data(api.get('/notifications'))
+export const markNotificationsAsRead = () => data(api.patch('/notifications/read-all'))
+export const markNotificationRead = (id) => data(api.patch(`/notifications/${id}/read`))
 
-      const destinationColumn = board.columns.find((column) => column.id === toColumnId)
-      if (!card || !destinationColumn) {
-        return null
-      }
+export const getBoardActivities = (boardId) => data(api.get(`/activities/${boardId}`))
+export const getActivityFeed = () => data(api.get('/user/activity'))
+export const getAnalytics = () => data(api.get('/user/analytics'))
+export const getMembers = () => data(api.get('/user/members'))
+export const getAchievements = () => data(api.get('/user/achievements'))
+export const getSchedule = () => data(api.get('/user/schedule'))
+export const getMessageThreads = () => data(api.get('/user/messages'))
+export const getSettings = (workspaceId) => data(api.get('/user/settings', { params: workspaceId ? { workspaceId } : {} }))
+export const updateSettings = (payload) => data(api.patch('/user/settings', payload))
+export const changePassword = (payload) => data(api.patch('/user/password', payload))
+export const getUserProfile = () => data(api.get('/user/profile'))
+export const updateUserProfile = (payload) => data(api.patch('/user/profile', payload))
+export const getMyCards = () => data(api.get('/user/my-cards'))
 
-      destinationColumn.cards.splice(newIndex, 0, card)
-
-      const notification = createLocalNotification(
-        `Card moved: ${card.title} -> ${destinationColumn.title}`,
-      )
-      mockState.notifications.unshift(notification)
-      return clone(board)
-    },
-  )
-
-export const getNotifications = () =>
-  tryBackend(
-    () => api.get('/notifications'),
-    () => clone(mockState.notifications),
-  )
-
-export const markNotificationsAsRead = () =>
-  tryBackend(
-    () => api.patch('/notifications/read-all'),
-    () => {
-      mockState.notifications = mockState.notifications.map((item) => ({
-        ...item,
-        is_read: true,
-      }))
-      return { success: true }
-    },
-  )
-
-export const getAnalytics = () =>
-  tryBackend(
-    () => api.get('/analytics'),
-    () => clone(mockState.analytics),
-  )
-
-export const getActivityFeed = () =>
-  tryBackend(
-    () => api.get('/activity'),
-    () => clone(mockState.activityFeed),
-  )
-
-export const getMembers = () =>
-  tryBackend(
-    () => api.get('/members'),
-    () => clone(mockState.members),
-  )
-
-export const getAchievements = () =>
-  tryBackend(
-    () => api.get('/achievements'),
-    () => clone(mockState.achievements),
-  )
-
-export const getSchedule = () =>
-  tryBackend(
-    () => api.get('/schedule'),
-    () => clone(mockState.schedule),
-  )
-
-export const getMessageThreads = () =>
-  tryBackend(
-    () => api.get('/messages'),
-    () => clone(mockState.messageThreads),
-  )
-
-export const getSettings = () =>
-  tryBackend(
-    () => api.get('/settings'),
-    () => clone(mockState.settings),
-  )
-
-export const updateSettings = (payload) =>
-  tryBackend(
-    () => api.patch('/settings', payload),
-    () => {
-      mockState.settings = {
-        ...mockState.settings,
-        ...payload,
-      }
-      return clone(mockState.settings)
-    },
-  )
+export default api

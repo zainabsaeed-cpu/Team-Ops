@@ -25,6 +25,9 @@ export const mockState = {
   boards: {
     501: {
       id: 501,
+      workspace_id: 101,
+      name: 'TeamOps Board',
+      color: '#7c5cfc',
       title: 'TeamOps Board',
       columns: [
         {
@@ -106,6 +109,9 @@ export const mockState = {
     },
     502: {
       id: 502,
+      workspace_id: 102,
+      name: 'Demo Board',
+      color: '#14b8a6',
       title: 'Demo Board',
       columns: [
         { id: 'todo', title: 'To Do', position: 1, cards: [] },

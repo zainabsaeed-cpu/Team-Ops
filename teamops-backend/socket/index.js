@@ -1,51 +1,58 @@
-const { Activity, Notification, Card, User } = require('../models');
+const jwt = require('jsonwebtoken');
+const jwtSecret = process.env.JWT_SECRET || 'teamops-dev-secret';
 
 module.exports = (io) => {
     io.on('connection', (socket) => {
         console.log('New client connected', socket.id);
 
-        socket.on('board:join', ({ boardId }) => {
+        // try to extract userId from token provided by client
+        try {
+            const token = socket.handshake.auth && socket.handshake.auth.token;
+            if (token) {
+                const decoded = jwt.verify(token, jwtSecret);
+                socket.userId = decoded.userId;
+                socket.join(`user:${decoded.userId}`);
+            }
+        } catch (e) {
+            socket.userId = null;
+        }
+
+        const normalizeRoomId = (payload) => {
+            if (!payload) return '';
+            if (typeof payload === 'string') return payload;
+            return payload.boardId || payload.userId || '';
+        };
+
+        const joinBoard = (payload) => {
+            const boardId = normalizeRoomId(payload);
+            if (!boardId) return;
             socket.join(`board:${boardId}`);
             console.log(`Socket ${socket.id} joined board ${boardId}`);
-        });
+        };
 
-        socket.on('board:leave', ({ boardId }) => {
+        const leaveBoard = (payload) => {
+            const boardId = normalizeRoomId(payload);
+            if (!boardId) return;
             socket.leave(`board:${boardId}`);
+        };
+
+        socket.on('join:board', joinBoard);
+        socket.on('board:join', joinBoard);
+        socket.on('leave:board', leaveBoard);
+        socket.on('board:leave', leaveBoard);
+
+        socket.on('join:user', (payload) => {
+            if (!socket.userId) return;
+            const userId = normalizeRoomId(payload);
+            if (userId && String(userId) !== String(socket.userId)) return;
+            socket.join(`user:${socket.userId}`);
         });
 
-        socket.on('card:move', async (data) => {
-            const { boardId, actorId, cardId, activity } = data;
-
-            socket.to(`board:${boardId}`).emit('card:moved', data);
-
-            if (activity) {
-                io.to(`board:${boardId}`).emit('activity:new', {
-                    id: `${Date.now()}-${Math.random()}`,
-                    action: activity,
-                    created_at: new Date().toISOString(),
-                });
-            }
-
-            if (actorId) {
-                const actor = await User.findById(actorId).lean();
-                const card = await Card.findById(cardId).lean();
-                if (actor && card && card.assignee && card.assignee.toString() !== actorId.toString()) {
-                    const notification = await Notification.create({
-                        user: card.assignee,
-                        message: `${actor.name} moved your card "${card.title}"`,
-                    });
-                    io.to(`board:${boardId}`).emit('notification:new', {
-                        id: notification._id.toString(),
-                        message: notification.message,
-                        is_read: notification.is_read,
-                        created_at: notification.createdAt,
-                    });
-                }
-            }
-        });
-
-        socket.on('card:create', async (data) => {
-            socket.to(`board:${data.workspaceId}`).emit('card:created', data);
+        socket.on('leave:user', (payload) => {
+            if (!socket.userId) return;
+            const userId = normalizeRoomId(payload);
+            if (userId && String(userId) !== String(socket.userId)) return;
+            socket.leave(`user:${socket.userId}`);
         });
 
         socket.on('disconnect', () => {

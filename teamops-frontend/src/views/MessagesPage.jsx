@@ -40,9 +40,9 @@ export default function MessagesPage() {
           <li key={thread.id} className="notification-item unread">
             <div>
               <strong>{thread.from}</strong>
-              <div className="muted">{thread.preview}</div>
+              <div className="muted">{thread.content}</div>
             </div>
-            <small className="muted">{thread.at}</small>
+            <small className="muted">{thread.time}</small>
           </li>
         ))}
         {threads.length === 0 && !error ? <li className="muted">No messages yet.</li> : null}

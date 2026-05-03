@@ -1,7 +1,7 @@
 import { CSS } from '@dnd-kit/utilities'
 import { useSortable } from '@dnd-kit/sortable'
 
-export default function SortableCard({ card }) {
+export default function SortableCard({ card, onClick, highlighted = false }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: card.id })
 
@@ -14,7 +14,18 @@ export default function SortableCard({ card }) {
     <article
       ref={setNodeRef}
       style={style}
-      className={`card ${isDragging ? 'dragging' : ''}`}
+      className={`card ${onClick ? 'card-clickable' : ''} ${isDragging ? 'dragging' : ''} ${highlighted ? 'card-highlighted' : ''}`}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={onClick ? `Open ${card.title}` : undefined}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (!onClick) return
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onClick()
+        }
+      }}
       {...attributes}
       {...listeners}
     >

@@ -1,7 +1,7 @@
 import { useNotifications } from '../state/NotificationsContext.jsx'
 
 export default function NotificationsPage() {
-  const { notifications, markAllRead } = useNotifications()
+  const { notifications, markAllRead, markRead } = useNotifications()
 
   return (
     <section>
@@ -17,7 +17,12 @@ export default function NotificationsPage() {
         {notifications.map((item) => (
           <li key={item.id} className={`notification-item ${item.is_read ? '' : 'unread'}`}>
             <div>{item.message}</div>
-            <small className="muted">{new Date(item.created_at).toLocaleString()}</small>
+            <div className="row" style={{ justifyContent: 'space-between', marginTop: 8 }}>
+              <small className="muted">{new Date(item.created_at).toLocaleString()}</small>
+              {!item.is_read ? (
+                <button className="btn-ghost" type="button" onClick={() => markRead(item.id)}>Mark read</button>
+              ) : null}
+            </div>
           </li>
         ))}
         {notifications.length === 0 ? <li className="muted">No notifications yet.</li> : null}
