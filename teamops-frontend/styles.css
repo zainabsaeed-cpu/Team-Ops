@@ -1019,6 +1019,8 @@ footer {
 .db-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--violet), #c084fc); }
 .db-bar-val { font-size: 12px; font-weight: 700; color: var(--ink2); text-align: right; }
 .analytics-board-toolbar {
+  position: relative;
+  z-index: 60;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -1979,6 +1981,17 @@ footer {
 .teamops-select {
   position: relative;
   width: 100%;
+  z-index: 1;
+}
+.teamops-select.open {
+  z-index: 3000;
+}
+.u-style-41 > div:has(.teamops-select.open),
+.u-style-45 > div:has(.teamops-select.open),
+.u-style-45:has(.teamops-select.open),
+.analytics-board-toolbar:has(.teamops-select.open) {
+  position: relative;
+  z-index: 3000;
 }
 .teamops-native-select {
   position: absolute;
@@ -2044,7 +2057,7 @@ footer {
 }
 .teamops-select-menu {
   position: absolute;
-  z-index: 2300;
+  z-index: 3001;
   top: calc(100% + 8px);
   left: 0;
   right: 0;
@@ -2062,6 +2075,17 @@ footer {
   transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s ease;
 }
 .teamops-select.open .teamops-select-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+.teamops-select-menu.portaled {
+  position: fixed;
+  top: var(--select-menu-top);
+  left: var(--select-menu-left);
+  right: auto;
+  width: var(--select-menu-width);
+  z-index: 12000;
   opacity: 1;
   visibility: visible;
   transform: translateY(0) scale(1);

@@ -2523,7 +2523,7 @@ function rebuildCustomSelect(select) {
 
   const valueEl = wrapper.querySelector('.teamops-select-value');
   const button = wrapper.querySelector('.teamops-select-btn');
-  const menu = wrapper.querySelector('.teamops-select-menu');
+  const menu = wrapper.customSelectMenu || wrapper.querySelector('.teamops-select-menu');
   const selectedOption = select.selectedOptions?.[0] || select.options?.[0];
   if (button) button.disabled = select.disabled;
   if (valueEl) valueEl.textContent = selectedOption?.textContent || 'Select an option';
@@ -2542,11 +2542,48 @@ function rebuildCustomSelect(select) {
       if (option.disabled) return;
       select.value = option.value;
       select.dispatchEvent(new Event('change', { bubbles: true }));
-      wrapper.classList.remove('open');
+      closeCustomSelect(wrapper);
       rebuildCustomSelect(select);
     });
     menu.appendChild(item);
   });
+}
+
+function positionCustomSelectMenu(wrapper) {
+  const button = wrapper.querySelector('.teamops-select-btn');
+  const menu = wrapper.customSelectMenu;
+  if (!button || !menu) return;
+
+  const rect = button.getBoundingClientRect();
+  const gap = 8;
+  const estimatedHeight = Math.min(230, Math.max(56, menu.scrollHeight || 180));
+  const opensUp = rect.bottom + gap + estimatedHeight > window.innerHeight && rect.top > estimatedHeight;
+  const top = opensUp ? Math.max(12, rect.top - gap - estimatedHeight) : rect.bottom + gap;
+
+  menu.style.setProperty('--select-menu-left', `${rect.left}px`);
+  menu.style.setProperty('--select-menu-top', `${top}px`);
+  menu.style.setProperty('--select-menu-width', `${rect.width}px`);
+}
+
+function closeCustomSelect(wrapper) {
+  if (!wrapper) return;
+  const menu = wrapper.customSelectMenu;
+  wrapper.classList.remove('open');
+  if (menu) {
+    menu.classList.remove('portaled');
+    menu.removeAttribute('style');
+    wrapper.appendChild(menu);
+  }
+}
+
+function openCustomSelect(wrapper) {
+  const menu = wrapper.customSelectMenu;
+  if (!menu) return;
+  document.querySelectorAll('.teamops-select.open').forEach(closeCustomSelect);
+  wrapper.classList.add('open');
+  document.body.appendChild(menu);
+  menu.classList.add('portaled');
+  positionCustomSelectMenu(wrapper);
 }
 
 function enhanceSelect(select) {
@@ -2566,13 +2603,15 @@ function enhanceSelect(select) {
 
   const menu = document.createElement('div');
   menu.className = 'teamops-select-menu';
+  wrapper.customSelectMenu = menu;
 
   wrapper.append(button, menu);
   button.addEventListener('click', () => {
-    document.querySelectorAll('.teamops-select.open').forEach(openSelect => {
-      if (openSelect !== wrapper) openSelect.classList.remove('open');
-    });
-    wrapper.classList.toggle('open');
+    if (wrapper.classList.contains('open')) {
+      closeCustomSelect(wrapper);
+    } else {
+      openCustomSelect(wrapper);
+    }
   });
 
   select.addEventListener('change', () => rebuildCustomSelect(select));
@@ -2596,10 +2635,18 @@ function refreshCustomSelectById(id) {
 }
 
 document.addEventListener('click', event => {
-  if (!event.target.closest('.teamops-select')) {
-    document.querySelectorAll('.teamops-select.open').forEach(wrapper => wrapper.classList.remove('open'));
+  if (!event.target.closest('.teamops-select') && !event.target.closest('.teamops-select-menu')) {
+    document.querySelectorAll('.teamops-select.open').forEach(closeCustomSelect);
   }
 });
+
+window.addEventListener('resize', () => {
+  document.querySelectorAll('.teamops-select.open').forEach(positionCustomSelectMenu);
+});
+
+document.addEventListener('scroll', () => {
+  document.querySelectorAll('.teamops-select.open').forEach(positionCustomSelectMenu);
+}, true);
 
 function openCardDetail(card) {
   openCardModal(card.column_id, card);
