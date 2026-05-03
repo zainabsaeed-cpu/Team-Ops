@@ -413,6 +413,7 @@
       <button class="aside-nav-btn" data-db-view="notifications" onclick="switchDashboardView('notifications', this)"><span class="anb-icon"><i class="bi bi-bell"></i></span> Notifications <span class="anb-badge">5</span></button>
       <button class="aside-nav-btn" data-db-view="members" id="membersNavBtn" onclick="switchDashboardView('members', this)"><span class="anb-icon"><i class="bi bi-people"></i></span> Members</button>
       <button class="aside-nav-btn" data-db-view="settings" id="settingsNavBtn" onclick="switchDashboardView('settings', this)"><span class="anb-icon"><i class="bi bi-gear"></i></span> Settings</button>
+
     </div>
     <div class="aside-section">
       <div class="aside-sec-label">Manage</div>
@@ -433,11 +434,16 @@
       <button class="aside-board-item u-style-34" id="newBoardBtn" onclick="createBoardFromSidebar()">+ New board</button>
     </div>
     <div class="aside-foot">
-      <div class="aside-user">
-        <div class="aside-av">Z</div>
-        <div><div class="aside-uname" id="asideUserName">Zainab Saeed</div><div class="aside-urole" id="asideUserRole">Owner</div></div>
+      <div class="aside-foot-row">
+        <button class="aside-user aside-user-btn" onclick="switchDashboardView('profile')" title="View profile">
+          <div class="aside-av">Z</div>
+          <div class="aside-user-text">
+            <div class="aside-uname" id="asideUserName">Zainab Saeed</div>
+            <div class="aside-urole" id="asideUserRole">Owner</div>
+          </div>
+        </button>
+        <button class="aside-logout-icon" onclick="doLogout()" title="Log out"><i class="bi bi-box-arrow-right"></i></button>
       </div>
-      <button class="aside-logout" onclick="doLogout()"><i class="bi bi-box-arrow-right"></i> Log out</button>
     </div>
   </div>
 
@@ -1265,6 +1271,90 @@
         </div>
       </div>
     </div>
+
+    <!-- PROFILE VIEW -->
+    <div class="db-content-view db-page" id="dbView-profile">
+      <div class="db-page-head db-anim db-delay-1">
+        <div class="db-page-kicker"><i class="bi bi-person-circle"></i> Your Identity</div>
+        <h3>Profile</h3>
+        <p class="db-page-sub">Manage your personal details, avatar, password, and view cards assigned to you.</p>
+      </div>
+
+      <div class="prof-tabs db-anim db-delay-1">
+        <button class="prof-tab active" data-prof-tab="info" onclick="switchProfileTab('info', this)"><i class="bi bi-person"></i> Profile</button>
+        <button class="prof-tab" data-prof-tab="work" onclick="switchProfileTab('work', this)"><i class="bi bi-briefcase"></i> My Work</button>
+      </div>
+
+      <!-- PROFILE TAB -->
+      <div id="profTab-info" class="prof-tab-panel db-anim db-delay-2">
+        <div class="prof-layout">
+          <div class="prof-panel">
+            <div class="prof-panel-head">
+              <div>
+                <div class="prof-panel-title">Profile Information</div>
+                <div class="prof-panel-sub">Keep your TeamOps identity current across every workspace.</div>
+              </div>
+              <button class="db-solid-btn" onclick="saveProfileInfo()"><i class="bi bi-floppy"></i> Save</button>
+            </div>
+            <div id="profInfoMsg" class="prof-msg" style="display:none"></div>
+            <div class="prof-form-grid">
+              <button class="prof-avatar-btn" type="button" onclick="document.getElementById('avatarFileInput').click()" title="Click to upload avatar">
+                <img id="profAvatarImg" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                <span id="profAvatarInitial" class="prof-avatar-initial">U</span>
+                <span class="prof-avatar-cam"><i class="bi bi-camera"></i></span>
+              </button>
+              <input id="avatarFileInput" type="file" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
+              <div class="prof-fields">
+                <label class="prof-label">Name
+                  <input id="profNameInput" class="prof-input" type="text" placeholder="Your name">
+                </label>
+                <label class="prof-label">Email
+                  <div class="prof-readonly"><i class="bi bi-envelope"></i> <span id="profEmailDisplay">—</span></div>
+                </label>
+                <label class="prof-label">Member since
+                  <div class="prof-readonly"><i class="bi bi-calendar3"></i> <span id="profSinceDisplay">—</span></div>
+                </label>
+              </div>
+            </div>
+            <div class="prof-ws-strip" id="profWorkspaceStrip"></div>
+          </div>
+
+          <div class="prof-panel">
+            <div class="prof-panel-head">
+              <div>
+                <div class="prof-panel-title">Change Password</div>
+                <div class="prof-panel-sub">Use at least 6 characters for the new password.</div>
+              </div>
+              <i class="bi bi-shield-lock" style="font-size:20px; color:var(--violet)"></i>
+            </div>
+            <div id="profPwMsg" class="prof-msg" style="display:none"></div>
+            <div class="prof-pw-grid">
+              <input id="profCurPw" class="prof-input" type="password" placeholder="Current password">
+              <input id="profNewPw" class="prof-input" type="password" placeholder="New password">
+              <input id="profConfPw" class="prof-input" type="password" placeholder="Confirm new password">
+              <button class="db-ghost-btn" style="width:100%" onclick="saveProfilePassword()">Update password</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MY WORK TAB -->
+      <div id="profTab-work" class="prof-tab-panel db-anim db-delay-2" style="display:none">
+        <div class="prof-panel">
+          <div class="prof-panel-head">
+            <div>
+              <div class="prof-panel-title">My Work</div>
+              <div class="prof-panel-sub">Cards assigned to you across all accessible boards.</div>
+            </div>
+            <span class="prof-work-count" id="profWorkCount">0 cards</span>
+          </div>
+          <div id="profWorkList" class="prof-work-list">
+            <div class="prof-loading">Loading assigned cards…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- RIGHT PANEL -->
@@ -1346,7 +1436,8 @@ function switchDashboardView(viewId, btnEl) {
     activity: 'Activity — Team Timeline',
     notifications: 'Notifications — Inbox',
     members: 'Members — Workspace Team',
-    settings: 'Settings — Workspace Preferences'
+    settings: 'Settings — Workspace Preferences',
+    profile: 'Profile — My Account'
   };
   const titleEl = document.getElementById('dbHeaderTitle');
   if (titleEl) titleEl.textContent = titles[viewId] || 'TeamOps Dashboard';
@@ -1355,6 +1446,7 @@ function switchDashboardView(viewId, btnEl) {
     refreshAnalyticsBoardSelector();
     loadAnalyticsData();
   }
+  if (viewId === 'profile') loadProfileView();
 
   target.querySelectorAll('.db-kpi-card').forEach(card => card.classList.remove('kpi-finished'));
   runCountUps(target);
@@ -2766,6 +2858,196 @@ if (verificationToken) {
 } else {
   setTimeout(() => showToast('bi-stars','TeamOps v2','New design loaded — open the dashboard!'), 1000);
   bootstrapSession();
+}
+
+// ── PROFILE ─────────────────────────────────────────────────────────────────
+let profAvatarBase64 = null;
+
+function switchProfileTab(tab, btn) {
+  document.querySelectorAll('.prof-tab').forEach(t => t.classList.toggle('active', t.dataset.profTab === tab));
+  document.querySelectorAll('.prof-tab-panel').forEach(p => { p.style.display = 'none'; });
+  const panel = document.getElementById('profTab-' + tab);
+  if (panel) panel.style.display = '';
+}
+
+async function loadProfileView() {
+  profAvatarBase64 = null;
+  hideProfMsg('profInfoMsg');
+  hideProfMsg('profPwMsg');
+
+  try {
+    const data = await apiRequest('/user/profile');
+    const u = data.user;
+
+    const nameInput = document.getElementById('profNameInput');
+    if (nameInput) nameInput.value = u.name || '';
+
+    const emailEl = document.getElementById('profEmailDisplay');
+    if (emailEl) emailEl.textContent = u.email || '—';
+
+    const sinceEl = document.getElementById('profSinceDisplay');
+    const rawDate = u.created_at || u.createdAt;
+    if (sinceEl) sinceEl.textContent = rawDate
+      ? new Date(rawDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+      : '—';
+
+    const img = document.getElementById('profAvatarImg');
+    const initial = document.getElementById('profAvatarInitial');
+    const avatarUrl = u.avatar_url || u.avatarUrl;
+    if (avatarUrl) {
+      img.src = avatarUrl;
+      img.style.display = '';
+      initial.style.display = 'none';
+    } else {
+      img.style.display = 'none';
+      initial.style.display = '';
+      initial.textContent = (u.name || u.email || 'U').charAt(0).toUpperCase();
+    }
+
+    const strip = document.getElementById('profWorkspaceStrip');
+    if (strip) {
+      strip.innerHTML = (u.workspaces && u.workspaces.length)
+        ? u.workspaces.map(ws => `<span class="prof-ws-badge">${ws.name}<strong>${ws.role}</strong></span>`).join('')
+        : '<span class="prof-muted">No workspaces yet.</span>';
+    }
+  } catch (err) {
+    showProfMsg('profInfoMsg', 'error', 'Could not load profile: ' + err.message);
+  }
+
+  loadMyCards();
+}
+
+async function loadMyCards() {
+  const list = document.getElementById('profWorkList');
+  const countEl = document.getElementById('profWorkCount');
+  if (!list) return;
+  list.innerHTML = '<div class="prof-loading">Loading assigned cards…</div>';
+
+  try {
+    const data = await apiRequest('/user/my-cards');
+    const cards = data.cards || [];
+    if (countEl) countEl.textContent = cards.length + ' card' + (cards.length !== 1 ? 's' : '');
+
+    if (!cards.length) {
+      list.innerHTML = '<div class="prof-muted" style="padding:16px 0">No cards assigned to you yet.</div>';
+      return;
+    }
+
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const groups = {};
+    cards.forEach(card => {
+      const ws = card.workspace_name || 'Workspace';
+      if (!groups[ws]) groups[ws] = [];
+      groups[ws].push(card);
+    });
+
+    list.innerHTML = Object.entries(groups).map(([wsName, wsCards]) => `
+      <div class="prof-ws-group">
+        <div class="prof-ws-group-label"><i class="bi bi-building"></i> ${wsName}</div>
+        ${wsCards.map(card => {
+          const overdue = card.due_date && new Date(card.due_date + 'T00:00:00') < today;
+          const prio = card.priority || 'medium';
+          const prioClass = prio === 'high' ? 'prio-high' : prio === 'low' ? 'prio-low' : 'prio-medium';
+          const due = card.due_date
+            ? new Date(card.due_date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+            : 'No due date';
+          return `<button class="prof-card-row${overdue ? ' overdue' : ''}" onclick="navigateToCard('${card.board_id}','${card.id}')">
+            <span class="prof-card-info">
+              <strong class="prof-card-title">${card.title}</strong>
+              <span class="prof-card-board">${card.board_name}</span>
+            </span>
+            <span class="prof-prio ${prioClass}">${prio}</span>
+            <span class="prof-card-due${overdue ? ' overdue-text' : ''}">${due}</span>
+          </button>`;
+        }).join('')}
+      </div>`).join('');
+  } catch (err) {
+    if (list) list.innerHTML = '<div class="prof-muted" style="padding:16px 0">Could not load assigned cards.</div>';
+  }
+}
+
+function navigateToCard(boardId, cardId) {
+  switchDashboardView('board');
+  loadBoard(boardId);
+  setTimeout(() => {
+    const el = document.getElementById('card-' + cardId);
+    if (el) {
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      el.classList.add('card-highlight');
+      setTimeout(() => el.classList.remove('card-highlight'), 2500);
+    }
+  }, 1200);
+}
+
+function handleAvatarUpload(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    showProfMsg('profInfoMsg', 'error', 'Please choose an image file.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    profAvatarBase64 = reader.result;
+    const img = document.getElementById('profAvatarImg');
+    const initial = document.getElementById('profAvatarInitial');
+    img.src = profAvatarBase64;
+    img.style.display = '';
+    initial.style.display = 'none';
+    showProfMsg('profInfoMsg', 'info', 'Avatar ready — click Save to apply.');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveProfileInfo() {
+  hideProfMsg('profInfoMsg');
+  const name = document.getElementById('profNameInput')?.value?.trim();
+  if (!name) { showProfMsg('profInfoMsg', 'error', 'Name cannot be empty.'); return; }
+  try {
+    const body = { name };
+    if (profAvatarBase64 !== null) body.avatar = profAvatarBase64;
+    const data = await apiRequest('/user/profile', { method: 'PATCH', body: JSON.stringify(body) });
+    profAvatarBase64 = null;
+    const nameEl = document.getElementById('asideUserName');
+    if (nameEl && data.user?.name) nameEl.textContent = data.user.name;
+    const initial = document.getElementById('profAvatarInitial');
+    if (initial && data.user?.name) initial.textContent = data.user.name.charAt(0).toUpperCase();
+    showProfMsg('profInfoMsg', 'success', 'Profile saved successfully.');
+  } catch (err) {
+    showProfMsg('profInfoMsg', 'error', err.message || 'Could not save profile.');
+  }
+}
+
+async function saveProfilePassword() {
+  hideProfMsg('profPwMsg');
+  const cur = document.getElementById('profCurPw')?.value;
+  const next = document.getElementById('profNewPw')?.value;
+  const conf = document.getElementById('profConfPw')?.value;
+  if (!cur || !next || !conf) { showProfMsg('profPwMsg', 'error', 'All password fields are required.'); return; }
+  if (next !== conf) { showProfMsg('profPwMsg', 'error', 'New password and confirmation do not match.'); return; }
+  if (next.length < 6) { showProfMsg('profPwMsg', 'error', 'New password must be at least 6 characters.'); return; }
+  try {
+    await apiRequest('/user/password', { method: 'PATCH', body: JSON.stringify({ currentPassword: cur, newPassword: next }) });
+    document.getElementById('profCurPw').value = '';
+    document.getElementById('profNewPw').value = '';
+    document.getElementById('profConfPw').value = '';
+    showProfMsg('profPwMsg', 'success', 'Password updated successfully.');
+  } catch (err) {
+    showProfMsg('profPwMsg', 'error', err.message || 'Could not update password.');
+  }
+}
+
+function showProfMsg(id, type, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'prof-msg prof-msg-' + type;
+  el.textContent = text;
+  el.style.display = '';
+}
+
+function hideProfMsg(id) {
+  const el = document.getElementById(id);
+  if (el) { el.style.display = 'none'; el.textContent = ''; }
 }
 </script>
 </body>

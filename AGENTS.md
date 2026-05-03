@@ -1,11 +1,24 @@
 # Repository Guidelines
 
+## CRITICAL — Frontend Architecture
+
+> The **only** active frontend is **`teamops-frontend/`**.
+> It is a **standalone HTML/JS app** — all logic lives in two files:
+> - **`teamops-frontend/index.html`** — 128KB self-contained app (markup + inlined JS)
+> - **`teamops-frontend/styles.css`** — 75KB stylesheet
+>
+> There is **no React build step, no `src/` directory, no JSX**.
+> Do NOT create a `src/` folder, `main.jsx`, or any React component files inside `teamops-frontend/`.
+> All frontend features are implemented directly in `index.html` and `styles.css`.
+>
+> `frontend/` has been deleted. `teamops-frontend/src/` has been deleted. Neither must ever be recreated.
+
 ## Project Structure & Module Organization
 
-TeamOps is a monorepo with two independent Node.js packages:
+TeamOps is a monorepo with two active packages:
 
 - **`teamops-backend/`** — Express 5 REST API + Socket.io server. All Mongoose models and formatter helpers live in a single file: `models/index.js`. Routes map to `controllers/`, and real-time events are handled in `socket/index.js`. The server auto-seeds MongoDB on first start if no data exists.
-- **`teamops-frontend/`** — React 19 + Vite SPA. Pages live in `src/views/`, backend calls are centralised in `src/services/api.js` (which falls back to `src/services/mockData.js` when the backend is unreachable), and the Socket.io client is a singleton in `src/services/socket.js`.
+- **`teamops-frontend/`** — Standalone HTML/JS app. Edit `index.html` for features and `styles.css` for styling. Served as static files — no build step required.
 
 The backend uses **MongoDB via Mongoose** (not PostgreSQL — `db/init.sql` is unused). All model definitions and their JSON formatters (`formatUser`, `formatCard`, etc.) are co-located in `models/index.js`.
 

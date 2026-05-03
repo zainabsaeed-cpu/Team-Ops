@@ -170,6 +170,7 @@ const formatUser = (user) => ({
   avatarUrl: user.avatarUrl || null,
   auth_provider: user.authProvider || 'email',
   created_at: user.createdAt,
+  createdAt: user.createdAt,
 })
 
 const formatWorkspace = (workspace, role, memberCount) => ({
