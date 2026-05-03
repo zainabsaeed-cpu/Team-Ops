@@ -4,6 +4,7 @@ const { sendVerificationEmail, sendInvitationEmail, sendWorkspaceInviteEmail } =
 
 const workspaceRoleHierarchy = { owner: 3, admin: 2, member: 1, viewer: 0 };
 const assignableRoles = ['admin', 'member', 'viewer'];
+const adminAssignableRoles = ['member', 'viewer'];
 const inviteCodeAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
 const generateInviteCode = () => {
@@ -55,6 +56,18 @@ const checkWorkspaceAccess = async (userId, workspaceId, requiredRole = 'member'
 const workspacePayloadForUser = (workspace, userId) => {
     const member = (workspace.members || []).find((item) => item.user.toString() === userId.toString());
     return formatWorkspace(workspace, member?.role || 'member', workspace.members.length);
+};
+
+const canManageTargetMember = (requesterRole, targetRole) => {
+    if (requesterRole === 'owner') return targetRole !== 'owner';
+    if (requesterRole === 'admin') return ['member', 'viewer'].includes(targetRole);
+    return false;
+};
+
+const canAssignMemberRole = (requesterRole, role) => {
+    if (requesterRole === 'owner') return assignableRoles.includes(role);
+    if (requesterRole === 'admin') return adminAssignableRoles.includes(role);
+    return false;
 };
 
 const ensureWorkspaceBoard = async (workspace) => {
@@ -200,12 +213,26 @@ exports.addMember = async (req, res) => {
         return res.status(400).json({ error: 'Workspace ID is required' });
     }
     const { email, role } = req.body;
-    const normalized = email.toLowerCase().trim();
-    let user = await User.findOne({ email: normalized });
+    const normalized = String(email || '').trim().toLowerCase();
+    if (!normalized || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+        return res.status(400).json({ error: 'Valid email is required' });
+    }
     const workspace = await Workspace.findById(workspaceId).lean();
     if (!workspace) {
         return res.status(404).json({ error: 'Workspace not found' });
     }
+
+    const requester = (workspace.members || []).find((member) => member.user.toString() === req.userId.toString());
+    if (!requester || !['owner', 'admin'].includes(requester.role)) {
+        return res.status(403).json({ error: 'Only owners and admins can add members' });
+    }
+
+    const requestedRole = assignableRoles.includes(role) ? role : 'member';
+    if (!canAssignMemberRole(requester.role, requestedRole)) {
+        return res.status(403).json({ error: 'Admins can only add members and viewers' });
+    }
+
+    let user = await User.findOne({ email: normalized });
 
     // If user does not exist, create an unverified placeholder and send verification
     let createdNewUser = false;
@@ -223,7 +250,7 @@ exports.addMember = async (req, res) => {
 
     await Workspace.updateOne(
         { _id: workspaceId, 'members.user': { $ne: user._id } },
-            { $push: { members: { user: user._id, role: assignableRoles.includes(role) ? role : 'member' } } }
+            { $push: { members: { user: user._id, role: requestedRole } } }
     );
 
     // Log activity
@@ -264,6 +291,10 @@ exports.inviteByEmail = async (req, res) => {
         const access = await checkWorkspaceAccess(req.userId, workspaceId, 'admin');
         if (!access.allowed) {
             return res.status(access.error === 'Workspace not found' ? 404 : 403).json({ error: access.error });
+        }
+
+        if (!canAssignMemberRole(access.member.role, normalizedRole)) {
+            return res.status(403).json({ error: 'Admins can only invite members and viewers' });
         }
 
         const existingUser = await User.findOne({ email: normalizedEmail }).lean();
@@ -403,8 +434,8 @@ exports.updateMemberRole = async (req, res) => {
         if (requester.role === 'admin' && !['member', 'viewer'].includes(target.role)) {
             return res.status(403).json({ error: 'Admins can only change members and viewers' });
         }
-        if (requester.role === 'admin' && role === 'admin') {
-            return res.status(403).json({ error: 'Admins cannot promote users to admin' });
+        if (!canManageTargetMember(requester.role, target.role) || !canAssignMemberRole(requester.role, role)) {
+            return res.status(403).json({ error: 'You cannot assign that role' });
         }
 
         target.role = role;
@@ -448,7 +479,7 @@ exports.removeMember = async (req, res) => {
         if (target.role === 'owner') {
             return res.status(400).json({ error: 'Owner cannot be removed here' });
         }
-        if (requester.role === 'admin' && !['member', 'viewer'].includes(target.role)) {
+        if (!canManageTargetMember(requester.role, target.role)) {
             return res.status(403).json({ error: 'Admins can only remove members and viewers' });
         }
 

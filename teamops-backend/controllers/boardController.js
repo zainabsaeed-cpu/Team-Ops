@@ -197,7 +197,7 @@ exports.deleteBoard = async (req, res) => {
 exports.getBoardData = async (req, res) => {
     const { boardId } = req.params;
     try {
-        const access = await resolveBoardAccess(req.userId, boardId, 'member');
+        const access = await resolveBoardAccess(req.userId, boardId, 'viewer');
         if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
 
         const workspace = await Workspace.findById(access.workspaceId).lean();
@@ -631,7 +631,7 @@ exports.moveCard = async (req, res) => {
         }
 
         // Check access
-        const access = await resolveBoardAccess(req.userId, boardId, 'viewer');
+        const access = await resolveBoardAccess(req.userId, boardId, 'member');
         if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
 
         const card = await Card.findById(cardId);
@@ -723,7 +723,7 @@ exports.getBoardAnalytics = async (req, res) => {
     const { boardId } = req.params;
 
     try {
-        const access = await resolveBoardAccess(req.userId, boardId, 'member');
+        const access = await resolveBoardAccess(req.userId, boardId, 'viewer');
         if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
 
         const columns = await Column.find({ board: boardId }).sort({ position: 1 }).lean();

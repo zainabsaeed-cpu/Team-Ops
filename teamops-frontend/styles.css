@@ -1464,7 +1464,8 @@ footer {
   justify-content: center;
   flex-shrink: 0;
 }
-.db-member-name { font-size: 13px; font-weight: 700; }
+.db-member-main { min-width: 0; }
+.db-member-name { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
 .db-member-role { font-size: 11px; color: var(--muted); }
 .db-pill {
   margin-left: auto;
@@ -1475,7 +1476,47 @@ footer {
   background: #f0fdf4;
   color: var(--teal);
 }
-.db-member-meta { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.db-member-meta { margin-left: auto; display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+.role-badge-owner { background: #f3e8ff; color: #7e22ce; }
+.role-badge-admin { background: #dbeafe; color: #1d4ed8; }
+.role-badge-member { background: #dcfce7; color: #15803d; }
+.role-badge-viewer { background: #f1f5f9; color: #475569; }
+.member-role-select { min-width: 104px; }
+.db-member-meta .teamops-select { width: 118px; }
+.db-member-meta .teamops-select-btn {
+  min-height: 34px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.member-remove-btn {
+  min-width: 92px;
+  height: 34px;
+  border: 1px solid rgba(244,63,94,0.22);
+  background: #fff1f2;
+  color: var(--rose);
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  font-family: inherit;
+}
+.member-remove-btn:hover { background: var(--rose); border-color: var(--rose); color: #fff; }
 .db-mini-track {
   width: 76px;
   height: 6px;

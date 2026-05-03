@@ -1951,9 +1951,9 @@ function renderWorkspaceMenu(workspaces = userWorkspaces) {
     <div class="workspace-menu-row ${currentWorkspace && String(currentWorkspace.id) === String(workspace.id) ? 'active' : ''}">
       <button class="workspace-menu-item" onclick="selectWorkspace('${workspace.id}')">
         <strong>${escapeHtml(workspace.name || 'Workspace')}</strong>
-        <span>${escapeHtml(workspace.role || 'member')} · ${escapeHtml(workspace.inviteCode || '')}</span>
+        <span>${escapeHtml(workspace.role || 'member')}${['owner', 'admin'].includes(workspace.role) && workspace.inviteCode ? ` · ${escapeHtml(workspace.inviteCode)}` : ''}</span>
       </button>
-      ${workspace.inviteCode ? `<button class="workspace-copy-code-btn" onclick="copyWorkspaceInviteCode('${encodeURIComponent(workspace.inviteCode)}')" title="Copy invite code"><i class="bi bi-copy"></i></button>` : ''}
+      ${workspace.inviteCode && ['owner', 'admin'].includes(workspace.role) ? `<button class="workspace-copy-code-btn" onclick="copyWorkspaceInviteCode('${encodeURIComponent(workspace.inviteCode)}')" title="Copy invite code"><i class="bi bi-copy"></i></button>` : ''}
     </div>
   `).join('') + `
     <button class="workspace-menu-item" onclick="showCreateWorkspace()">
@@ -2014,6 +2014,10 @@ async function copyTextToClipboard(text) {
 }
 
 async function copyCurrentInviteCode() {
+  if (!['owner', 'admin'].includes(currentWorkspaceRole)) {
+    showToast('bi-shield-lock', 'Permission needed', 'Only owners and admins can invite members.');
+    return;
+  }
   const code = currentWorkspace?.inviteCode || localStorage.getItem('teamops_invite_code') || '';
   if (!code) {
     showToast('bi-exclamation-circle', 'No invite code', 'Create or select a workspace first.');
@@ -2024,6 +2028,10 @@ async function copyCurrentInviteCode() {
 }
 
 async function copyWorkspaceInviteCode(encodedCode) {
+  if (!['owner', 'admin'].includes(currentWorkspaceRole)) {
+    showToast('bi-shield-lock', 'Permission needed', 'Only owners and admins can invite members.');
+    return;
+  }
   const code = decodeURIComponent(encodedCode || '');
   if (!code) return;
   await copyTextToClipboard(code);
@@ -2031,6 +2039,10 @@ async function copyWorkspaceInviteCode(encodedCode) {
 }
 
 async function copyCurrentInviteLink() {
+  if (!['owner', 'admin'].includes(currentWorkspaceRole)) {
+    showToast('bi-shield-lock', 'Permission needed', 'Only owners and admins can invite members.');
+    return;
+  }
   const code = currentWorkspace?.inviteCode || localStorage.getItem('teamops_invite_code') || '';
   const link = currentWorkspace?.inviteLink || localStorage.getItem('teamops_invite_link') || (code ? `${window.location.origin}/join?code=${encodeURIComponent(code)}` : '');
   if (!link) {
@@ -2060,23 +2072,30 @@ function applyWorkspaceContext(sessionUser, workspaces) {
   renderInviteCodePanels(primaryWorkspace);
 
   const canManage = role === 'owner' || role === 'admin';
+  const canManageCards = ['owner', 'admin', 'member'].includes(role);
   const newBoardBtn = document.getElementById('newBoardBtn');
   const membersNavBtn = document.getElementById('membersNavBtn');
   const settingsNavBtn = document.getElementById('settingsNavBtn');
+  const headerAddBtn = document.querySelector('.h-add-btn');
+  const invitePanel = document.querySelector('#dbView-members .workspace-invite-panel');
+  const settingsInviteRow = document.querySelector('#dbView-settings .invite-setting-row');
 
   if (newBoardBtn) {
-    newBoardBtn.style.opacity = canManage ? '1' : '0.45';
-    newBoardBtn.style.pointerEvents = canManage ? 'auto' : 'none';
+    newBoardBtn.classList.toggle('hidden', !canManage);
     newBoardBtn.title = canManage ? '' : 'Only owners and admins can create boards';
   }
   if (membersNavBtn) {
-    membersNavBtn.style.opacity = canManage ? '1' : '0.55';
-    membersNavBtn.title = canManage ? '' : 'Members page is read-only for members';
+    membersNavBtn.style.opacity = '1';
+    membersNavBtn.title = '';
   }
   if (settingsNavBtn) {
     settingsNavBtn.style.opacity = canManage ? '1' : '0.55';
     settingsNavBtn.title = canManage ? '' : 'Workspace settings require owner or admin access';
   }
+  if (headerAddBtn) headerAddBtn.classList.toggle('hidden', !canManageCards);
+  if (invitePanel) invitePanel.classList.toggle('hidden', !canManage);
+  if (settingsInviteRow) settingsInviteRow.classList.toggle('hidden', !canManage);
+  document.querySelectorAll('.invite-row').forEach(button => button.classList.toggle('hidden', !canManage));
 
   if (primaryWorkspace?.id) {
     loadWorkspaceMembers({ silent: true });
@@ -2136,11 +2155,13 @@ async function loadWorkspaceBoards(workspaceId, role = currentWorkspaceRole) {
       boardList.innerHTML = '<button class="aside-board-item active"><div class="b-dot u-style-4"></div>No boards yet</button>';
     }
 
-    boardList.insertAdjacentHTML('beforeend', `
-      <button class="aside-board-item u-style-34" id="newBoardBtn" onclick="createBoardFromSidebar()" ${canManage ? '' : 'disabled title="Only owners and admins can create boards"'}>
-        + New board
-      </button>
-    `);
+    if (canManage) {
+      boardList.insertAdjacentHTML('beforeend', `
+        <button class="aside-board-item u-style-34" id="newBoardBtn" onclick="createBoardFromSidebar()">
+          + New board
+        </button>
+      `);
+    }
 
     if (activeBoard) {
       localStorage.setItem('teamops_board_id', activeBoard.id);
@@ -2847,12 +2868,104 @@ function memberAvatarClass(index) {
   return ['u-style-4', 'u-style-11', 'u-style-5', 'u-style-59'][index % 4];
 }
 
+function getCurrentUserId() {
+  try {
+    const user = JSON.parse(localStorage.getItem(USER_KEY) || '{}');
+    return user?.id || user?._id || '';
+  } catch (_) {
+    return '';
+  }
+}
+
+function roleBadgeClass(role = 'member') {
+  const normalized = String(role || 'member').toLowerCase();
+  if (normalized === 'owner') return 'role-badge-owner';
+  if (normalized === 'admin') return 'role-badge-admin';
+  if (normalized === 'viewer') return 'role-badge-viewer';
+  return 'role-badge-member';
+}
+
+function canEditMemberRole(member = {}) {
+  const currentUserId = getCurrentUserId();
+  if (String(member.id) === String(currentUserId)) return false;
+  if (currentWorkspaceRole === 'owner') return member.role !== 'owner';
+  if (currentWorkspaceRole === 'admin') return ['member', 'viewer'].includes(member.role);
+  return false;
+}
+
+function assignableRoleOptionsFor(member = {}) {
+  if (currentWorkspaceRole === 'owner') return ['admin', 'member', 'viewer'];
+  if (currentWorkspaceRole === 'admin' && ['member', 'viewer'].includes(member.role)) return ['member', 'viewer'];
+  return [];
+}
+
+function renderMemberRoleControl(member = {}) {
+  if (!canEditMemberRole(member)) {
+    return `<span class="role-badge ${roleBadgeClass(member.role)}">${escapeHtml(roleLabel(member.role))}</span>`;
+  }
+
+  const options = assignableRoleOptionsFor(member);
+  return `
+    <select class="member-role-select" onchange="updateWorkspaceMemberRole('${member.id}', this.value)">
+      ${options.map(role => `<option value="${role}" ${role === member.role ? 'selected' : ''}>${roleLabel(role)}</option>`).join('')}
+    </select>
+  `;
+}
+
+function canRemoveWorkspaceMember(member = {}) {
+  const currentUserId = getCurrentUserId();
+  if (String(member.id) === String(currentUserId)) return false;
+  if (member.role === 'owner') return false;
+  if (currentWorkspaceRole === 'owner') return true;
+  if (currentWorkspaceRole === 'admin') return ['member', 'viewer'].includes(member.role);
+  return false;
+}
+
+async function updateWorkspaceMemberRole(memberId, role) {
+  const workspaceId = localStorage.getItem('teamops_workspace_id');
+  if (!workspaceId || !memberId || !role) return;
+
+  try {
+    await apiRequest(`/workspaces/${workspaceId}/members/${memberId}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    });
+    showToast('bi-shield-check', 'Role updated', `Member is now ${roleLabel(role)}.`);
+    await loadWorkspaceMembers({ silent: true });
+  } catch (error) {
+    showToast('bi-shield-lock', 'Role change blocked', error.message);
+    await loadWorkspaceMembers({ silent: true });
+  }
+}
+
+async function removeWorkspaceMember(memberId) {
+  const workspaceId = localStorage.getItem('teamops_workspace_id');
+  const member = workspaceMembers.find(item => String(item.id) === String(memberId));
+  if (!workspaceId || !member || !canRemoveWorkspaceMember(member)) return;
+
+  const confirmed = await showConfirmDialog({
+    title: 'Remove member',
+    message: `Remove ${member.name || member.email || 'this member'} from the workspace?`,
+    action: 'Remove member',
+  });
+  if (!confirmed) return;
+
+  try {
+    await apiRequest(`/workspaces/${workspaceId}/members/${memberId}`, { method: 'DELETE' });
+    showToast('bi-person-dash', 'Member removed', `${member.name || member.email || 'Member'} no longer has access.`);
+    await loadWorkspaceMembers({ silent: true });
+  } catch (error) {
+    showToast('bi-exclamation-circle', 'Remove failed', error.message);
+  }
+}
+
 function renderWorkspaceMembers(payload = {}) {
   const rightList = getRightMembersList();
   const membersGrid = getMembersGrid();
   const totalCount = document.getElementById('membersTotalCount');
   const heroNote = document.getElementById('membersHeroNote');
   const members = workspaceMembers;
+  const canInviteMembers = ['owner', 'admin'].includes(currentWorkspaceRole);
 
   if (totalCount) {
     totalCount.textContent = String(members.length);
@@ -2871,6 +2984,9 @@ function renderWorkspaceMembers(payload = {}) {
     if (rightList) rightList.innerHTML = emptyHtml;
     if (membersGrid) membersGrid.innerHTML = emptyHtml;
     renderMemberLoadBars();
+    document.querySelector('#dbView-members .workspace-invite-panel')?.classList.toggle('hidden', !canInviteMembers);
+    document.querySelector('#dbView-settings .invite-setting-row')?.classList.toggle('hidden', !canInviteMembers);
+    document.querySelectorAll('.invite-row').forEach(button => button.classList.toggle('hidden', !canInviteMembers));
     return;
   }
 
@@ -2880,7 +2996,7 @@ function renderWorkspaceMembers(payload = {}) {
         <div class="mb-av ${memberAvatarClass(index)}">${escapeHtml(memberInitial(member.name))}</div>
         <div>
           <div class="mb-name">${escapeHtml(member.name || member.email || 'Member')}</div>
-          <div class="mb-role">${escapeHtml(roleLabel(member.role))}</div>
+          <div class="mb-role"><span class="role-badge ${roleBadgeClass(member.role)}">${escapeHtml(roleLabel(member.role))}</span></div>
         </div>
       </div>
     `).join('');
@@ -2890,18 +3006,26 @@ function renderWorkspaceMembers(payload = {}) {
     membersGrid.innerHTML = members.map((member, index) => `
       <div class="db-member-card">
         <div class="db-member-av ${memberAvatarClass(index)}">${escapeHtml(memberInitial(member.name))}</div>
-        <div>
-          <div class="db-member-name">${escapeHtml(member.name || member.email || 'Member')}</div>
+        <div class="db-member-main">
+          <div class="db-member-name">
+            ${escapeHtml(member.name || member.email || 'Member')}
+            <span class="role-badge ${roleBadgeClass(member.role)}">${escapeHtml(roleLabel(member.role))}</span>
+          </div>
           <div class="db-member-role">${escapeHtml(member.email || roleLabel(member.role))}</div>
         </div>
         <div class="db-member-meta">
-          <div class="db-pill">${escapeHtml(roleLabel(member.role))}</div>
+          ${renderMemberRoleControl(member)}
+          ${canRemoveWorkspaceMember(member) ? `<button class="member-remove-btn" onclick="removeWorkspaceMember('${member.id}')" title="Remove member"><i class="bi bi-person-dash"></i><span>Remove</span></button>` : ''}
         </div>
       </div>
     `).join('');
+    enhanceAllSelects();
   }
 
   renderMemberLoadBars();
+  document.querySelector('#dbView-members .workspace-invite-panel')?.classList.toggle('hidden', !canInviteMembers);
+  document.querySelector('#dbView-settings .invite-setting-row')?.classList.toggle('hidden', !canInviteMembers);
+  document.querySelectorAll('.invite-row').forEach(button => button.classList.toggle('hidden', !canInviteMembers));
 }
 
 function getRightMembersList() {
@@ -3259,6 +3383,10 @@ function todayISO() {
 }
 
 function openCardModal(columnId = '', card = null) {
+  if (!['owner', 'admin', 'member'].includes(currentWorkspaceRole)) {
+    showToast('bi-shield-lock', 'Read-only access', 'Viewers can see cards but cannot edit them.');
+    return;
+  }
   currentEditingCardId = card?.id || null;
   currentCardColumn = columnId || card?.column_id || activeBoardData?.columns?.[0]?.id || '';
   populateCardColumnOptions(currentCardColumn);
@@ -3319,6 +3447,10 @@ async function loadAssigneeOptions(selectedAssigneeId = '') {
 
 async function submitCardForm(e) {
   e.preventDefault();
+  if (!['owner', 'admin', 'member'].includes(currentWorkspaceRole)) {
+    showToast('bi-shield-lock', 'Permission needed', 'Viewers cannot create or edit cards.');
+    return;
+  }
   const title = document.getElementById('cardTitle').value;
   const description = document.getElementById('cardDesc').value;
   const priority = document.getElementById('cardPriority').value;
@@ -3377,6 +3509,10 @@ async function submitCardForm(e) {
 }
 
 async function deleteCurrentCard() {
+  if (!['owner', 'admin', 'member'].includes(currentWorkspaceRole)) {
+    showToast('bi-shield-lock', 'Permission needed', 'Viewers cannot delete cards.');
+    return;
+  }
   const boardId = localStorage.getItem('teamops_board_id');
   if (!boardId || !currentEditingCardId) return;
   const confirmed = await showConfirmDialog({
@@ -3404,6 +3540,10 @@ function getColumnByIdOrKey(columnRef) {
 }
 
 function addCard(col) {
+  if (!['owner', 'admin', 'member'].includes(currentWorkspaceRole)) {
+    showToast('bi-shield-lock', 'Read-only access', 'Viewers cannot create cards.');
+    return;
+  }
   openCardModal(col);
 }
 
@@ -3476,12 +3616,13 @@ async function loadBoardData() {
   if (!boardContainer) return;
 
   if (!boardId) {
+    const canManageBoards = ['owner', 'admin'].includes(currentWorkspaceRole);
     boardContainer.innerHTML = `
       <div class="board-empty-state">
         <i class="bi bi-kanban"></i>
         <h3>Create or join a workspace, then create a board</h3>
         <p>Boards hold your columns, cards, and real-time activity.</p>
-        <button class="add-col-btn" onclick="createBoardFromSidebar()">+ New board</button>
+        ${canManageBoards ? '<button class="add-col-btn" onclick="createBoardFromSidebar()">+ New board</button>' : ''}
       </div>
     `;
     return;
@@ -3523,15 +3664,15 @@ function renderBoard(board) {
         <div class="b-col-title">${escapeHtml(column.title)}</div>
         <div class="b-col-count">${column.cards?.length || 0}</div>
         ${canManageColumns ? `<button class="column-edit-btn" onclick="openColumnModal('${column.id}')" title="Edit column"><i class="bi bi-pencil"></i></button>` : ''}
-        <button class="b-col-add" onclick="addCard('${column.id}')" ${canManageCards ? '' : 'disabled title="Viewers cannot add cards"'}>+</button>
+        ${canManageCards ? `<button class="b-col-add" onclick="addCard('${column.id}')">+</button>` : ''}
       </div>
       <div class="b-cards" data-column-id="${column.id}">
         ${(column.cards || []).map(renderCard).join('')}
       </div>
-      <button class="b-add-card" onclick="addCard('${column.id}')" ${canManageCards ? '' : 'disabled title="Viewers cannot add cards"'}>+ Add a card</button>
+      ${canManageCards ? `<button class="b-add-card" onclick="addCard('${column.id}')">+ Add a card</button>` : ''}
     </div>
   `).join('') + `
-    <button class="add-col-btn" onclick="addColumn()" ${canManageColumns ? '' : 'disabled title="Only owners and admins can add columns"'}>+ Add Column</button>
+    ${canManageColumns ? '<button class="add-col-btn" onclick="addColumn()">+ Add Column</button>' : ''}
   `;
 }
 
@@ -3547,7 +3688,7 @@ function renderCard(card) {
   const priority = card.priority || 'medium';
   const assigneeInitial = card.assignee_name?.charAt(0)?.toUpperCase() || 'Z';
   return `
-    <div class="b-card" draggable="true" data-card-id="${card.id}" onclick="openCardById('${card.id}')">
+    <div class="b-card" draggable="${['owner', 'admin', 'member'].includes(currentWorkspaceRole) ? 'true' : 'false'}" data-card-id="${card.id}" onclick="openCardById('${card.id}')">
       <div class="card-tags"><span class="c-tag ct-v">Task</span></div>
       <div class="b-card-title">${escapeHtml(card.title)}</div>
       <div class="b-card-foot">
@@ -3709,6 +3850,7 @@ function openCardDetail(card) {
 }
 
 function setupDragDrop(board) {
+  if (!['owner', 'admin', 'member'].includes(currentWorkspaceRole)) return;
   let dragged = null, srcCol = null;
   
   document.addEventListener('dragstart', e => {
