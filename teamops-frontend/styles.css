@@ -1441,6 +1441,7 @@ footer {
   border-radius: 16px;
   padding: 16px;
   margin-bottom: 12px;
+  min-width: 0;
 }
 .db-slab-title { font-size: 12px; font-weight: 800; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
 .db-slab-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
@@ -1540,7 +1541,7 @@ footer {
 .db-donut {
   width: 132px;
   height: 132px;
-  margin: 8px auto 10px;
+  margin: 0 auto;
   border-radius: 50%;
   background: conic-gradient(var(--violet) 0 58%, #f59e0b 58% 82%, #14b8a6 82% 100%);
   position: relative;
@@ -1548,6 +1549,14 @@ footer {
   opacity: 0.75;
 }
 .db-content-view.active.is-animating .db-donut { animation: dbDonutIn 0.75s var(--spring) forwards; }
+.db-donut-wrap {
+  width: 132px;
+  height: 132px;
+  margin: 18px auto 12px;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
 @keyframes dbDonutIn {
   0% { transform: scale(0.9) rotate(-18deg); opacity: 0.75; }
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
@@ -1560,14 +1569,16 @@ footer {
   border-radius: 50%;
 }
 .db-donut-label {
-  position: relative;
-  margin-top: -91px;
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
   text-align: center;
   font-size: 26px;
   font-weight: 800;
   z-index: 1;
 }
-.db-donut-sub { text-align: center; font-size: 12px; color: var(--muted); margin-top: 24px; }
+.db-donut-sub { text-align: center; font-size: 12px; color: var(--muted); margin: 0 0 18px; }
 .db-activity-list { display: grid; gap: 10px; }
 .db-activity-item {
   display: grid;

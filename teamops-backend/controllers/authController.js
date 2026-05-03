@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 const { User, VerificationToken, Workspace, Board, Column, formatUser } = require('../models');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/mailer');
+const { logAccountActivity } = require('../utils/auditLogger');
 const jwtSecret = process.env.JWT_SECRET || 'teamops-dev-secret';
 const googleClientId = process.env.GOOGLE_CLIENT_ID || '175739577750-6pglkgnai3nha232d8js957jl529ep5i.apps.googleusercontent.com';
 const googleClient = new OAuth2Client(googleClientId);
@@ -229,6 +230,7 @@ exports.resetPassword = async (req, res) => {
         const passwordHash = await bcrypt.hash(password, 10);
         await User.findByIdAndUpdate(user._id, { passwordHash, verified: true, authProvider: 'email' });
         await VerificationToken.deleteOne({ _id: resetToken._id });
+        await logAccountActivity(user._id, 'Reset account password');
 
         res.json({ message: 'Password reset successfully' });
     } catch (err) {
@@ -254,6 +256,7 @@ exports.login = async (req, res) => {
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
 
+        await logAccountActivity(user._id, 'Logged in with email');
         res.json(issueSession(user));
     } catch (err) {
         res.status(500).json({ error: 'Server error' });
@@ -317,6 +320,7 @@ exports.googleLogin = async (req, res) => {
             await createStarterWorkspace(user._id);
         }
 
+        await logAccountActivity(user._id, 'Logged in with Google');
         res.json(issueSession(user));
     } catch (err) {
         console.error('Google login error:', err);

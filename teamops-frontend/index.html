@@ -496,7 +496,7 @@
     <div class="aside-section">
       <div class="aside-sec-label">Manage</div>
       <button class="aside-nav-btn" data-db-view="projects" onclick="switchDashboardView('projects', this)"><span class="anb-icon"><i class="bi bi-briefcase"></i></span> Projects</button>
-      <button class="aside-nav-btn" data-db-view="audit" onclick="switchDashboardView('audit', this)"><span class="anb-icon"><i class="bi bi-clipboard-check"></i></span> Audit Log</button>
+      <button class="aside-nav-btn" data-db-view="audit" id="auditNavBtn" onclick="switchDashboardView('audit', this)"><span class="anb-icon"><i class="bi bi-clipboard-check"></i></span> Audit Log</button>
       <button class="aside-nav-btn" data-db-view="help" onclick="switchDashboardView('help', this)"><span class="anb-icon"><i class="bi bi-question-circle"></i></span> Help</button>
       <button class="aside-nav-btn" data-db-view="saved" onclick="switchDashboardView('saved', this)"><span class="anb-icon"><i class="bi bi-bookmark"></i></span> Saved Views</button>
     </div>
@@ -733,13 +733,13 @@
             <div class="db-hero-badges">
               <span class="db-badge"><i class="bi bi-lightning-charge"></i> WebSocket Live</span>
               <span class="db-badge"><i class="bi bi-kanban"></i> Board scoped</span>
-              <span class="db-badge"><i class="bi bi-database-check"></i> MongoDB data</span>
+              <span class="db-badge"><i class="bi bi-database-check"></i> Live data</span>
             </div>
           </div>
           <div class="db-hero-metric">
             <div class="db-hero-metric-label">Cards this board</div>
             <div class="db-hero-metric-value" id="analyticsTotalCards" data-countup="0">0</div>
-            <div class="db-hero-metric-note" id="analyticsTotalNote">Loaded from MongoDB</div>
+            <div class="db-hero-metric-note" id="analyticsTotalNote">Board data ready</div>
           </div>
         </div>
       </div>
@@ -796,8 +796,10 @@
         </div>
         <div class="db-slab">
           <div class="db-slab-title">Cards per assignee</div>
-          <div class="db-donut"></div>
-          <div class="db-donut-label" id="analyticsAssignedTotal" data-countup="0">0</div>
+          <div class="db-donut-wrap">
+            <div class="db-donut"></div>
+            <div class="db-donut-label" id="analyticsAssignedTotal" data-countup="0">0</div>
+          </div>
           <div class="db-donut-sub">Cards assigned on this board</div>
           <div class="db-bars u-style-53" id="analyticsAssigneeBars">
             <div class="db-bar-row u-style-54"><div class="db-bar-name">Loading</div><div class="db-bar-val">0</div></div>
@@ -867,7 +869,7 @@
           <div class="db-hero-metric">
             <div class="db-hero-metric-label">Workspace members</div>
             <div class="db-hero-metric-value" id="membersTotalCount" data-countup="0">0</div>
-            <div class="db-hero-metric-note" id="membersHeroNote">Loaded from workspace</div>
+            <div class="db-hero-metric-note" id="membersHeroNote">Workspace roster ready</div>
           </div>
         </div>
       </div>
@@ -1053,7 +1055,7 @@
             <div class="db-project-meta">Syncing data</div>
           </div>
           <div class="db-project-desc">Fetching boards, cards, and member activity from your workspace.</div>
-          <div class="db-project-tags"><span>Realtime</span><span>MongoDB</span></div>
+          <div class="db-project-tags"><span>Realtime</span><span>Live data</span></div>
           <div class="db-project-progress"><div class="db-progress-bar" style="width:20%"></div></div>
         </div>
       </div>
@@ -1511,6 +1513,11 @@ function showView(id) {
   window.scrollTo(0, 0);
 }
 function switchDashboardView(viewId, btnEl) {
+  if (viewId === 'audit' && !['owner', 'admin'].includes(currentWorkspaceRole)) {
+    showToast('bi-shield-lock', 'Admin only', 'Audit logs are limited to workspace owners and admins.');
+    return;
+  }
+
   const target = document.getElementById('dbView-' + viewId);
   if (!target) return;
   document.querySelectorAll('.db-content-view').forEach(v => v.classList.remove('active'));
@@ -1532,7 +1539,8 @@ function switchDashboardView(viewId, btnEl) {
     notifications: 'Notifications — Inbox',
     members: 'Members — Workspace Team',
     settings: 'Settings — Workspace Preferences',
-    profile: 'Profile — My Account'
+    profile: 'Profile — My Account',
+    audit: 'Audit — Admin Log'
   };
   const titleEl = document.getElementById('dbHeaderTitle');
   if (titleEl) titleEl.textContent = titles[viewId] || 'TeamOps Dashboard';
@@ -2113,6 +2121,7 @@ function connectRealtime(userId = '') {
     const boardId = localStorage.getItem('teamops_board_id');
     if (payload?.board_id && String(payload.board_id) !== String(boardId)) return;
     if (payload?.boardId && String(payload.boardId) !== String(boardId)) return;
+    if (!shouldShowActivityEvent(payload)) return;
     if (payload?.action || payload?.message) {
       prependActivity(payload);
       renderAuditLog();
@@ -2509,6 +2518,7 @@ function applyWorkspaceContext(sessionUser, workspaces) {
   const projectsNewBoardBtn = document.getElementById('projectsNewBoardBtn');
   const membersNavBtn = document.getElementById('membersNavBtn');
   const settingsNavBtn = document.getElementById('settingsNavBtn');
+  const auditNavBtn = document.getElementById('auditNavBtn');
   const headerAddBtn = document.querySelector('.h-add-btn');
   const invitePanel = document.querySelector('#dbView-members .workspace-invite-panel');
   const settingsInviteRow = document.querySelector('#dbView-settings .invite-setting-row');
@@ -2528,6 +2538,10 @@ function applyWorkspaceContext(sessionUser, workspaces) {
   if (settingsNavBtn) {
     settingsNavBtn.style.opacity = canManage ? '1' : '0.55';
     settingsNavBtn.title = canManage ? '' : 'Workspace settings require owner or admin access';
+  }
+  if (auditNavBtn) {
+    auditNavBtn.classList.toggle('hidden', !canManage);
+    auditNavBtn.title = canManage ? '' : 'Audit logs are limited to owners and admins';
   }
   if (headerAddBtn) headerAddBtn.classList.toggle('hidden', !canManageCards);
   if (invitePanel) invitePanel.classList.toggle('hidden', !canManage);
@@ -2636,7 +2650,7 @@ async function selectBoard(boardId, options = {}) {
   renderSprintProgress();
   refreshAnalyticsBoardSelector();
   renderSavedViews();
-  showToast('bi-kanban', 'Board opened', 'Loaded columns and cards from MongoDB');
+  showToast('bi-kanban', 'Board opened', 'Columns and cards are ready');
 }
 
 function refreshAnalyticsBoardSelector() {
@@ -2715,7 +2729,7 @@ async function loadAnalyticsData(boardId = localStorage.getItem('teamops_board_i
 
     const subtitle = document.getElementById('analyticsBoardSubtitle');
     if (subtitle) {
-      subtitle.textContent = `Live performance pulse for ${board?.name || board?.title || 'this board'} with MongoDB-backed cards, columns, and assignments.`;
+      subtitle.textContent = `Live performance pulse for ${board?.name || board?.title || 'this board'} with cards, columns, and assignments.`;
     }
 
     renderAnalyticsBars('analyticsColumnBars', cardsPerColumn, 'columnTitle', 'count');
@@ -2820,7 +2834,7 @@ async function submitBoardForm(event) {
       closeBoardModal();
       switchDashboardView('board');
       await loadWorkspaceBoards(workspaceId, currentWorkspaceRole);
-      showToast('bi-kanban', currentEditingBoardId ? 'Board updated' : 'Board created', `"${trimmed}" saved to MongoDB.`);
+      showToast('bi-kanban', currentEditingBoardId ? 'Board updated' : 'Board created', `"${trimmed}" is ready.`);
     }
   } catch (error) {
     showToast('bi-exclamation-circle', 'Could not save board', error.message);
@@ -3866,13 +3880,20 @@ function renderMemberLoadBars() {
 
 async function loadAuditLog() {
   const workspaceId = localStorage.getItem('teamops_workspace_id');
+  if (!canViewAuditLogs()) {
+    const auditList = document.getElementById('auditLogList');
+    const auditCount = document.getElementById('auditEventCount');
+    if (auditCount) auditCount.textContent = 'Admin only';
+    if (auditList) auditList.innerHTML = '<div class="notif-empty">Audit logs are limited to workspace owners and admins. Use Activity for your own board updates.</div>';
+    return;
+  }
   if (!workspaceId) {
     renderAuditLog([]);
     return;
   }
 
   try {
-    const activities = await apiRequest(`/activities/workspace/${workspaceId}`);
+    const activities = await apiRequest(`/activities/workspace/${workspaceId}/audit`);
     renderAuditLog(Array.isArray(activities) ? activities : []);
   } catch (error) {
     console.error('Load audit error:', error);
@@ -3883,10 +3904,32 @@ async function loadAuditLog() {
 
 function isAuditEvent(activity = {}) {
   const message = activity.action || activity.message || '';
-  return /workspace|member|role|invite|invited|joined|removed|board|column|delete|deleted|archive|permission/i.test(message);
+  return /workspace|member|role|invite|invited|joined|removed|delete|deleted|archive|permission|settings|logged in|login|password|profile|account|security/i.test(message);
+}
+
+function canViewAuditLogs() {
+  return ['owner', 'admin'].includes(currentWorkspaceRole);
+}
+
+function getCurrentUserId() {
+  try {
+    const user = JSON.parse(localStorage.getItem(USER_KEY) || '{}');
+    return String(user.id || user._id || '');
+  } catch (_) {
+    return '';
+  }
+}
+
+function shouldShowActivityEvent(activity = {}) {
+  if (!isAuditEvent(activity) || canViewAuditLogs()) return true;
+  const actorId = String(activity.user_id || activity.userId || activity.user || '');
+  return actorId && actorId === getCurrentUserId();
 }
 
 function auditActionMeta(message = '') {
+  if (/login|logged in/i.test(message)) return { label: 'Login', icon: 'bi-box-arrow-in-right', cls: 'u-style-78' };
+  if (/password|security/i.test(message)) return { label: 'Security', icon: 'bi-shield-lock', cls: 'u-style-79' };
+  if (/profile|account/i.test(message)) return { label: 'Account', icon: 'bi-person-gear', cls: 'u-style-78' };
   if (/delete|remove|archive/i.test(message)) return { label: 'Removed', icon: 'bi-trash', cls: 'u-style-81' };
   if (/role|permission/i.test(message)) return { label: 'Access', icon: 'bi-shield-check', cls: 'u-style-79' };
   if (/invite|joined|member/i.test(message)) return { label: 'Member', icon: 'bi-person-plus', cls: 'u-style-78' };
@@ -3916,7 +3959,7 @@ function renderAuditLog(source = null) {
           <div class="db-audit-action ${meta.cls}"><i class="bi ${meta.icon}"></i> ${meta.label}</div>
           <div class="db-audit-desc">
             <div class="db-audit-title">${escapeHtml(activity.message)}</div>
-            <div class="db-audit-user">Workspace audit event</div>
+            <div class="db-audit-user">${escapeHtml(activity.user_name || activity.userName || 'Workspace audit event')}</div>
           </div>
           <div class="db-audit-time">${formatTimeAgo(new Date(activity.created_at))}</div>
         </div>
@@ -4647,7 +4690,7 @@ async function submitCardForm(e) {
       body: JSON.stringify(payload),
     });
     closeCardModal();
-    showToast('bi-plus-circle', currentEditingCardId ? 'Card updated' : 'Card created', `"${title}" saved to MongoDB`);
+    showToast('bi-plus-circle', currentEditingCardId ? 'Card updated' : 'Card created', `"${title}" is ready`);
     await loadBoardData();
   } catch (error) {
     console.error('Save card error:', error);
@@ -4671,7 +4714,7 @@ async function deleteCurrentCard() {
   try {
     await apiRequest(`/boards/${boardId}/cards/${currentEditingCardId}`, { method: 'DELETE' });
     closeCardModal();
-    showToast('bi-trash', 'Card deleted', 'The card was removed from MongoDB.');
+    showToast('bi-trash', 'Card deleted', 'The card was removed.');
     await loadBoardData();
   } catch (error) {
     showToast('bi-exclamation-circle', 'Delete failed', error.message);
@@ -4731,7 +4774,7 @@ async function submitColumnForm(event) {
       body: JSON.stringify({ title }),
     });
     closeColumnModal();
-    showToast('bi-kanban', currentEditingColumnId ? 'Column updated' : 'Column added', `"${title}" saved to MongoDB.`);
+    showToast('bi-kanban', currentEditingColumnId ? 'Column updated' : 'Column added', `"${title}" is ready.`);
     await loadBoardData();
   } catch (error) {
     showToast('bi-exclamation-circle', 'Could not save column', error.message);

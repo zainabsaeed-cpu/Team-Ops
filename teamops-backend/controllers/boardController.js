@@ -1,5 +1,6 @@
 const { Workspace, Board, Column, Card, Comment, Activity, User, formatBoard, formatColumn, formatCard, formatComment, formatActivityLog } = require('../models');
 const { createActivity, createNotification, emitBoardEvent } = require('../utils/realtime');
+const { filterActivitiesForRole } = require('../utils/activityVisibility');
 
 const startOfToday = () => {
     const now = new Date();
@@ -227,6 +228,7 @@ exports.getBoardData = async (req, res) => {
         }));
 
         const activitiesResult = await Activity.find({ $or: [{ boardId }, { board: boardId }, { workspace: boardId }] }).sort({ createdAt: -1 }).limit(50).populate('user', 'name').lean();
+        const visibleActivities = filterActivitiesForRole(activitiesResult, access.member?.role, req.userId);
 
         res.json({
             id: boardId,
@@ -235,7 +237,7 @@ exports.getBoardData = async (req, res) => {
             name: access.board.name,
             color: access.board.color || defaultBoardColors[0],
             columns,
-            activityLogs: activitiesResult.map(formatActivityLog)
+            activityLogs: visibleActivities.map(formatActivityLog)
         });
     } catch (err) {
         console.error(err);

@@ -1,5 +1,7 @@
 const bcrypt = require('bcryptjs');
 const { Workspace, Board, User, Activity, Column, Card, formatUser } = require('../models');
+const { filterActivitiesForRole } = require('../utils/activityVisibility');
+const { logAccountActivity } = require('../utils/auditLogger');
 
 exports.getProfile = async (req, res) => {
     try {
@@ -46,6 +48,13 @@ exports.updateProfile = async (req, res) => {
 
         const user = await User.findByIdAndUpdate(req.userId, updates, { new: true }).lean();
         if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const changedFields = [];
+        if (Object.prototype.hasOwnProperty.call(updates, 'name')) changedFields.push('name');
+        if (Object.prototype.hasOwnProperty.call(updates, 'avatarUrl')) changedFields.push('avatar');
+        if (changedFields.length) {
+            await logAccountActivity(req.userId, `Updated profile ${changedFields.join(' and ')}`);
+        }
 
         res.json({ user: formatUser(user) });
     } catch (err) {
@@ -156,7 +165,15 @@ exports.getActivityFeed = async (req, res) => {
         const workspaces = await Workspace.find({ 'members.user': req.userId }).lean();
         const workspaceIds = workspaces.map((workspace) => workspace._id);
         const result = await Activity.find({ workspace: { $in: workspaceIds } }).sort({ createdAt: -1 }).limit(20).lean();
-        res.json(result.map((activity) => ({
+        const rolesByWorkspace = new Map(workspaces.map((workspace) => {
+            const member = (workspace.members || []).find((item) => String(item?.user?._id || item?.user || '') === String(req.userId));
+            return [String(workspace._id), member?.role || 'member'];
+        }));
+        const visibleActivities = result.filter((activity) => {
+            const workspaceId = String(activity.workspaceId || activity.workspace || '');
+            return filterActivitiesForRole([activity], rolesByWorkspace.get(workspaceId), req.userId).length > 0;
+        });
+        res.json(visibleActivities.map((activity) => ({
             id: activity._id.toString(),
             message: activity.action,
             time: new Date(activity.createdAt).toLocaleString(),
@@ -327,6 +344,7 @@ exports.changePassword = async (req, res) => {
 
         user.passwordHash = await bcrypt.hash(newPassword, 10);
         await user.save();
+        await logAccountActivity(req.userId, 'Changed account password');
 
         res.json({ message: 'Password updated' });
     } catch (err) {
