@@ -358,6 +358,9 @@
         <input id="loginEmail" type="email" class="auth-input" placeholder="you@example.com">
         <label class="auth-label">Password</label>
         <input id="loginPassword" type="password" class="auth-input" placeholder="••••••••">
+        <div class="auth-inline-action">
+          <button type="button" onclick="showForgotPassword()">Forgot password?</button>
+        </div>
         <div id="authError" class="auth-error u-style-28"></div>
         <button class="auth-submit" onclick="doLogin()">Log in →</button>
         <div class="auth-or">or</div>
@@ -377,6 +380,37 @@
         <input id="signupPassword" type="password" class="auth-input" placeholder="Create a strong password">
         <div id="signupError" class="auth-error u-style-28"></div>
         <button class="auth-submit" onclick="doSignup()">Create account →</button>
+      </div>
+      <div id="fForgotPassword" class="u-style-28">
+        <div class="auth-panel-note">
+          <div class="auth-panel-title">Reset your password</div>
+          <div class="auth-panel-text">Enter your account email and we will send a reset code.</div>
+        </div>
+        <label class="auth-label">Email</label>
+        <input id="forgotEmail" type="email" class="auth-input" placeholder="you@example.com">
+        <div id="forgotError" class="auth-error u-style-28"></div>
+        <button class="auth-submit" onclick="doForgotPassword()">Send reset code →</button>
+        <div class="auth-secondary-action">
+          <button type="button" onclick="switchTab('login')">Back to login</button>
+        </div>
+      </div>
+      <div id="fResetPassword" class="u-style-28">
+        <div class="auth-panel-note">
+          <div class="auth-panel-title">Enter your reset code</div>
+          <div class="auth-panel-text">Use the 6-digit code from your email and choose a new password.</div>
+        </div>
+        <label class="auth-label">Email</label>
+        <input id="resetEmail" type="email" class="auth-input" placeholder="you@example.com">
+        <label class="auth-label">Reset code</label>
+        <input id="resetCode" type="text" class="auth-input" placeholder="123456" inputmode="numeric" autocomplete="one-time-code">
+        <label class="auth-label">New password</label>
+        <input id="resetPassword" type="password" class="auth-input" placeholder="Create a new password">
+        <div id="resetError" class="auth-error u-style-28"></div>
+        <button class="auth-submit" onclick="doResetPassword()">Reset password →</button>
+        <div class="auth-secondary-action">
+          <button type="button" onclick="showForgotPassword()">Send another code</button>
+          <button type="button" onclick="switchTab('login')">Back to login</button>
+        </div>
       </div>
       <div id="fVerification" class="u-style-28">
         <div class="u-style-29">
@@ -1678,6 +1712,8 @@ function switchTab(t) {
   document.getElementById('tabSignup').classList.toggle('active', t==='signup');
   document.getElementById('fLogin').style.display = t==='login'?'block':'none';
   document.getElementById('fSignup').style.display = t==='signup'?'block':'none';
+  document.getElementById('fForgotPassword').style.display = t==='forgot'?'block':'none';
+  document.getElementById('fResetPassword').style.display = t==='reset'?'block':'none';
   document.getElementById('fVerification').style.display = t==='verification'?'block':'none';
   hideAuthError();
 }
@@ -1705,6 +1741,8 @@ function hideAuthError() {
   const loginError = document.getElementById('authError');
   const signupError = document.getElementById('signupError');
   const verificationError = document.getElementById('verificationError');
+  const forgotError = document.getElementById('forgotError');
+  const resetError = document.getElementById('resetError');
   if (loginError) {
     loginError.textContent = '';
     loginError.style.display = 'none';
@@ -1716,6 +1754,14 @@ function hideAuthError() {
   if (verificationError) {
     verificationError.textContent = '';
     verificationError.style.display = 'none';
+  }
+  if (forgotError) {
+    forgotError.textContent = '';
+    forgotError.style.display = 'none';
+  }
+  if (resetError) {
+    resetError.textContent = '';
+    resetError.style.display = 'none';
   }
   ['workspaceError', 'joinWorkspaceError'].forEach(id => {
     const el = document.getElementById(id);
@@ -2436,6 +2482,105 @@ async function bootstrapSession() {
     showView('auth');
     switchTab('login');
     return false;
+  }
+}
+
+function showForgotPassword() {
+  hideAuthError();
+  const loginEmail = document.getElementById('loginEmail')?.value?.trim() || '';
+  const resetEmail = document.getElementById('resetEmail')?.value?.trim() || '';
+  const forgotEmail = document.getElementById('forgotEmail');
+  if (forgotEmail && !forgotEmail.value) forgotEmail.value = loginEmail || resetEmail;
+  switchTab('forgot');
+  forgotEmail?.focus();
+}
+
+function showResetPassword(email = '') {
+  hideAuthError();
+  const resetEmail = document.getElementById('resetEmail');
+  if (resetEmail && email) resetEmail.value = email;
+  switchTab('reset');
+  document.getElementById('resetCode')?.focus();
+}
+
+async function doForgotPassword() {
+  hideAuthError();
+  const email = document.getElementById('forgotEmail')?.value?.trim() || '';
+
+  if (!email) {
+    showAuthError('Email is required.', 'forgotError');
+    return;
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email)) {
+    showAuthError('Please enter a valid email address.', 'forgotError');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      showAuthError(payload?.error || 'Could not send reset code. Please try again.', 'forgotError');
+      return;
+    }
+
+    showResetPassword(email);
+    showToast('bi-envelope-check', 'Check your email', payload?.message || 'Enter the reset code to create a new password.');
+  } catch (err) {
+    showAuthError('Cannot reach backend. Check that server is running on port 5002.', 'forgotError');
+  }
+}
+
+async function doResetPassword() {
+  hideAuthError();
+  const email = document.getElementById('resetEmail')?.value?.trim() || '';
+  const token = document.getElementById('resetCode')?.value?.trim() || '';
+  const password = document.getElementById('resetPassword')?.value || '';
+
+  if (!email || !token || !password) {
+    showAuthError('Email, reset code, and new password are required.', 'resetError');
+    return;
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email)) {
+    showAuthError('Please enter a valid email address.', 'resetError');
+    return;
+  }
+
+  if (password.length < 6) {
+    showAuthError('New password must be at least 6 characters.', 'resetError');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, token, password }),
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      showAuthError(payload?.error || 'Could not reset password. Please try again.', 'resetError');
+      return;
+    }
+
+    document.getElementById('loginEmail').value = email;
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('resetCode').value = '';
+    document.getElementById('resetPassword').value = '';
+    switchTab('login');
+    showToast('bi-check-circle', 'Password reset', 'You can now log in with your new password.');
+  } catch (err) {
+    showAuthError('Cannot reach backend. Check that server is running on port 5002.', 'resetError');
   }
 }
 
@@ -3944,6 +4089,7 @@ function addColumn() {
 // ── VERIFY EMAIL LINK ────────────────────────────
 const urlParams = new URLSearchParams(window.location.search);
 const verificationToken = urlParams.get('token');
+const resetEmailParam = urlParams.get('resetEmail');
 const inviteCodeParam = urlParams.get('inviteCode') || urlParams.get('code');
 
 // ── BOOT TOAST ───────────────────────────────────
@@ -3960,6 +4106,12 @@ if (verificationToken) {
     if (urlParams.get('email')) sessionStorage.setItem('pendingVerificationEmail', urlParams.get('email'));
     document.getElementById('verificationCode').value = verificationToken;
     showToast('bi-envelope-check', 'Verification link detected', 'Enter the code below to activate your account.');
+  }, 100);
+} else if (resetEmailParam) {
+  setTimeout(() => {
+    showView('auth');
+    showResetPassword(resetEmailParam);
+    showToast('bi-shield-lock', 'Reset code ready', 'Enter the code from your email and choose a new password.');
   }, 100);
 } else {
   setTimeout(() => showToast('bi-stars','TeamOps v2','New design loaded — open the dashboard!'), 1000);

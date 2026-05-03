@@ -25,9 +25,13 @@ const allowedCorsOrigins = Array.from(new Set([
   'http://127.0.0.1:5173',
   ...configuredCorsOrigins,
 ]));
+const isDevLocalOrigin = (origin) => (
+  process.env.NODE_ENV !== 'production'
+  && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)
+);
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || allowedCorsOrigins.includes(origin) || allowedCorsOrigins.includes('*')) {
+    if (!origin || allowedCorsOrigins.includes(origin) || allowedCorsOrigins.includes('*') || isDevLocalOrigin(origin)) {
       return callback(null, true);
     }
 
@@ -37,7 +41,7 @@ const corsOptions = {
 };
 const io = new Server(server, {
   cors: {
-    origin: allowedCorsOrigins.includes('*') ? '*' : allowedCorsOrigins,
+    origin: allowedCorsOrigins.includes('*') || process.env.NODE_ENV !== 'production' ? '*' : allowedCorsOrigins,
     credentials: true,
   },
 });
