@@ -18,5 +18,8 @@ router.post('/:boardId/cards', auth, requireRole('owner', 'admin', 'member'), bo
 router.patch('/:boardId/cards/:cardId', auth, requireRole('owner', 'admin', 'member'), boardController.updateCard);
 router.delete('/:boardId/cards/:cardId', auth, requireRole('owner', 'admin', 'member'), boardController.deleteCard);
 router.patch('/:boardId/cards/:cardId/move', auth, requireRole('owner', 'admin', 'member'), boardController.moveCard);
+router.get('/:boardId/cards/:cardId/comments', auth, requireRole('owner', 'admin', 'member', 'viewer'), boardController.getCardComments);
+router.post('/:boardId/cards/:cardId/comments', auth, requireRole('owner', 'admin', 'member', 'viewer'), boardController.addCardComment);
+router.delete('/:boardId/cards/:cardId/comments/:commentId', auth, requireRole('owner', 'admin', 'member', 'viewer'), boardController.deleteCardComment);
 
 module.exports = router;

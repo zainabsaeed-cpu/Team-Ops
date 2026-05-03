@@ -106,6 +106,15 @@ const cardSchema = new Schema(
   { timestamps: true },
 )
 
+const commentSchema = new Schema(
+  {
+    card: { type: Schema.Types.ObjectId, ref: 'Card', required: true, index: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    content: { type: String, required: true, trim: true, maxlength: 2000 },
+  },
+  { timestamps: true },
+)
+
 const activitySchema = new Schema(
   {
     workspace: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true, index: true },
@@ -136,6 +145,7 @@ const Workspace = mongoose.models.Workspace || mongoose.model('Workspace', works
 const Board = mongoose.models.Board || mongoose.model('Board', boardSchema)
 const Column = mongoose.models.Column || mongoose.model('Column', columnSchema)
 const Card = mongoose.models.Card || mongoose.model('Card', cardSchema)
+const Comment = mongoose.models.Comment || mongoose.model('Comment', commentSchema)
 const Activity = mongoose.models.Activity || mongoose.model('Activity', activitySchema)
 const Notification = mongoose.models.Notification || mongoose.model('Notification', notificationSchema)
 
@@ -225,6 +235,15 @@ const formatActivityLog = (activity) => ({
   action: activity.action,
   message: activity.action,
   created_at: activity.createdAt,
+})
+
+const formatComment = (comment) => ({
+  id: toId(comment._id),
+  card_id: toId(comment.card),
+  user_id: toId(comment.user?._id || comment.user),
+  user_name: comment.user?.name || '',
+  content: comment.content,
+  created_at: comment.createdAt,
 })
 
 const formatActivityFeed = (activity) => ({
@@ -320,6 +339,7 @@ module.exports = {
   Board,
   Column,
   Card,
+  Comment,
   Activity,
   Notification,
   formatUser,
@@ -327,6 +347,7 @@ module.exports = {
   formatBoard,
   formatColumn,
   formatCard,
+  formatComment,
   formatActivityLog,
   formatActivityFeed,
   formatNotification,

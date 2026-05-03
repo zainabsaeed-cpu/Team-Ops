@@ -1,4 +1,4 @@
-const { Workspace, Board, Column, Card, Activity, User, formatBoard, formatColumn, formatCard, formatActivityLog } = require('../models');
+const { Workspace, Board, Column, Card, Comment, Activity, User, formatBoard, formatColumn, formatCard, formatComment, formatActivityLog } = require('../models');
 const { createActivity, createNotification, emitBoardEvent } = require('../utils/realtime');
 
 const startOfToday = () => {
@@ -178,8 +178,10 @@ exports.deleteBoard = async (req, res) => {
 
         const columns = await Column.find({ board: boardId }).lean();
         const columnIds = columns.map((column) => column._id);
+        const cardIds = (await Card.find({ column: { $in: columnIds } }).select('_id').lean()).map((card) => card._id);
 
         await Promise.all([
+            Comment.deleteMany({ card: { $in: cardIds } }),
             Card.deleteMany({ column: { $in: columnIds } }),
             Column.deleteMany({ board: boardId }),
             Activity.deleteMany({ boardId }),
@@ -209,7 +211,19 @@ exports.getBoardData = async (req, res) => {
 
         const columns = await Promise.all(columnsResult.map(async (col) => {
             const cardsResult = await Card.find({ column: col._id }).sort({ position: 1 }).populate('assignee', 'name email').lean();
-            return { ...formatColumn(col), cards: cardsResult.map(formatCard) };
+            
+            // Get comment counts for all cards in this column
+            const cardsWithComments = await Promise.all(
+                cardsResult.map(async (card) => {
+                    const commentCount = await Comment.countDocuments({ card: card._id });
+                    return {
+                        ...formatCard(card),
+                        comment_count: commentCount
+                    };
+                })
+            );
+            
+            return { ...formatColumn(col), cards: cardsWithComments };
         }));
 
         const activitiesResult = await Activity.find({ $or: [{ boardId }, { board: boardId }, { workspace: boardId }] }).sort({ createdAt: -1 }).limit(50).populate('user', 'name').lean();
@@ -362,7 +376,11 @@ exports.deleteColumn = async (req, res) => {
             return res.status(403).json({ error: 'Unauthorized' });
         }
 
-        await Card.deleteMany({ column: columnId });
+        const cardIds = (await Card.find({ column: columnId }).select('_id').lean()).map((card) => card._id);
+        await Promise.all([
+            Comment.deleteMany({ card: { $in: cardIds } }),
+            Card.deleteMany({ column: columnId }),
+        ]);
         await Column.deleteOne({ _id: columnId });
         await Column.updateMany(
             { board: boardId, position: { $gt: column.position } },
@@ -591,7 +609,10 @@ exports.deleteCard = async (req, res) => {
 
         const cardTitle = card.title;
         const columnId = card.column.toString();
-        await Card.deleteOne({ _id: cardId });
+        await Promise.all([
+            Card.deleteOne({ _id: cardId }),
+            Comment.deleteMany({ card: cardId }),
+        ]);
         await Card.updateMany(
             { column: card.column, position: { $gt: card.position } },
             { $inc: { position: -1 } }
@@ -617,6 +638,94 @@ exports.deleteCard = async (req, res) => {
         res.json({ message: 'Card deleted' });
     } catch (err) {
         console.error('Delete card error:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+exports.getCardComments = async (req, res) => {
+    const { boardId, cardId } = req.params;
+
+    try {
+        if (!boardId) {
+            return res.status(400).json({ error: 'Board ID is required' });
+        }
+
+        const access = await resolveBoardAccess(req.userId, boardId, 'viewer');
+        if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
+
+        const card = await Card.findById(cardId).lean();
+        if (!card) return res.status(404).json({ error: 'Card not found' });
+
+        const column = await Column.findById(card.column).lean();
+        if (!column || column.board?.toString() !== boardId) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+
+        const comments = await Comment.find({ card: cardId })
+            .sort({ createdAt: 1 })
+            .populate('user', 'name')
+            .lean();
+
+        res.json({ comments: comments.map(formatComment) });
+    } catch (err) {
+        console.error('Get comments error:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+exports.addCardComment = async (req, res) => {
+    const { boardId, cardId } = req.params;
+    const { content } = req.body;
+
+    try {
+        if (!boardId) {
+            return res.status(400).json({ error: 'Board ID is required' });
+        }
+
+        const trimmed = String(content || '').trim();
+        if (!trimmed) {
+            return res.status(400).json({ error: 'Comment content is required' });
+        }
+
+        const access = await resolveBoardAccess(req.userId, boardId, 'viewer');
+        if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
+
+        const card = await Card.findById(cardId).lean();
+        if (!card) return res.status(404).json({ error: 'Card not found' });
+
+        const column = await Column.findById(card.column).lean();
+        if (!column || column.board?.toString() !== boardId) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+
+        const comment = await Comment.create({
+            card: cardId,
+            user: req.userId,
+            content: trimmed,
+        });
+
+        const populatedComment = await Comment.findById(comment._id).populate('user', 'name').lean();
+        const formattedComment = formatComment(populatedComment);
+
+        const user = await User.findById(req.userId).lean();
+        await createActivity({
+            io: req.app.get('io'),
+            userId: req.userId,
+            workspaceId: access.workspaceId,
+            boardId,
+            action: `${user?.name || 'A user'} commented on "${card.title}"`,
+        });
+
+        emitBoardEvent(req.app.get('io'), boardId, 'card:commented', {
+            boardId,
+            actorId: req.userId,
+            cardId,
+            comment: formattedComment,
+        });
+
+        res.status(201).json({ comment: formattedComment });
+    } catch (err) {
+        console.error('Add comment error:', err);
         res.status(500).json({ error: 'Server error' });
     }
 };
@@ -770,5 +879,100 @@ exports.getBoardAnalytics = async (req, res) => {
     } catch (err) {
         console.error('Board analytics error:', err);
         res.status(500).json({ error: 'Failed to load board analytics' });
+    }
+};
+
+// ── COMMENT MANAGEMENT ──────────────────────────
+exports.getCardComments = async (req, res) => {
+    const { boardId, cardId } = req.params;
+
+    try {
+        const access = await resolveBoardAccess(req.userId, boardId, 'viewer');
+        if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
+
+        const card = await Card.findById(cardId).lean();
+        if (!card) return res.status(404).json({ error: 'Card not found' });
+
+        const comments = await Comment.find({ card: cardId })
+            .populate('user', 'name email _id')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const formattedComments = comments.map(comment => formatComment(comment));
+
+        res.json({ comments: formattedComments });
+    } catch (err) {
+        console.error('Get comments error:', err);
+        res.status(500).json({ error: 'Failed to load comments' });
+    }
+};
+
+exports.addCardComment = async (req, res) => {
+    const { boardId, cardId } = req.params;
+    const { content } = req.body;
+
+    try {
+        const access = await resolveBoardAccess(req.userId, boardId, 'viewer');
+        if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
+
+        if (!content || String(content).trim().length === 0) {
+            return res.status(400).json({ error: 'Comment cannot be empty' });
+        }
+
+        const card = await Card.findById(cardId);
+        if (!card) return res.status(404).json({ error: 'Card not found' });
+
+        const comment = new Comment({
+            card: cardId,
+            user: req.userId,
+            content: String(content).trim(),
+        });
+
+        await comment.save();
+        const populatedComment = await comment.populate('user', 'name email _id');
+
+        // Emit real-time event
+        emitBoardEvent(req.app.get('io'), boardId, 'card:commented', {
+            boardId,
+            cardId: cardId,
+            comment: formatComment(populatedComment),
+            userId: req.userId,
+        });
+
+        res.json({ comment: formatComment(populatedComment) });
+    } catch (err) {
+        console.error('Add comment error:', err);
+        res.status(500).json({ error: 'Failed to post comment' });
+    }
+};
+
+exports.deleteCardComment = async (req, res) => {
+    const { boardId, cardId, commentId } = req.params;
+
+    try {
+        const access = await resolveBoardAccess(req.userId, boardId, 'viewer');
+        if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
+
+        const comment = await Comment.findById(commentId);
+        if (!comment) return res.status(404).json({ error: 'Comment not found' });
+
+        // Only comment author can delete
+        if (String(comment.user) !== String(req.userId)) {
+            return res.status(403).json({ error: 'You can only delete your own comments' });
+        }
+
+        await Comment.deleteOne({ _id: commentId });
+
+        // Emit real-time event
+        emitBoardEvent(req.app.get('io'), boardId, 'comment:deleted', {
+            boardId,
+            cardId: cardId,
+            commentId: commentId,
+        });
+
+        res.json({ message: 'Comment deleted' });
+    } catch (err) {
+        console.error('Delete comment error:', err);
+        res.status(500).json({ error: 'Failed to delete comment' });
     }
 };
