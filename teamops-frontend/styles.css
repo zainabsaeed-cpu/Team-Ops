@@ -2318,50 +2318,79 @@ footer {
   border-color: var(--violet);
   box-shadow: 0 0 0 3px rgba(124, 92, 252, 0.1);
 }
-.db-help-categories {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
+.db-faq-wrap {
   padding: 20px;
+  max-width: 900px;
 }
-.db-help-category {
+.db-faq-section {
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  padding: 20px;
-  transition: all 0.3s;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.db-faq-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  margin-bottom: 10px;
+  color: var(--ink);
+}
+.db-faq-section h4 i { color: var(--violet); }
+.db-faq-item {
+  border-top: 1px solid var(--border);
+}
+.db-faq-q {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--ink2);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 14px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
   cursor: pointer;
 }
-.db-help-category:hover {
-  border-color: var(--violet);
-  box-shadow: 0 8px 24px rgba(124, 92, 252, 0.12);
-  transform: translateY(-2px);
+.db-faq-q i {
+  color: var(--muted2);
+  transition: transform 0.25s ease;
 }
-.db-help-cat-icon {
-  font-size: 28px;
-  color: var(--violet);
-  margin-bottom: 12px;
+.db-faq-item.open .db-faq-q i {
+  transform: rotate(180deg);
 }
-.db-help-cat-title {
+.db-faq-a {
+  max-height: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  transition: max-height 0.25s ease, padding 0.25s ease;
+}
+.db-faq-item.open .db-faq-a {
+  max-height: 140px;
+  padding-bottom: 14px;
+}
+.db-faq-item.is-hidden,
+.db-faq-section.is-hidden {
+  display: none;
+}
+.db-faq-contact {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 18px;
+  color: var(--ink2);
   font-size: 14px;
-  font-weight: 600;
-  color: var(--ink);
-  margin-bottom: 12px;
 }
-.db-help-cat-articles {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.db-help-cat-articles a {
-  font-size: 12px;
+.db-faq-contact a {
   color: var(--violet);
+  font-weight: 700;
   text-decoration: none;
-  transition: color 0.3s;
-}
-.db-help-cat-articles a:hover {
-  color: var(--ink);
-  text-decoration: underline;
 }
 
 /* ══ SAVED VIEWS VIEW ══════════════════════════ */

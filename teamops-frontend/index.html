@@ -1212,50 +1212,51 @@
         <div class="db-hero-row">
           <div>
             <div class="db-page-kicker"><i class="bi bi-question-circle"></i> Resources</div>
-            <h3>Help & Documentation</h3>
-            <p class="db-page-sub">Learn TeamOps, explore features, and get answers from our knowledge base.</p>
+            <h3>FAQ</h3>
+            <p class="db-page-sub">Quick answers for common TeamOps workflows.</p>
             <div class="db-help-search-container">
-              <input type="text" class="db-help-search" placeholder="Search for help articles…">
+              <input type="text" class="db-help-search" id="faqSearch" placeholder="Search questions...">
             </div>
           </div>
         </div>
       </div>
-      <div class="db-help-categories db-anim db-delay-2">
-        <div class="db-help-category">
-          <div class="db-help-cat-icon"><i class="bi bi-lightning-charge"></i></div>
-          <div class="db-help-cat-title">Getting Started</div>
-          <div class="db-help-cat-articles">
-            <a href="#">First steps with TeamOps</a>
-            <a href="#">Creating your first board</a>
-            <a href="#">Inviting team members</a>
-          </div>
-        </div>
-        <div class="db-help-category">
-          <div class="db-help-cat-icon"><i class="bi bi-kanban"></i></div>
-          <div class="db-help-cat-title">Kanban & Cards</div>
-          <div class="db-help-cat-articles">
-            <a href="#">Understanding columns</a>
-            <a href="#">Card templates & shortcuts</a>
-            <a href="#">Drag and drop guide</a>
-          </div>
-        </div>
-        <div class="db-help-category">
-          <div class="db-help-cat-icon"><i class="bi bi-people"></i></div>
-          <div class="db-help-cat-title">Team Collaboration</div>
-          <div class="db-help-cat-articles">
-            <a href="#">Assigning tasks</a>
-            <a href="#">Comments and mentions</a>
-            <a href="#">Real-time sync explained</a>
-          </div>
-        </div>
-        <div class="db-help-category">
-          <div class="db-help-cat-icon"><i class="bi bi-tools"></i></div>
-          <div class="db-help-cat-title">Advanced</div>
-          <div class="db-help-cat-articles">
-            <a href="#">API documentation</a>
-            <a href="#">Webhooks & automation</a>
-            <a href="#">Custom integrations</a>
-          </div>
+      <div class="db-faq-wrap db-anim db-delay-2" id="faqList">
+        <section class="db-faq-section">
+          <h4><i class="bi bi-lightning-charge"></i> Getting Started</h4>
+          <div class="db-faq-item"><button class="db-faq-q">How do I create a workspace?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Open the workspace menu, choose Create Workspace, add a name, then save it.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">How do I invite team members?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Go to Members, copy the invite code, and share it with the people you want to add.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">How do I join a workspace with an invite code?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Use Join Workspace from the workspace menu and paste the invite code you received.</div></div>
+        </section>
+        <section class="db-faq-section">
+          <h4><i class="bi bi-kanban"></i> Boards & Cards</h4>
+          <div class="db-faq-item"><button class="db-faq-q">How do I create a board?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Open the board selector and choose New Board, then enter the board name.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">How do I add a card?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Click Add Card in the column where the work should start, fill in the details, and save.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">How do I move a card between columns?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Drag the card to another column or open the card and change its status.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">How do I assign a card to a team member?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Open the card, use the assignee field, and select a workspace member.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">How do I set a due date and priority?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Open the card details and update the due date and priority fields.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">How do I add comments to a board?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Open the board comments panel, type your comment, and send it.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">How do I tag a card in a comment?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Use the card tag option in the comment composer, then choose the card you want to reference.</div></div>
+        </section>
+        <section class="db-faq-section">
+          <h4><i class="bi bi-people"></i> Members & Roles</h4>
+          <div class="db-faq-item"><button class="db-faq-q">What are the different roles (Owner, Admin, Member, Viewer)?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Owners control the workspace, admins manage team settings, members collaborate on boards, and viewers have read-only access.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">How do I change a member's role?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Go to Members, find the teammate, and update their role from the role selector.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">What is a Board Leader?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">A Board Leader is the main person responsible for keeping a board organized and moving.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">What are specialty tags?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Specialty tags describe a member's focus area so teams can quickly find the right person for work.</div></div>
+        </section>
+        <section class="db-faq-section">
+          <h4><i class="bi bi-bell"></i> Notifications & Activity</h4>
+          <div class="db-faq-item"><button class="db-faq-q">How do notifications work?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">TeamOps sends notifications for important workspace and board updates, including assigned work and collaboration events.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">Where can I see recent activity?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Open Activity from the sidebar to see the latest workspace timeline.</div></div>
+        </section>
+        <section class="db-faq-section">
+          <h4><i class="bi bi-gear"></i> Settings</h4>
+          <div class="db-faq-item"><button class="db-faq-q">How do I change my password?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Open Profile, enter your current password and new password, then save the change.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">How do I update my profile picture?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Open Profile, choose a new image, then save your profile.</div></div>
+          <div class="db-faq-item"><button class="db-faq-q">How do I delete a workspace?<i class="bi bi-chevron-down"></i></button><div class="db-faq-a">Workspace deletion is handled from Settings by users with owner-level access.</div></div>
+        </section>
+        <div class="db-faq-contact">
+          <strong>Still need help?</strong> Contact us at <a href="mailto:support@teamops.dev">support@teamops.dev</a>
         </div>
       </div>
     </div>
@@ -1498,6 +1499,28 @@ function openDashboardFromDemo() {
     return;
   }
   showDashboard();
+}
+function initFaqPage() {
+  const faqList = document.getElementById('faqList');
+  const search = document.getElementById('faqSearch');
+  if (!faqList || faqList.dataset.ready) return;
+  faqList.dataset.ready = 'true';
+
+  faqList.addEventListener('click', e => {
+    const btn = e.target.closest('.db-faq-q');
+    if (!btn) return;
+    btn.closest('.db-faq-item')?.classList.toggle('open');
+  });
+
+  search?.addEventListener('input', () => {
+    const term = search.value.trim().toLowerCase();
+    faqList.querySelectorAll('.db-faq-item').forEach(item => {
+      item.classList.toggle('is-hidden', term && !item.textContent.toLowerCase().includes(term));
+    });
+    faqList.querySelectorAll('.db-faq-section').forEach(section => {
+      section.classList.toggle('is-hidden', !section.querySelector('.db-faq-item:not(.is-hidden)'));
+    });
+  });
 }
 function toggleSide(side) {
   const dash = document.getElementById('dashboard');
@@ -5005,6 +5028,7 @@ const inviteCodeParam = urlParams.get('inviteCode') || urlParams.get('code');
 initKpiSparklines();
 initDashboardParallax();
 enhanceAllSelects();
+initFaqPage();
 
 if (verificationToken) {
   // Handle email verification link
