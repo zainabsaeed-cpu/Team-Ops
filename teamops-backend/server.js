@@ -20,7 +20,11 @@ const configuredCorsOrigins = (process.env.CORS_ORIGIN || '')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
-const allowedCorsOrigins = Array.from(new Set(['http://localhost:5173', ...configuredCorsOrigins]));
+const allowedCorsOrigins = Array.from(new Set([
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  ...configuredCorsOrigins,
+]));
 const corsOptions = {
   origin(origin, callback) {
     if (!origin || allowedCorsOrigins.includes(origin) || allowedCorsOrigins.includes('*')) {

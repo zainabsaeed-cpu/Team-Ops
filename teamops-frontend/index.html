@@ -3312,7 +3312,7 @@ function switchTab(t) {
   }
   hideAuthError();
 }
-const API_BASE = 'http://localhost:5001/api';
+const API_BASE = 'http://localhost:5002/api';
 const TOKEN_KEY = 'teamops_token';
 const USER_KEY = 'teamops_user';
 
@@ -3427,9 +3427,11 @@ async function bootstrapSession() {
       
       // Store the primary workspace ID for API calls
       if (workspaces && workspaces.length > 0) {
-        localStorage.setItem('teamops_workspace_id', workspaces[0]._id);
+        localStorage.setItem('teamops_workspace_id', workspaces[0].id);
+        localStorage.setItem('teamops_board_id', workspaces[0].boardId || workspaces[0].id);
       } else {
         localStorage.removeItem('teamops_workspace_id');
+        localStorage.removeItem('teamops_board_id');
       }
       
       applyWorkspaceContext(me.user, workspaces);
@@ -3482,7 +3484,7 @@ async function doLogin() {
     await bootstrapSession();
     setTimeout(() => showToast('bi-person-check', `Welcome back, ${payload.user?.name || 'User'}!`, 'You are now signed in.'), 700);
   } catch (err) {
-    showAuthError('Cannot reach backend. Check that server is running on port 5001.');
+    showAuthError('Cannot reach backend. Check that server is running on port 5002.');
   }
 }
 
@@ -3534,7 +3536,7 @@ async function doSignup() {
     document.getElementById('fVerification').style.display = 'block';
     sessionStorage.setItem('pendingVerificationEmail', email);
   } catch (err) {
-    showAuthError('Cannot reach backend. Check that server is running on port 5001.', 'signupError');
+    showAuthError('Cannot reach backend. Check that server is running on port 5002.', 'signupError');
   }
 }
 
@@ -3567,7 +3569,7 @@ async function doVerify() {
     switchTab('login');
     setTimeout(() => showToast('bi-check-circle', 'Email verified!', 'Your account is ready. You can now log in.'), 700);
   } catch (err) {
-    showAuthError('Cannot reach backend. Check that server is running on port 5001.', 'verificationError');
+    showAuthError('Cannot reach backend. Check that server is running on port 5002.', 'verificationError');
   }
 }
 function doLogout() {
@@ -3636,14 +3638,14 @@ function closeCardModal() {
 }
 
 async function loadAssigneeOptions() {
-  const boardId = localStorage.getItem('teamops_workspace_id');
-  if (!boardId || boardId === 'undefined' || boardId === 'null') return;
+  const workspaceId = localStorage.getItem('teamops_workspace_id');
+  if (!workspaceId || workspaceId === 'undefined' || workspaceId === 'null') return;
 
   try {
     const assigneeSelect = document.getElementById('cardAssignee');
     assigneeSelect.innerHTML = '<option value="">No one assigned</option>';
 
-    const payload = await apiRequest(`/workspaces/${boardId}/members`);
+    const payload = await apiRequest(`/workspaces/${workspaceId}/members`);
     const members = Array.isArray(payload?.members) ? payload.members : [];
 
     members.forEach(member => {
@@ -3671,7 +3673,7 @@ async function submitCardForm(e) {
   }
 
   // Get current board (workspace)
-  const boardId = localStorage.getItem('teamops_workspace_id');
+  const boardId = localStorage.getItem('teamops_board_id');
   if (!boardId) {
     showToast('bi-exclamation-circle', 'Error', 'No active workspace');
     return;
@@ -3688,7 +3690,7 @@ async function submitCardForm(e) {
 
   try {
     const token = getToken();
-    const response = await fetch(`http://localhost:5001/api/boards/${boardId}/cards`, {
+    const response = await fetch(`${API_BASE}/boards/${boardId}/cards`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
@@ -3721,7 +3723,7 @@ async function submitCardForm(e) {
 async function getColumnByName(workspaceId, colName) {
   try {
     const token = getToken();
-    const response = await fetch(`http://localhost:5001/api/boards/${workspaceId}`, {
+    const response = await fetch(`${API_BASE}/boards/${workspaceId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await response.json();
@@ -3738,12 +3740,12 @@ function addCard(col) {
 }
 
 async function loadBoardData() {
-  const boardId = localStorage.getItem('teamops_workspace_id');
+  const boardId = localStorage.getItem('teamops_board_id');
   if (!boardId) return;
 
   try {
     const token = getToken();
-    const response = await fetch(`http://localhost:5001/api/boards/${boardId}`, {
+    const response = await fetch(`${API_BASE}/boards/${boardId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -3842,13 +3844,13 @@ function setupDragDrop(board) {
       
       if (card) {
         // Move card via API
-        const boardId = localStorage.getItem('teamops_workspace_id');
+        const boardId = localStorage.getItem('teamops_board_id');
         const targetCol = board.columns.find(c => colMap[c.title] === tgt);
         
         if (targetCol && boardId) {
           try {
             const token = getToken();
-            await fetch(`http://localhost:5001/api/boards/${boardId}/cards/${card.id}/move`, {
+            await fetch(`${API_BASE}/boards/${boardId}/cards/${card.id}/move`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
               body: JSON.stringify({ toColumnId: targetCol.id, newIndex: 0 }),
