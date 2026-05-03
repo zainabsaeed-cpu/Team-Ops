@@ -141,13 +141,6 @@ exports.verify = async (req, res) => {
         // Delete used token
         await VerificationToken.deleteOne({ _id: verificationToken._id });
 
-        // Create starter workspace only if user has no workspaces
-        const existingWorkspace = await Workspace.findOne({ 'members.user': user._id }).lean();
-        if (!existingWorkspace) {
-            await createStarterWorkspace(user._id);
-        }
-
-        // Issue JWT token
         const jwtToken = jwt.sign({ userId: user._id.toString() }, jwtSecret, { expiresIn: '7d' });
         
         res.json({ 

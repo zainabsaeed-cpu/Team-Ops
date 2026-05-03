@@ -354,7 +354,7 @@ export default function AppLayout() {
               {board.name || board.title}
             </button>
           ))}
-          {boardsLoading ? <span className="board-mini-empty">Loading boards...</span> : null}
+          {boardsLoading && boards.length === 0 ? <span className="board-mini-empty">Loading boards...</span> : null}
           {!boardsLoading && boards.length === 0 ? <span className="board-mini-empty">No boards yet.</span> : null}
           {canCreateBoard ? (
             <button type="button" className="board-mini-item board-mini-add" onClick={() => setBoardModalOpen(true)}>

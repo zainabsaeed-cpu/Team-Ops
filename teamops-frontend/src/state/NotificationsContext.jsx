@@ -42,7 +42,7 @@ export function NotificationsProvider({ children }) {
       return undefined
     }
 
-    const socket = getSocket(token)
+    const socket = getSocket(token, user?.id)
     socket.connect()
     if (user?.id) {
       socket.emit('join:user', user.id)

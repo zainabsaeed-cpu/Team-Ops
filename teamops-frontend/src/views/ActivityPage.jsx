@@ -63,6 +63,7 @@ export default function ActivityPage() {
       <ul className="notification-list" style={{ marginTop: 20 }}>
         {feed.map((item) => (
           <li key={item.id} className="notification-item unread">
+            {item.user_name || item.userName ? <strong>{item.user_name || item.userName}</strong> : null}
             <div>{item.message || item.action}</div>
             <small className="muted">
               {item.created_at ? new Date(item.created_at).toLocaleString() : item.time}
