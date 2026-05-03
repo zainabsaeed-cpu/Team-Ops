@@ -26,7 +26,7 @@ exports.getActivityFeed = async (req, res) => {
         const workspace = await Workspace.findOne({ _id: workspaceId, 'members.user': req.userId }).lean();
         if (!workspace) return res.status(403).json({ error: 'Not a member of this workspace' });
 
-        const activities = await Activity.find({ workspace: workspaceId })
+        const activities = await Activity.find({ $or: [{ workspace: workspaceId }, { workspaceId }] })
             .sort({ createdAt: -1 })
             .limit(50)
             .populate('user', 'name')

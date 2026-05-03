@@ -194,8 +194,8 @@
         <div class="how-desc">Every action broadcasts via WebSocket — all teammates see changes instantly, zero refresh needed.</div>
         <div class="how-visual">
           <div class="mini-stat-row">
-            <div class="mini-stat-box"><div class="msb-num">4</div><div class="msb-lbl">Online now</div></div>
-            <div class="mini-stat-box"><div class="msb-num">&lt;50ms</div><div class="msb-lbl">Sync latency</div></div>
+            <div class="mini-stat-box"><div class="msb-num">Live</div><div class="msb-lbl">Board sync</div></div>
+            <div class="mini-stat-box"><div class="msb-num">API</div><div class="msb-lbl">Socket updates</div></div>
           </div>
         </div>
       </div>
@@ -204,8 +204,8 @@
         <div class="how-title">Track progress in real time</div>
         <div class="how-desc">Live activity feed, notification badges, and sprint progress bars keep everyone aligned without a meeting.</div>
         <div class="how-visual">
-          <div class="prog-item"><div class="prog-head"><span>Backend</span><span>75%</span></div><div class="prog-track"><div class="prog-fill pf-v u-style-18"></div></div></div>
-          <div class="prog-item"><div class="prog-head"><span>Frontend</span><span>40%</span></div><div class="prog-track"><div class="prog-fill pf-g u-style-19"></div></div></div>
+          <div class="prog-item"><div class="prog-head"><span>Board cards</span><span>Live</span></div><div class="prog-track"><div class="prog-fill pf-v u-style-18"></div></div></div>
+          <div class="prog-item"><div class="prog-head"><span>Assignments</span><span>Live</span></div><div class="prog-track"><div class="prog-fill pf-g u-style-19"></div></div></div>
         </div>
       </div>
     </div>
@@ -776,21 +776,15 @@
           </div>
           <div class="db-hero-metric">
             <div class="db-hero-metric-label">Events today</div>
-            <div class="db-hero-metric-value" data-countup="34">34</div>
-            <div class="db-hero-metric-note">Peak at 11:30 AM</div>
+            <div class="db-hero-metric-value" id="activityEventsToday" data-countup="0">0</div>
+            <div class="db-hero-metric-note" id="activityHeroNote">Loading latest activity</div>
           </div>
         </div>
       </div>
       <div class="db-slab db-anim db-delay-2">
         <div class="db-slab-head"><div class="db-slab-title u-style-50">Recent actions</div><div class="db-slab-note">Sorted by newest first</div></div>
-        <div class="db-activity-list">
-          <div class="db-day-label">Today</div>
-          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-arrow-left-right"></i></div><div class="db-activity-msg"><b>Zainab</b> moved <b>REST API endpoints</b> from In Progress to In Review</div><div class="db-activity-time">2 min ago</div></div>
-          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-chat-dots"></i></div><div class="db-activity-msg"><b>Zunairah</b> commented on <b>WebSocket event system</b></div><div class="db-activity-time">8 min ago</div></div>
-          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-person-check"></i></div><div class="db-activity-msg"><b>Zainab</b> assigned <b>Kanban drag-and-drop</b> to Zunairah</div><div class="db-activity-time">15 min ago</div></div>
-          <div class="db-day-label">Yesterday</div>
-          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-stars"></i></div><div class="db-activity-msg"><b>Zunairah</b> created <b>JWT middleware setup</b></div><div class="db-activity-time">1 hour ago</div></div>
-          <div class="db-activity-item"><div class="db-activity-icon"><i class="bi bi-check2-circle"></i></div><div class="db-activity-msg"><b>DB migrations</b> passed final verification checks</div><div class="db-activity-time">Yesterday, 5:14 PM</div></div>
+        <div class="db-activity-list" id="activityTimelineList">
+          <div class="notif-loading">Loading activity...</div>
         </div>
       </div>
     </div>
@@ -831,9 +825,9 @@
             <p class="db-page-sub">Role visibility, workload snapshots, and availability across all active contributors.</p>
           </div>
           <div class="db-hero-metric">
-            <div class="db-hero-metric-label">Online now</div>
-            <div class="db-hero-metric-value" data-countup="4">4</div>
-            <div class="db-hero-metric-note">Out of 6 members</div>
+            <div class="db-hero-metric-label">Workspace members</div>
+            <div class="db-hero-metric-value" id="membersTotalCount" data-countup="0">0</div>
+            <div class="db-hero-metric-note" id="membersHeroNote">Loaded from workspace</div>
           </div>
         </div>
       </div>
@@ -850,20 +844,15 @@
           <button onclick="copyCurrentInviteLink()">Copy join link</button>
         </div>
       </div>
-      <div class="db-member-grid db-anim db-delay-2">
-        <div class="db-member-card"><div class="db-member-av u-style-4">Z</div><div><div class="db-member-name">Zainab Saeed</div><div class="db-member-role">Owner</div></div><div class="db-member-meta"><div class="db-mini-track"><div class="db-mini-fill u-style-55"></div></div><div class="db-pill">Online</div></div></div>
-        <div class="db-member-card"><div class="db-member-av u-style-11">U</div><div><div class="db-member-name">Zunairah Sarwar</div><div class="db-member-role">Admin</div></div><div class="db-member-meta"><div class="db-mini-track"><div class="db-mini-fill u-style-56"></div></div><div class="db-pill">Online</div></div></div>
-        <div class="db-member-card"><div class="db-member-av u-style-5">A</div><div><div class="db-member-name">Areeba Khan</div><div class="db-member-role">Member</div></div><div class="db-member-meta"><div class="db-mini-track"><div class="db-mini-fill u-style-57"></div></div><div class="db-pill u-style-58">Idle</div></div></div>
-        <div class="db-member-card"><div class="db-member-av u-style-59">H</div><div><div class="db-member-name">Hassan Malik</div><div class="db-member-role">Member</div></div><div class="db-member-meta"><div class="db-mini-track"><div class="db-mini-fill u-style-60"></div></div><div class="db-pill u-style-61">Remote</div></div></div>
+      <div class="db-member-grid db-anim db-delay-2" id="membersGrid">
+        <div class="notif-loading">Loading members...</div>
       </div>
       <div class="db-slab db-anim db-delay-3 u-style-62">
         <div class="db-slab-head"><div class="db-slab-title u-style-50">Collaboration load</div><div class="db-slab-note">Tasks assigned this sprint</div></div>
-        <div class="db-bars">
-          <div class="db-bar-row"><div class="db-bar-name">Zainab</div><div class="db-bar-track"><div class="db-bar-fill u-style-63"></div></div><div class="db-bar-val">11</div></div>
-          <div class="db-bar-row"><div class="db-bar-name">Zunairah</div><div class="db-bar-track"><div class="db-bar-fill u-style-64"></div></div><div class="db-bar-val">9</div></div>
-          <div class="db-bar-row"><div class="db-bar-name">Areeba</div><div class="db-bar-track"><div class="db-bar-fill u-style-65"></div></div><div class="db-bar-val">5</div></div>
+        <div class="db-bars" id="memberLoadBars">
+          <div class="notif-loading">Loading assignments...</div>
         </div>
-        <button class="invite-row" onclick="showToast('bi-link-45deg','Invite link copied','Share it with new teammates')">+ Invite teammate</button>
+        <button class="invite-row" onclick="copyCurrentInviteLink()">+ Invite teammate</button>
       </div>
     </div>
 
@@ -1181,56 +1170,17 @@
           <div>
             <div class="db-page-kicker"><i class="bi bi-clipboard-check"></i> Compliance</div>
             <h3>Audit Log</h3>
-            <p class="db-page-sub">Complete record of all workspace changes: who, what, when, for compliance and accountability.</p>
+            <p class="db-page-sub">Administrative and compliance-sensitive workspace changes, separate from the live collaboration timeline.</p>
             <div class="db-hero-badges">
-              <span class="db-badge"><i class="bi bi-archive"></i> 847 events logged</span>
-              <span class="db-badge"><i class="bi bi-calendar"></i> Last 30 days</span>
-              <span class="db-badge"><i class="bi bi-download"></i> Export available</span>
+              <span class="db-badge"><i class="bi bi-archive"></i> <span id="auditEventCount">0 events logged</span></span>
+              <span class="db-badge"><i class="bi bi-calendar"></i> Workspace scope</span>
+              <span class="db-badge"><i class="bi bi-shield-check"></i> Admin actions</span>
             </div>
           </div>
         </div>
       </div>
-      <div class="db-audit-list db-anim db-delay-2">
-        <div class="db-audit-item">
-          <div class="db-audit-meta">
-            <div class="db-audit-action u-style-78"><i class="bi bi-stars"></i> Created</div>
-            <div class="db-audit-desc">
-              <div class="db-audit-title">Card created: "WebSocket event system"</div>
-              <div class="db-audit-user">by Zunairah Sarwar</div>
-            </div>
-            <div class="db-audit-time">Apr 12, 2:34 PM</div>
-          </div>
-        </div>
-        <div class="db-audit-item">
-          <div class="db-audit-meta">
-            <div class="db-audit-action u-style-79"><i class="bi bi-pencil"></i> Modified</div>
-            <div class="db-audit-desc">
-              <div class="db-audit-title">Card renamed • "JWT implementation" → "JWT middleware setup"</div>
-              <div class="db-audit-user">by Zainab Saeed</div>
-            </div>
-            <div class="db-audit-time">Apr 12, 1:52 PM</div>
-          </div>
-        </div>
-        <div class="db-audit-item">
-          <div class="db-audit-meta">
-            <div class="db-audit-action u-style-80"><i class="bi bi-arrow-left-right"></i> Moved</div>
-            <div class="db-audit-desc">
-              <div class="db-audit-title">"REST API endpoints" moved • In Progress → In Review</div>
-              <div class="db-audit-user">by Zainab Saeed</div>
-            </div>
-            <div class="db-audit-time">Apr 12, 9:12 AM</div>
-          </div>
-        </div>
-        <div class="db-audit-item">
-          <div class="db-audit-meta">
-            <div class="db-audit-action u-style-81"><i class="bi bi-trash"></i> Deleted</div>
-            <div class="db-audit-desc">
-              <div class="db-audit-title">Card archived: "Old card template"</div>
-              <div class="db-audit-user">by Zainab Saeed</div>
-            </div>
-            <div class="db-audit-time">Apr 11, 4:23 PM</div>
-          </div>
-        </div>
+      <div class="db-audit-list db-anim db-delay-2" id="auditLogList">
+        <div class="notif-loading">Loading audit log...</div>
       </div>
     </div>
 
@@ -1436,24 +1386,22 @@
   <div class="db-panel">
     <div class="panel-block">
       <div class="panel-title">Live Activity</div>
-      <div class="act-row"><div class="act-chip a-move">↕</div><div class="act-body"><div class="act-text"><b>Zainab</b> moved <b>REST API</b> to In Review</div><div class="act-ts">2 min ago</div></div></div>
-      <div class="act-row"><div class="act-chip a-comment"><i class="bi bi-chat-dots"></i></div><div class="act-body"><div class="act-text"><b>Zunairah</b> commented on <b>WebSocket</b></div><div class="act-ts">8 min ago</div></div></div>
-      <div class="act-row"><div class="act-chip a-assign"><i class="bi bi-person"></i></div><div class="act-body"><div class="act-text"><b>Zainab</b> assigned <b>Drag & Drop</b> to Zunairah</div><div class="act-ts">15 min ago</div></div></div>
-      <div class="act-row"><div class="act-chip a-create"><i class="bi bi-stars"></i></div><div class="act-body"><div class="act-text"><b>Zunairah</b> created <b>JWT middleware</b></div><div class="act-ts">1h ago</div></div></div>
+      <div id="liveActivityList">
+        <div class="notif-loading">Loading activity...</div>
+      </div>
     </div>
     <div class="panel-block">
       <div class="panel-title">Sprint Progress</div>
-      <div class="prog-item"><div class="prog-head"><span>Overall</span><span>60%</span></div><div class="prog-track"><div class="prog-fill pf-v u-style-8"></div></div></div>
-      <div class="prog-item"><div class="prog-head"><span>Backend</span><span>75%</span></div><div class="prog-track"><div class="prog-fill pf-g u-style-18"></div></div></div>
-      <div class="prog-item"><div class="prog-head"><span>Frontend</span><span>40%</span></div><div class="prog-track"><div class="prog-fill pf-r u-style-19"></div></div></div>
+      <div id="sprintProgressList">
+        <div class="notif-loading">Loading progress...</div>
+      </div>
     </div>
     <div class="panel-block">
-      <div class="panel-title">Members Online</div>
-      <div class="mb-list">
-        <div class="mb-item"><div class="mb-av u-style-4">Z</div><div><div class="mb-name">Zainab Saeed</div><div class="mb-role">Owner</div></div><div class="mb-on"></div></div>
-        <div class="mb-item"><div class="mb-av u-style-11">U</div><div><div class="mb-name">Zunairah Sarwar</div><div class="mb-role">Admin</div></div><div class="mb-on"></div></div>
+      <div class="panel-title">Workspace Members</div>
+      <div class="mb-list" id="rightMembersList">
+        <div class="notif-loading">Loading members...</div>
       </div>
-      <button class="invite-row" onclick="showToast('bi-link-45deg','Link copied!','Share this to invite teammates')">+ Invite teammate</button>
+      <button class="invite-row" onclick="copyCurrentInviteLink()">+ Invite teammate</button>
     </div>
   </div>
 </div>
@@ -1524,6 +1472,15 @@ function switchDashboardView(viewId, btnEl) {
   if (viewId === 'notifications') {
     // ensure notifications are loaded when opening the Notifications view
     try { loadNotifications(); } catch (e) { console.warn('loadNotifications failed:', e); }
+  }
+  if (viewId === 'activity') {
+    try { loadActivityFeed(); } catch (e) { console.warn('loadActivityFeed failed:', e); }
+  }
+  if (viewId === 'members') {
+    try { loadWorkspaceMembers(); } catch (e) { console.warn('loadWorkspaceMembers failed:', e); }
+  }
+  if (viewId === 'audit') {
+    try { loadAuditLog(); } catch (e) { console.warn('loadAuditLog failed:', e); }
   }
   if (viewId === 'profile') loadProfileView();
 
@@ -1956,6 +1913,8 @@ function connectRealtime(userId = '') {
     if (payload?.board_id && String(payload.board_id) !== String(boardId)) return;
     if (payload?.boardId && String(payload.boardId) !== String(boardId)) return;
     if (payload?.action || payload?.message) {
+      prependActivity(payload);
+      renderAuditLog();
       showToast('bi-broadcast-pin', 'Live activity', payload.action || payload.message);
     }
   });
@@ -2120,6 +2079,7 @@ function applyWorkspaceContext(sessionUser, workspaces) {
   }
 
   if (primaryWorkspace?.id) {
+    loadWorkspaceMembers({ silent: true });
     loadWorkspaceBoards(primaryWorkspace.id, role);
   } else {
     renderNoWorkspaceState();
@@ -2187,6 +2147,9 @@ async function loadWorkspaceBoards(workspaceId, role = currentWorkspaceRole) {
       setActiveSidebarBoard(activeBoard.id);
       joinBoardRoom(activeBoard.id);
       await loadBoardData();
+      await loadActivityFeed({ silent: true });
+      await loadWorkspaceMembers({ silent: true });
+      renderSprintProgress();
       refreshAnalyticsBoardSelector();
     }
   } catch (error) {
@@ -2202,6 +2165,8 @@ async function selectBoard(boardId) {
   setActiveSidebarBoard(boardId);
   switchDashboardView('board');
   await loadBoardData();
+  await loadActivityFeed({ silent: true });
+  renderSprintProgress();
   refreshAnalyticsBoardSelector();
   showToast('bi-kanban', 'Board opened', 'Loaded columns and cards from MongoDB');
 }
@@ -2653,6 +2618,421 @@ function handleGoogleAuth() {
   showToast('bi-info-circle', 'Google OAuth', 'Coming soon! Configure Google credentials in your .env file.');
 }
 
+// ── LIVE ACTIVITY ────────────────────────────────────────
+async function loadActivityFeed(options = {}) {
+  const boardId = localStorage.getItem('teamops_board_id');
+  const workspaceId = localStorage.getItem('teamops_workspace_id');
+  const path = boardId
+    ? `/activities/${boardId}`
+    : (workspaceId ? `/activities/workspace/${workspaceId}` : '');
+
+  if (!path) {
+    activityFeed = [];
+    renderActivityFeed();
+    return;
+  }
+
+  try {
+    if (!options.silent) renderActivityLoading();
+    const activities = await apiRequest(path);
+    activityFeed = Array.isArray(activities) ? activities : [];
+    renderActivityFeed();
+  } catch (error) {
+    console.error('Load activity error:', error);
+    if (!options.silent) {
+      const errorHtml = '<div class="notif-empty">Could not load activity</div>';
+      const liveList = document.getElementById('liveActivityList');
+      const timelineList = getActivityTimelineList();
+      if (liveList) liveList.innerHTML = errorHtml;
+      if (timelineList) timelineList.innerHTML = errorHtml;
+      updateActivityHero(0, 'Activity could not be loaded');
+    }
+  }
+}
+
+function renderActivityLoading() {
+  const timelineList = getActivityTimelineList();
+  const heroNote = document.getElementById('activityHeroNote');
+  if (timelineList) timelineList.innerHTML = '<div class="notif-loading">Loading activity...</div>';
+  if (heroNote) heroNote.textContent = 'Loading latest activity';
+}
+
+function getActivityTimelineList() {
+  const timelineList = document.getElementById('activityTimelineList') || document.querySelector('#dbView-activity .db-activity-list');
+  if (timelineList && !timelineList.id) timelineList.id = 'activityTimelineList';
+  return timelineList;
+}
+
+function normalizeActivity(activity = {}) {
+  const boardId = activity.board_id || activity.boardId || activity.board || '';
+  const createdAt = activity.created_at || activity.createdAt || new Date().toISOString();
+  return {
+    id: activity.id || activity._id || `${boardId || 'activity'}-${createdAt}-${activity.action || activity.message || ''}`,
+    board_id: boardId,
+    message: activity.action || activity.message || 'Updated board activity',
+    created_at: createdAt,
+  };
+}
+
+function prependActivity(activity) {
+  const normalized = normalizeActivity(activity);
+  const existing = activityFeed.filter(item => String(item.id) !== String(normalized.id));
+  activityFeed = [normalized, ...existing].slice(0, 50);
+  renderActivityFeed();
+}
+
+function getActivityIcon(activity) {
+  const message = activity?.message || activity?.action || '';
+  if (/comment/i.test(message)) return { icon: 'bi-chat-dots', chip: 'a-comment' };
+  if (/assign/i.test(message)) return { icon: 'bi-person', chip: 'a-assign' };
+  if (/creat|add/i.test(message)) return { icon: 'bi-stars', chip: 'a-create' };
+  if (/delet|remove/i.test(message)) return { icon: 'bi-trash', chip: 'a-assign' };
+  if (/mov|drag|column/i.test(message)) return { icon: 'bi-arrow-left-right', chip: 'a-move' };
+  return { icon: 'bi-broadcast-pin', chip: 'a-create' };
+}
+
+function renderActivityFeed() {
+  const liveList = document.getElementById('liveActivityList');
+  const timelineList = getActivityTimelineList();
+  const normalized = activityFeed.map(normalizeActivity);
+
+  if (!normalized.length) {
+    const emptyHtml = '<div class="notif-empty">No activity yet</div>';
+    if (liveList) liveList.innerHTML = emptyHtml;
+    if (timelineList) timelineList.innerHTML = emptyHtml;
+    updateActivityHero(0, 'No board activity yet');
+    return;
+  }
+
+  if (liveList) {
+    liveList.innerHTML = normalized.slice(0, 4).map(activity => {
+      const { icon, chip } = getActivityIcon(activity);
+      return `
+        <div class="act-row">
+          <div class="act-chip ${chip}"><i class="bi ${icon}"></i></div>
+          <div class="act-body">
+            <div class="act-text">${escapeHtml(activity.message)}</div>
+            <div class="act-ts">${formatTimeAgo(new Date(activity.created_at))}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  if (timelineList) {
+    timelineList.innerHTML = normalized.map(activity => {
+      const { icon } = getActivityIcon(activity);
+      return `
+        <div class="db-activity-item">
+          <div class="db-activity-icon"><i class="bi ${icon}"></i></div>
+          <div class="db-activity-msg">${escapeHtml(activity.message)}</div>
+          <div class="db-activity-time">${formatTimeAgo(new Date(activity.created_at))}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  const todayKey = new Date().toDateString();
+  const todayCount = normalized.filter(activity => new Date(activity.created_at).toDateString() === todayKey).length;
+  updateActivityHero(todayCount, `${normalized.length} recent event${normalized.length === 1 ? '' : 's'} loaded`);
+}
+
+function updateActivityHero(todayCount, note) {
+  const eventsToday = document.getElementById('activityEventsToday') || document.querySelector('#dbView-activity .db-hero-metric-value');
+  const heroNote = document.getElementById('activityHeroNote') || document.querySelector('#dbView-activity .db-hero-metric-note');
+  if (eventsToday && !eventsToday.id) eventsToday.id = 'activityEventsToday';
+  if (heroNote && !heroNote.id) heroNote.id = 'activityHeroNote';
+  if (eventsToday) {
+    eventsToday.textContent = String(todayCount);
+    eventsToday.dataset.countup = String(todayCount);
+    eventsToday.dataset.finalText = String(todayCount);
+  }
+  if (heroNote) heroNote.textContent = note;
+}
+
+function isDoneColumnTitle(title = '') {
+  return /done|complete|closed|shipped/i.test(title);
+}
+
+function getBoardCards() {
+  return (activeBoardData?.columns || []).flatMap(column =>
+    (column.cards || []).map(card => ({ ...card, column_title: column.title, column_id: column.id }))
+  );
+}
+
+function progressRow(label, percent, fillClass = 'pf-v') {
+  const safePercent = Math.max(0, Math.min(100, Math.round(percent || 0)));
+  return `
+    <div class="prog-item">
+      <div class="prog-head"><span>${escapeHtml(label)}</span><span>${safePercent}%</span></div>
+      <div class="prog-track"><div class="prog-fill ${fillClass}" style="width:${safePercent}%"></div></div>
+    </div>
+  `;
+}
+
+function renderSprintProgress() {
+  const list = getSprintProgressList();
+  if (!list) return;
+
+  const columns = activeBoardData?.columns || [];
+  const cards = getBoardCards();
+  if (!columns.length) {
+    list.innerHTML = '<div class="notif-empty">No board selected</div>';
+    return;
+  }
+
+  const total = cards.length;
+  const doneCount = cards.filter(card => isDoneColumnTitle(card.column_title)).length;
+  const overall = total ? (doneCount / total) * 100 : 0;
+  const columnRows = columns
+    .filter(column => !isDoneColumnTitle(column.title))
+    .slice(0, 2)
+    .map((column, index) => {
+      const count = (column.cards || []).length;
+      return progressRow(column.title, total ? (count / total) * 100 : 0, index === 0 ? 'pf-g' : 'pf-r');
+    })
+    .join('');
+
+  list.innerHTML = progressRow('Completed', overall, 'pf-v') + (columnRows || progressRow('In progress', 0, 'pf-g'));
+}
+
+function getPanelBlockByTitle(title) {
+  return Array.from(document.querySelectorAll('.panel-block')).find(block =>
+    block.querySelector('.panel-title')?.textContent.trim() === title
+  );
+}
+
+function getSprintProgressList() {
+  let list = document.getElementById('sprintProgressList');
+  if (list) return list;
+
+  const block = getPanelBlockByTitle('Sprint Progress');
+  if (!block) return null;
+  block.querySelectorAll('.prog-item').forEach(item => item.remove());
+  list = document.createElement('div');
+  list.id = 'sprintProgressList';
+  block.appendChild(list);
+  return list;
+}
+
+async function loadWorkspaceMembers(options = {}) {
+  const workspaceId = localStorage.getItem('teamops_workspace_id');
+  if (!workspaceId) {
+    workspaceMembers = [];
+    renderWorkspaceMembers();
+    return;
+  }
+
+  try {
+    const payload = await apiRequest(`/workspaces/${workspaceId}/members`);
+    workspaceMembers = Array.isArray(payload?.members) ? payload.members : [];
+    renderWorkspaceMembers(payload);
+  } catch (error) {
+    console.error('Load members error:', error);
+    if (!options.silent) {
+      const emptyHtml = '<div class="notif-empty">Could not load members</div>';
+      const rightList = getRightMembersList();
+      const membersGrid = getMembersGrid();
+      if (rightList) rightList.innerHTML = emptyHtml;
+      if (membersGrid) membersGrid.innerHTML = emptyHtml;
+    }
+  }
+}
+
+function memberInitial(name = '') {
+  return (String(name).trim().charAt(0) || '?').toUpperCase();
+}
+
+function memberAvatarClass(index) {
+  return ['u-style-4', 'u-style-11', 'u-style-5', 'u-style-59'][index % 4];
+}
+
+function renderWorkspaceMembers(payload = {}) {
+  const rightList = getRightMembersList();
+  const membersGrid = getMembersGrid();
+  const totalCount = document.getElementById('membersTotalCount');
+  const heroNote = document.getElementById('membersHeroNote');
+  const members = workspaceMembers;
+
+  if (totalCount) {
+    totalCount.textContent = String(members.length);
+    totalCount.dataset.countup = String(members.length);
+    totalCount.dataset.finalText = String(members.length);
+  }
+  if (heroNote) heroNote.textContent = `${members.length} active workspace member${members.length === 1 ? '' : 's'}`;
+  renderInviteCodePanels({
+    ...currentWorkspace,
+    inviteCode: payload.inviteCode || currentWorkspace?.inviteCode,
+    inviteLink: payload.inviteLink || currentWorkspace?.inviteLink,
+  });
+
+  if (!members.length) {
+    const emptyHtml = '<div class="notif-empty">No members found</div>';
+    if (rightList) rightList.innerHTML = emptyHtml;
+    if (membersGrid) membersGrid.innerHTML = emptyHtml;
+    renderMemberLoadBars();
+    return;
+  }
+
+  if (rightList) {
+    rightList.innerHTML = members.slice(0, 4).map((member, index) => `
+      <div class="mb-item">
+        <div class="mb-av ${memberAvatarClass(index)}">${escapeHtml(memberInitial(member.name))}</div>
+        <div>
+          <div class="mb-name">${escapeHtml(member.name || member.email || 'Member')}</div>
+          <div class="mb-role">${escapeHtml(roleLabel(member.role))}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  if (membersGrid) {
+    membersGrid.innerHTML = members.map((member, index) => `
+      <div class="db-member-card">
+        <div class="db-member-av ${memberAvatarClass(index)}">${escapeHtml(memberInitial(member.name))}</div>
+        <div>
+          <div class="db-member-name">${escapeHtml(member.name || member.email || 'Member')}</div>
+          <div class="db-member-role">${escapeHtml(member.email || roleLabel(member.role))}</div>
+        </div>
+        <div class="db-member-meta">
+          <div class="db-pill">${escapeHtml(roleLabel(member.role))}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  renderMemberLoadBars();
+}
+
+function getRightMembersList() {
+  let list = document.getElementById('rightMembersList');
+  if (list) return list;
+
+  const block = getPanelBlockByTitle('Workspace Members') || getPanelBlockByTitle('Members Online');
+  if (!block) return null;
+  const title = block.querySelector('.panel-title');
+  if (title) title.textContent = 'Workspace Members';
+  list = block.querySelector('.mb-list') || document.createElement('div');
+  list.id = 'rightMembersList';
+  list.classList.add('mb-list');
+  block.querySelectorAll('.mb-item').forEach(item => item.remove());
+  if (!list.parentNode) block.insertBefore(list, block.querySelector('.invite-row'));
+  return list;
+}
+
+function getMembersGrid() {
+  const grid = document.getElementById('membersGrid') || document.querySelector('#dbView-members .db-member-grid');
+  if (grid && !grid.id) grid.id = 'membersGrid';
+  return grid;
+}
+
+function getMemberLoadBars() {
+  const bars = document.getElementById('memberLoadBars') || document.querySelector('#dbView-members .db-slab.u-style-62 .db-bars');
+  if (bars && !bars.id) bars.id = 'memberLoadBars';
+  return bars;
+}
+
+function roleLabel(role = 'member') {
+  const normalized = String(role || 'member');
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+function renderMemberLoadBars() {
+  const container = getMemberLoadBars();
+  if (!container) return;
+
+  const cards = getBoardCards();
+  const counts = new Map();
+  workspaceMembers.forEach(member => {
+    counts.set(String(member.id), { name: member.name || member.email || 'Member', count: 0 });
+  });
+  cards.forEach(card => {
+    if (!card.assignee_id) return;
+    const item = counts.get(String(card.assignee_id)) || { name: card.assignee_name || 'Assigned member', count: 0 };
+    item.count += 1;
+    counts.set(String(card.assignee_id), item);
+  });
+
+  const rows = Array.from(counts.values()).sort((a, b) => b.count - a.count).slice(0, 5);
+  const max = Math.max(1, ...rows.map(row => row.count));
+  if (!rows.length) {
+    container.innerHTML = '<div class="notif-empty">No member workload yet</div>';
+    return;
+  }
+
+  container.innerHTML = rows.map((row, index) => {
+    const percent = Math.round((row.count / max) * 100);
+    return `
+      <div class="db-bar-row">
+        <div class="db-bar-name">${escapeHtml(row.name)}</div>
+        <div class="db-bar-track"><div class="db-bar-fill ${['u-style-63', 'u-style-64', 'u-style-65'][index % 3]}" style="width:${percent}%"></div></div>
+        <div class="db-bar-val">${row.count}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadAuditLog() {
+  const workspaceId = localStorage.getItem('teamops_workspace_id');
+  if (!workspaceId) {
+    renderAuditLog([]);
+    return;
+  }
+
+  try {
+    const activities = await apiRequest(`/activities/workspace/${workspaceId}`);
+    renderAuditLog(Array.isArray(activities) ? activities : []);
+  } catch (error) {
+    console.error('Load audit error:', error);
+    const auditList = document.getElementById('auditLogList');
+    if (auditList) auditList.innerHTML = '<div class="notif-empty">Could not load audit log</div>';
+  }
+}
+
+function isAuditEvent(activity = {}) {
+  const message = activity.action || activity.message || '';
+  return /workspace|member|role|invite|invited|joined|removed|board|column|delete|deleted|archive|permission/i.test(message);
+}
+
+function auditActionMeta(message = '') {
+  if (/delete|remove|archive/i.test(message)) return { label: 'Removed', icon: 'bi-trash', cls: 'u-style-81' };
+  if (/role|permission/i.test(message)) return { label: 'Access', icon: 'bi-shield-check', cls: 'u-style-79' };
+  if (/invite|joined|member/i.test(message)) return { label: 'Member', icon: 'bi-person-plus', cls: 'u-style-78' };
+  if (/board|column/i.test(message)) return { label: 'Structure', icon: 'bi-kanban', cls: 'u-style-80' };
+  return { label: 'Audit', icon: 'bi-clipboard-check', cls: 'u-style-78' };
+}
+
+function renderAuditLog(source = null) {
+  const auditList = document.getElementById('auditLogList');
+  const auditCount = document.getElementById('auditEventCount');
+  if (!auditList && !auditCount) return;
+
+  const auditEvents = (Array.isArray(source) ? source : activityFeed).map(normalizeActivity).filter(isAuditEvent);
+  if (auditCount) auditCount.textContent = `${auditEvents.length} event${auditEvents.length === 1 ? '' : 's'} logged`;
+
+  if (!auditList) return;
+  if (!auditEvents.length) {
+    auditList.innerHTML = '<div class="notif-empty">No administrative audit events yet</div>';
+    return;
+  }
+
+  auditList.innerHTML = auditEvents.map(activity => {
+    const meta = auditActionMeta(activity.message);
+    return `
+      <div class="db-audit-item">
+        <div class="db-audit-meta">
+          <div class="db-audit-action ${meta.cls}"><i class="bi ${meta.icon}"></i> ${meta.label}</div>
+          <div class="db-audit-desc">
+            <div class="db-audit-title">${escapeHtml(activity.message)}</div>
+            <div class="db-audit-user">Workspace audit event</div>
+          </div>
+          <div class="db-audit-time">${formatTimeAgo(new Date(activity.created_at))}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 // ── NOTIFICATIONS ────────────────────────────────────────
 async function loadNotifications() {
   try {
@@ -2820,6 +3200,11 @@ function formatTimeAgo(date) {
   return date.toLocaleDateString();
 }
 
+setInterval(() => {
+  if (activityFeed.length) renderActivityFeed();
+  if (notificationFeed.length) renderNotifications();
+}, 60000);
+
 // ── TOAST ────────────────────────────────────────
 function showToast(iconClass, title, msg) {
   const wrap = document.getElementById('toasts');
@@ -2863,6 +3248,8 @@ let userWorkspaces = [];
 let currentWorkspace = null;
 let teamopsSocket = null;
 let joinedBoardId = '';
+let activityFeed = [];
+let workspaceMembers = [];
 let notificationFeed = [];
 let notificationImportantOnly = false;
 const boardColors = ['#7c5cfc', '#14b8a6', '#ff4d6d', '#f59e0b', '#38bdf8', '#22c55e'];
@@ -3113,6 +3500,8 @@ async function loadBoardData() {
     activeBoardData = board;
     renderBoard(board);
     setupDragDrop(board);
+    renderSprintProgress();
+    renderMemberLoadBars();
   } catch (error) {
     console.error('Load board error:', error);
     showToast('bi-exclamation-circle', 'Board error', error.message);
