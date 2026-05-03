@@ -913,12 +913,24 @@ footer {
   height: 62px; background: var(--white); border-bottom: 1px solid var(--border);
   display: flex; align-items: center; padding: 0 28px; gap: 16px; flex-shrink: 0;
 }
-.db-header-title { font-family: 'Instrument Serif', serif; font-size: 20px; flex: 1; color: var(--ink); }
+.db-header-title {
+  flex: 1;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
 .live-chip {
   display: inline-flex; align-items: center; gap: 6px;
   background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 100px;
   padding: 4px 12px; font-size: 12px; color: var(--green); font-weight: 700;
 }
+.live-chip.offline {
+  background: #f4f3f1;
+  border-color: var(--border2);
+  color: var(--muted);
+}
+.live-chip.offline .on-dot { background: var(--muted2); }
 .h-search {
   display: flex; align-items: center; gap: 8px;
   background: #f4f3f1; border: 1px solid var(--border); border-radius: 10px;
@@ -1688,6 +1700,183 @@ footer {
   overflow: hidden;
 }
 .db-mini-fill { height: 100%; background: linear-gradient(90deg, var(--sky), var(--violet)); }
+.settings-command-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) repeat(3, minmax(116px, 0.6fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.settings-insight-card,
+.settings-mini-stat,
+.settings-lab-panel {
+  background: rgba(255,255,255,0.88);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(15,14,13,0.05);
+}
+.settings-insight-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+}
+.settings-insight-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(135deg, var(--violet), var(--teal));
+  box-shadow: 0 10px 22px rgba(20,184,166,0.18);
+  flex-shrink: 0;
+}
+.settings-insight-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: var(--muted2);
+}
+.settings-insight-value {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--ink);
+  margin-top: 3px;
+}
+.settings-insight-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.settings-mini-stat {
+  min-height: 92px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.settings-mini-stat span {
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 900;
+  color: var(--ink);
+}
+.settings-mini-stat small {
+  margin-top: 7px;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 800;
+}
+.settings-lab {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.settings-lab-panel {
+  padding: 15px;
+}
+.settings-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.settings-section-head .db-slab-title { margin-bottom: 3px; }
+.settings-chip-btn {
+  border: 1px solid rgba(124,92,252,0.24);
+  background: var(--violet-soft);
+  color: var(--violet);
+  border-radius: 999px;
+  min-height: 34px;
+  padding: 7px 11px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: none;
+  white-space: nowrap;
+}
+.settings-control-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.settings-field {
+  display: grid;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted2);
+}
+.settings-field input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  min-height: 40px;
+  padding: 0 11px;
+  background: #fbfaf8;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+}
+.settings-range-field { grid-column: 1 / -1; }
+.settings-range-row {
+  display: grid;
+  grid-template-columns: 1fr 68px;
+  align-items: center;
+  gap: 10px;
+}
+.settings-range-row input { padding: 0; accent-color: var(--violet); }
+.settings-range-row span {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--ink2);
+  text-align: right;
+}
+.settings-recipe-list { display: grid; gap: 8px; }
+.settings-recipe {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  background: #fbfaf8;
+  color: var(--ink2);
+  cursor: none;
+  font-family: inherit;
+  transition: transform 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.settings-recipe:hover {
+  transform: translateY(-1px);
+  border-color: rgba(124,92,252,0.35);
+  background: #fff;
+}
+.settings-recipe i {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--violet);
+  background: var(--violet-soft);
+  flex-shrink: 0;
+}
+.settings-recipe span { display: grid; gap: 2px; min-width: 0; }
+.settings-recipe strong { font-size: 13px; color: var(--ink); }
+.settings-recipe small { font-size: 11px; color: var(--muted); line-height: 1.35; }
 .db-settings-list { display: grid; gap: 10px; }
 .db-setting-row {
   display: flex;
@@ -1793,6 +1982,9 @@ footer {
   .db-cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .db-member-grid { grid-template-columns: 1fr; }
   .db-grid-2 { grid-template-columns: 1fr; }
+  .settings-command-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .settings-insight-card { grid-column: 1 / -1; }
+  .settings-lab { grid-template-columns: 1fr; }
   .board-filter-bar {
     align-items: flex-end;
     flex-wrap: wrap;
@@ -2746,6 +2938,13 @@ footer {
 @media (max-width: 720px) {
   .board-comments-fab { right: 18px; bottom: 18px; }
   .board-comments-pane { right: 12px; left: 12px; bottom: 86px; width: auto; height: min(620px, calc(100vh - 104px)); }
+  .settings-command-grid,
+  .settings-control-grid { grid-template-columns: 1fr; }
+  .settings-insight-card,
+  .settings-range-field { grid-column: auto; }
+  .settings-section-head { flex-direction: column; }
+  .settings-chip-btn { width: 100%; justify-content: center; }
+  .settings-mini-stat { min-height: 76px; }
 }
 .u-style-45 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 .u-style-46 { display:flex; gap:12px; margin-top:8px; }

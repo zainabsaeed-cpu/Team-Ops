@@ -510,10 +510,10 @@
     <div class="aside-foot">
       <div class="aside-foot-row">
         <button class="aside-user aside-user-btn" onclick="switchDashboardView('profile')" title="View profile">
-          <div class="aside-av">Z</div>
+          <div class="aside-av" id="asideUserInitial">U</div>
           <div class="aside-user-text">
-            <div class="aside-uname" id="asideUserName">Zainab Saeed</div>
-            <div class="aside-urole" id="asideUserRole">Owner</div>
+            <div class="aside-uname" id="asideUserName">User</div>
+            <div class="aside-urole" id="asideUserRole">Member</div>
           </div>
         </button>
         <button class="aside-logout-icon" onclick="doLogout()" title="Log out"><i class="bi bi-box-arrow-right"></i></button>
@@ -526,7 +526,7 @@
     <div class="db-header">
       <button class="h-toggle-btn" onclick="toggleSide('left')" aria-label="Toggle left panel"><i class="bi bi-layout-sidebar-inset"></i></button>
       <div class="db-header-title" id="dbHeaderTitle">Sprint 4 — April 2026</div>
-      <div class="live-chip"><span class="on-dot"></span> 3 online</div>
+      <div class="live-chip" id="workspacePresenceChip"><span class="on-dot"></span> <span id="workspacePresenceCount">Connecting...</span></div>
       <div class="h-search"><span class="u-style-35">⌕</span><input type="text" placeholder="Search cards…"></div>
       <div class="notif-container">
         <button class="h-icon-btn" id="notifBellBtn" onclick="toggleNotificationDropdown()" aria-label="Open notifications"><i class="bi bi-bell"></i><div class="notif-pip" id="notifBadge">0</div></button>
@@ -546,7 +546,7 @@
       <button class="h-icon-btn" onclick="switchDashboardView('settings')" aria-label="Open settings"><i class="bi bi-gear"></i></button>
       <button class="h-toggle-btn" onclick="toggleSide('right')" aria-label="Toggle right panel"><i class="bi bi-layout-sidebar-reverse"></i></button>
       <button class="h-add-btn" onclick="addCard()">+ Add Card</button>
-      <div class="h-uav">Z</div>
+      <div class="h-uav" id="headerUserInitial">U</div>
     </div>
     <div class="db-board db-content-view active" id="dbView-board"></div>
 
@@ -902,16 +902,93 @@
           <div>
             <div class="db-page-kicker"><i class="bi bi-sliders"></i> Workspace Controls</div>
             <h3>Settings Studio</h3>
-            <p class="db-page-sub">Tune your collaboration behavior, notification policy, and sprint automation from one place.</p>
+            <p class="db-page-sub">Tune collaboration behavior, notification policy, and lightweight automation from one focused command surface.</p>
+            <div class="db-hero-badges">
+              <span class="db-badge"><i class="bi bi-moon-stars"></i> Quiet hours aware</span>
+              <span class="db-badge"><i class="bi bi-magic"></i> Smart recipes</span>
+              <span class="db-badge"><i class="bi bi-shield-check"></i> Role guarded</span>
+            </div>
           </div>
-          <div class="db-hero-metric">
+          <div class="db-hero-metric settings-health-card">
             <div class="db-hero-metric-label">Config health</div>
-            <div class="db-hero-metric-value">A+</div>
-            <div class="db-hero-metric-note">3 optimized defaults active</div>
+            <div class="db-hero-metric-value" id="settingsHealthGrade">A+</div>
+            <div class="db-hero-metric-note" id="settingsHealthNote">Workspace signals look balanced</div>
           </div>
         </div>
       </div>
-      <div class="db-settings-list db-anim db-delay-2">
+
+      <div class="settings-command-grid db-anim db-delay-2">
+        <div class="settings-insight-card">
+          <div class="settings-insight-icon"><i class="bi bi-activity"></i></div>
+          <div>
+            <div class="settings-insight-label">Live policy radar</div>
+            <div class="settings-insight-value" id="settingsRadarTitle">Syncing workspace...</div>
+            <div class="settings-insight-desc" id="settingsRadarDesc">Open a board to let TeamOps tune suggestions from active cards.</div>
+          </div>
+        </div>
+        <div class="settings-mini-stat">
+          <span id="settingsOpenCards">0</span>
+          <small>Open cards</small>
+        </div>
+        <div class="settings-mini-stat">
+          <span id="settingsHighPriority">0</span>
+          <small>High priority</small>
+        </div>
+        <div class="settings-mini-stat">
+          <span id="settingsUnreadNotifs">0</span>
+          <small>Unread alerts</small>
+        </div>
+      </div>
+
+      <div class="settings-lab db-anim db-delay-3">
+        <div class="settings-lab-panel">
+          <div class="settings-section-head">
+            <div>
+              <div class="db-slab-title">Notification intelligence</div>
+              <div class="db-slab-note">Make alerts useful without letting them own the room.</div>
+            </div>
+            <button class="settings-chip-btn" onclick="applySettingsPreset('focus')"><i class="bi bi-stars"></i> Focus preset</button>
+          </div>
+          <div class="settings-control-grid">
+            <label class="settings-field">Quiet hours start
+              <input type="time" data-setting-input="quietStart" onchange="updateSettingInput('quietStart', this.value)">
+            </label>
+            <label class="settings-field">Quiet hours end
+              <input type="time" data-setting-input="quietEnd" onchange="updateSettingInput('quietEnd', this.value)">
+            </label>
+            <label class="settings-field settings-range-field">Escalate after
+              <div class="settings-range-row">
+                <input type="range" min="1" max="14" data-setting-input="escalationDays" oninput="updateSettingInput('escalationDays', this.value)">
+                <span id="settingsEscalationLabel">3 days</span>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="settings-lab-panel settings-recipes-panel">
+          <div class="settings-section-head">
+            <div>
+              <div class="db-slab-title">Automation recipes</div>
+              <div class="db-slab-note">Small rules that keep the board tidy.</div>
+            </div>
+          </div>
+          <div class="settings-recipe-list">
+            <button class="settings-recipe" onclick="applySettingsPreset('handoff')">
+              <i class="bi bi-arrow-left-right"></i>
+              <span><strong>Review handoff</strong><small>Nudge assignees when cards enter review.</small></span>
+            </button>
+            <button class="settings-recipe" onclick="applySettingsPreset('cleanup')">
+              <i class="bi bi-archive"></i>
+              <span><strong>Completion cleanup</strong><small>Archive finished cards after one week.</small></span>
+            </button>
+            <button class="settings-recipe" onclick="applySettingsPreset('calm')">
+              <i class="bi bi-bell-slash"></i>
+              <span><strong>Calm inbox</strong><small>Batch non-critical alerts into digests.</small></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="db-settings-list db-anim db-delay-3">
         <div class="db-setting-row invite-setting-row">
           <div>
             <div class="db-setting-title">Invite code</div>
@@ -922,20 +999,28 @@
         </div>
         <div class="db-setting-row">
           <div><div class="db-setting-title">Real-time desktop notifications</div><div class="db-setting-desc">Show browser alerts when cards are assigned or moved.</div></div>
-          <button class="db-toggle on" onclick="this.classList.toggle('on')"></button>
+          <button class="db-toggle on" data-setting-toggle="desktopNotifications" onclick="toggleWorkspaceSetting(this, 'desktopNotifications')" aria-label="Toggle real-time desktop notifications"></button>
         </div>
         <div class="db-setting-row">
           <div><div class="db-setting-title">Auto-archive completed cards</div><div class="db-setting-desc">Automatically archive cards 7 days after completion.</div></div>
-          <button class="db-toggle" onclick="this.classList.toggle('on')"></button>
+          <button class="db-toggle" data-setting-toggle="autoArchive" onclick="toggleWorkspaceSetting(this, 'autoArchive')" aria-label="Toggle auto-archive completed cards"></button>
         </div>
         <div class="db-setting-row">
           <div><div class="db-setting-title">Weekly sprint summary email</div><div class="db-setting-desc">Send digest every Friday to all team members.</div></div>
-          <button class="db-toggle on" onclick="this.classList.toggle('on')"></button>
+          <button class="db-toggle on" data-setting-toggle="weeklyDigest" onclick="toggleWorkspaceSetting(this, 'weeklyDigest')" aria-label="Toggle weekly sprint summary email"></button>
+        </div>
+        <div class="db-setting-row">
+          <div><div class="db-setting-title">Mention-only after hours</div><div class="db-setting-desc">Mute routine alerts during quiet hours unless a teammate mentions you.</div></div>
+          <button class="db-toggle on" data-setting-toggle="mentionOnlyAfterHours" onclick="toggleWorkspaceSetting(this, 'mentionOnlyAfterHours')" aria-label="Toggle mention-only after hours"></button>
+        </div>
+        <div class="db-setting-row">
+          <div><div class="db-setting-title">Smart review nudges</div><div class="db-setting-desc">Surface cards that sit in review longer than the escalation window.</div></div>
+          <button class="db-toggle on" data-setting-toggle="reviewNudges" onclick="toggleWorkspaceSetting(this, 'reviewNudges')" aria-label="Toggle smart review nudges"></button>
         </div>
       </div>
       <div class="db-actions-row db-anim db-delay-3">
-        <button class="db-ghost-btn" onclick="showToast('bi-arrow-counterclockwise','Reverted','Settings reset to last saved state')">Reset</button>
-        <button class="db-solid-btn" onclick="showToast('bi-floppy','Saved','Workspace settings updated successfully')">Save changes</button>
+        <button class="db-ghost-btn" onclick="resetWorkspaceSettings()">Reset</button>
+        <button class="db-solid-btn" onclick="saveWorkspaceSettings()">Save changes</button>
       </div>
     </div>
 
@@ -1475,6 +1560,7 @@ function switchDashboardView(viewId, btnEl) {
   if (viewId === 'audit') {
     try { loadAuditLog(); } catch (e) { console.warn('loadAuditLog failed:', e); }
   }
+  if (viewId === 'settings') refreshSettingsStudio();
   if (viewId === 'profile') loadProfileView();
 
   target.querySelectorAll('.db-kpi-card').forEach(card => card.classList.remove('kpi-finished'));
@@ -1952,9 +2038,21 @@ function connectRealtime(userId = '') {
   });
 
   teamopsSocket.on('connect', () => {
+    updateWorkspacePresenceChip(null, 'Syncing...');
     if (userId) teamopsSocket.emit('join:user', userId);
+    joinWorkspacePresence(currentWorkspace?.id || localStorage.getItem('teamops_workspace_id'));
     const boardId = localStorage.getItem('teamops_board_id');
     if (boardId) joinBoardRoom(boardId);
+  });
+
+  teamopsSocket.on('disconnect', () => {
+    updateWorkspacePresenceChip(null, 'Offline');
+  });
+
+  teamopsSocket.on('workspace:presence', payload => {
+    const workspaceId = currentWorkspace?.id || localStorage.getItem('teamops_workspace_id');
+    if (payload?.workspaceId && workspaceId && String(payload.workspaceId) !== String(workspaceId)) return;
+    updateWorkspacePresenceChip(payload?.count || 0);
   });
 
   ['card:created', 'card:moved', 'card:updated', 'card:deleted', 'column:created', 'column:deleted'].forEach(eventName => {
@@ -2037,6 +2135,32 @@ function joinBoardRoom(boardId) {
   teamopsSocket.emit('join:board', boardId);
 }
 
+function joinWorkspacePresence(workspaceId) {
+  if (!teamopsSocket || !workspaceId) {
+    updateWorkspacePresenceChip(0);
+    return;
+  }
+  if (joinedWorkspacePresenceId && String(joinedWorkspacePresenceId) !== String(workspaceId)) {
+    teamopsSocket.emit('workspace:leave', { workspaceId: joinedWorkspacePresenceId });
+  }
+  joinedWorkspacePresenceId = String(workspaceId);
+  teamopsSocket.emit('workspace:join', { workspaceId });
+}
+
+function updateWorkspacePresenceChip(count, label = '') {
+  const chip = document.getElementById('workspacePresenceChip');
+  const countEl = document.getElementById('workspacePresenceCount');
+  if (!countEl) return;
+  if (label) {
+    countEl.textContent = label;
+    chip?.classList.toggle('offline', label === 'Offline');
+    return;
+  }
+  const onlineCount = Math.max(0, Number(count) || 0);
+  countEl.textContent = `${onlineCount} online`;
+  chip?.classList.toggle('offline', onlineCount === 0);
+}
+
 function getActiveWorkspace(workspaces) {
   const list = Array.isArray(workspaces) ? workspaces : [];
   const storedWorkspaceId = localStorage.getItem('teamops_workspace_id');
@@ -2097,6 +2221,211 @@ function renderInviteCodePanels(workspace = currentWorkspace) {
   if (code) {
     localStorage.setItem('teamops_invite_code', code);
     localStorage.setItem('teamops_invite_link', link);
+  }
+}
+
+function getUserInitial(user = {}) {
+  const label = String(user.name || user.full_name || user.email || '').trim();
+  return (label.charAt(0) || 'U').toUpperCase();
+}
+
+function updateUserChrome(user = {}) {
+  const initial = getUserInitial(user);
+  const name = user.name || user.full_name || user.email || 'User';
+  const nameEl = document.getElementById('asideUserName');
+  const asideInitial = document.getElementById('asideUserInitial');
+  const headerInitial = document.getElementById('headerUserInitial');
+
+  if (nameEl) nameEl.textContent = name;
+  if (asideInitial) asideInitial.textContent = initial;
+  if (headerInitial) headerInitial.textContent = initial;
+}
+
+const SETTINGS_DEFAULTS = {
+  desktopNotifications: true,
+  autoArchive: false,
+  weeklyDigest: true,
+  mentionOnlyAfterHours: true,
+  reviewNudges: true,
+  quietStart: '18:00',
+  quietEnd: '09:00',
+  escalationDays: '3',
+};
+
+function getWorkspaceSettingsKey() {
+  const workspaceId = currentWorkspace?.id || localStorage.getItem('teamops_workspace_id') || 'default';
+  return `teamops_workspace_settings_${workspaceId}`;
+}
+
+function getWorkspaceSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(getWorkspaceSettingsKey()) || '{}');
+    return { ...SETTINGS_DEFAULTS, ...saved };
+  } catch (_) {
+    return { ...SETTINGS_DEFAULTS };
+  }
+}
+
+function persistWorkspaceSettings(settings) {
+  localStorage.setItem(getWorkspaceSettingsKey(), JSON.stringify({ ...SETTINGS_DEFAULTS, ...settings }));
+}
+
+function applyWorkspaceSettingsUI(settings = getWorkspaceSettings()) {
+  document.querySelectorAll('[data-setting-toggle]').forEach(button => {
+    const key = button.dataset.settingToggle;
+    button.classList.toggle('on', Boolean(settings[key]));
+    button.setAttribute('aria-pressed', Boolean(settings[key]) ? 'true' : 'false');
+  });
+
+  document.querySelectorAll('[data-setting-input]').forEach(input => {
+    const key = input.dataset.settingInput;
+    if (settings[key] !== undefined) input.value = settings[key];
+  });
+
+  const escalationLabel = document.getElementById('settingsEscalationLabel');
+  if (escalationLabel) {
+    const days = Number(settings.escalationDays) || 3;
+    escalationLabel.textContent = `${days} day${days === 1 ? '' : 's'}`;
+  }
+}
+
+function toggleWorkspaceSetting(button, key) {
+  const settings = getWorkspaceSettings();
+  settings[key] = !Boolean(settings[key]);
+  persistWorkspaceSettings(settings);
+  applyWorkspaceSettingsUI(settings);
+  refreshSettingsStudio();
+  const title = settings[key] ? 'Setting enabled' : 'Setting disabled';
+  showToast(settings[key] ? 'bi-toggle-on' : 'bi-toggle-off', title, settingLabel(key));
+}
+
+function updateSettingInput(key, value) {
+  const settings = getWorkspaceSettings();
+  settings[key] = value;
+  persistWorkspaceSettings(settings);
+  applyWorkspaceSettingsUI(settings);
+  refreshSettingsStudio();
+}
+
+function settingLabel(key) {
+  const labels = {
+    desktopNotifications: 'Real-time desktop notifications',
+    autoArchive: 'Auto-archive completed cards',
+    weeklyDigest: 'Weekly sprint summary email',
+    mentionOnlyAfterHours: 'Mention-only after hours',
+    reviewNudges: 'Smart review nudges',
+  };
+  return labels[key] || 'Workspace setting';
+}
+
+function applySettingsPreset(preset) {
+  const settings = getWorkspaceSettings();
+  if (preset === 'focus') {
+    Object.assign(settings, {
+      desktopNotifications: true,
+      weeklyDigest: true,
+      mentionOnlyAfterHours: true,
+      reviewNudges: true,
+      quietStart: '17:30',
+      quietEnd: '09:30',
+      escalationDays: '2',
+    });
+  }
+  if (preset === 'handoff') {
+    Object.assign(settings, { reviewNudges: true, desktopNotifications: true, escalationDays: '1' });
+  }
+  if (preset === 'cleanup') {
+    Object.assign(settings, { autoArchive: true, weeklyDigest: true });
+  }
+  if (preset === 'calm') {
+    Object.assign(settings, {
+      desktopNotifications: false,
+      weeklyDigest: true,
+      mentionOnlyAfterHours: true,
+      quietStart: '16:30',
+      quietEnd: '10:00',
+    });
+  }
+  persistWorkspaceSettings(settings);
+  applyWorkspaceSettingsUI(settings);
+  refreshSettingsStudio();
+  showToast('bi-magic', 'Recipe applied', 'Review and save the updated workspace policy.');
+}
+
+function resetWorkspaceSettings() {
+  persistWorkspaceSettings(SETTINGS_DEFAULTS);
+  applyWorkspaceSettingsUI(SETTINGS_DEFAULTS);
+  refreshSettingsStudio();
+  showToast('bi-arrow-counterclockwise', 'Reverted', 'Settings reset to recommended defaults');
+}
+
+function saveWorkspaceSettings() {
+  persistWorkspaceSettings(getWorkspaceSettings());
+  refreshSettingsStudio();
+  showToast('bi-floppy', 'Saved', 'Workspace settings updated successfully');
+}
+
+function getSettingsCards() {
+  return (activeBoardData?.columns || []).flatMap(column => (column.cards || []).map(card => ({
+    ...card,
+    column_title: column.title,
+  })));
+}
+
+function refreshSettingsStudio() {
+  const root = document.getElementById('dbView-settings');
+  if (!root) return;
+
+  const settings = getWorkspaceSettings();
+  applyWorkspaceSettingsUI(settings);
+
+  const cards = getSettingsCards();
+  const openCards = cards.filter(card => {
+    const columnTitle = (card.column_title || card.status || '').toLowerCase();
+    return !/done|complete|archive/.test(columnTitle);
+  });
+  const highPriority = cards.filter(card => String(card.priority || '').toLowerCase() === 'high').length;
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const overdue = cards.filter(card => card.due_date && new Date(`${card.due_date}T00:00:00`) < todayStart).length;
+  const unread = notificationFeed.filter(item => !item.is_read).length;
+  const enabledCount = ['desktopNotifications', 'autoArchive', 'weeklyDigest', 'mentionOnlyAfterHours', 'reviewNudges']
+    .filter(key => settings[key]).length;
+
+  const openEl = document.getElementById('settingsOpenCards');
+  const highEl = document.getElementById('settingsHighPriority');
+  const unreadEl = document.getElementById('settingsUnreadNotifs');
+  if (openEl) openEl.textContent = String(openCards.length);
+  if (highEl) highEl.textContent = String(highPriority);
+  if (unreadEl) unreadEl.textContent = String(unread);
+
+  const grade = enabledCount >= 4 && overdue <= 2 ? 'A+' : enabledCount >= 3 ? 'A' : enabledCount >= 2 ? 'B' : 'C';
+  const healthGrade = document.getElementById('settingsHealthGrade');
+  const healthNote = document.getElementById('settingsHealthNote');
+  if (healthGrade) healthGrade.textContent = grade;
+  if (healthNote) healthNote.textContent = `${enabledCount} smart controls active`;
+
+  const radarTitle = document.getElementById('settingsRadarTitle');
+  const radarDesc = document.getElementById('settingsRadarDesc');
+  if (radarTitle && radarDesc) {
+    if (!cards.length) {
+      radarTitle.textContent = 'Ready for your first board signal';
+      radarDesc.textContent = 'Load a board and this panel will summarize pressure, alerts, and recommended automation.';
+    } else if (overdue > 0) {
+      radarTitle.textContent = `${overdue} overdue card${overdue === 1 ? '' : 's'} need attention`;
+      radarDesc.textContent = settings.reviewNudges
+        ? 'Smart review nudges are active, so stale work will be surfaced earlier.'
+        : 'Enable smart review nudges to catch stale work before standup.';
+    } else if (highPriority > 2) {
+      radarTitle.textContent = 'Priority load is heating up';
+      radarDesc.textContent = 'The focus preset can tighten alerts around urgent cards and reduce routine noise.';
+    } else if (unread > 4) {
+      radarTitle.textContent = 'Inbox pressure is rising';
+      radarDesc.textContent = 'Calm inbox mode batches non-critical alerts while keeping mentions visible.';
+    } else {
+      radarTitle.textContent = 'Workspace policy is in a good rhythm';
+      radarDesc.textContent = 'Notification and automation settings match the current board load.';
+    }
   }
 }
 
@@ -2164,15 +2493,15 @@ function applyWorkspaceContext(sessionUser, workspaces) {
   const workspaceName = primaryWorkspace?.name || 'Workspace';
   currentWorkspaceRole = role;
 
-  const userNameEl = document.getElementById('asideUserName');
   const userRoleEl = document.getElementById('asideUserRole');
   const workspaceSwitcher = document.getElementById('workspaceSwitcher');
 
-  if (userNameEl) userNameEl.textContent = sessionUser?.name || 'User';
+  updateUserChrome(sessionUser || {});
   if (userRoleEl) userRoleEl.textContent = role.charAt(0).toUpperCase() + role.slice(1);
   if (workspaceSwitcher) workspaceSwitcher.textContent = `${workspaceName} ▾`;
   renderWorkspaceMenu(userWorkspaces);
   renderInviteCodePanels(primaryWorkspace);
+  joinWorkspacePresence(primaryWorkspace?.id);
 
   const canManage = role === 'owner' || role === 'admin';
   const canManageCards = ['owner', 'admin', 'member'].includes(role);
@@ -2204,6 +2533,7 @@ function applyWorkspaceContext(sessionUser, workspaces) {
   if (invitePanel) invitePanel.classList.toggle('hidden', !canManage);
   if (settingsInviteRow) settingsInviteRow.classList.toggle('hidden', !canManage);
   document.querySelectorAll('.invite-row').forEach(button => button.classList.toggle('hidden', !canManage));
+  refreshSettingsStudio();
 
   if (primaryWorkspace?.id) {
     loadWorkspaceMembers({ silent: true });
@@ -3654,6 +3984,7 @@ function renderNotifications() {
         : '<div class="notif-empty">No notifications yet</div>';
       if (dropdownList) dropdownList.innerHTML = emptyHtml;
       if (centerList) centerList.innerHTML = emptyHtml;
+      refreshSettingsStudio();
       return;
     }
     
@@ -3669,6 +4000,7 @@ function renderNotifications() {
     
     if (dropdownList) dropdownList.innerHTML = notifHtml;
     if (centerList) centerList.innerHTML = notifHtml;
+    refreshSettingsStudio();
   }
 
 function toggleImportantFilter() {
@@ -4055,6 +4387,7 @@ let userWorkspaces = [];
 let currentWorkspace = null;
 let teamopsSocket = null;
 let joinedBoardId = '';
+let joinedWorkspacePresenceId = '';
 let activityFeed = [];
 let workspaceMembers = [];
 let notificationFeed = [];
@@ -4751,6 +5084,7 @@ function renderBoard(board) {
     </div>
   `;
   enhanceAllSelects();
+  refreshSettingsStudio();
 }
 
 function columnIndicatorClass(title, index) {
@@ -4763,7 +5097,7 @@ function columnIndicatorClass(title, index) {
 
 function renderCard(card) {
   const priority = card.priority || 'medium';
-  const assigneeInitial = card.assignee_name?.charAt(0)?.toUpperCase() || 'Z';
+  const assigneeInitial = card.assignee_name?.charAt(0)?.toUpperCase() || '?';
   return `
     <div class="b-card" draggable="${['owner', 'admin', 'member'].includes(currentWorkspaceRole) ? 'true' : 'false'}" data-card-id="${card.id}" onclick="openCardById('${card.id}')">
       <div class="card-tags"><span class="c-tag ct-v">Task</span></div>
@@ -5071,6 +5405,7 @@ async function loadProfileView() {
   try {
     const data = await apiRequest('/user/profile');
     const u = data.user;
+    updateUserChrome(u || {});
 
     const nameInput = document.getElementById('profNameInput');
     if (nameInput) nameInput.value = u.name || '';
@@ -5094,7 +5429,7 @@ async function loadProfileView() {
     } else {
       img.style.display = 'none';
       initial.style.display = '';
-      initial.textContent = (u.name || u.email || 'U').charAt(0).toUpperCase();
+      initial.textContent = getUserInitial(u);
     }
 
     const strip = document.getElementById('profWorkspaceStrip');
@@ -5201,10 +5536,9 @@ async function saveProfileInfo() {
     if (profAvatarBase64 !== null) body.avatar = profAvatarBase64;
     const data = await apiRequest('/user/profile', { method: 'PATCH', body: JSON.stringify(body) });
     profAvatarBase64 = null;
-    const nameEl = document.getElementById('asideUserName');
-    if (nameEl && data.user?.name) nameEl.textContent = data.user.name;
+    updateUserChrome(data.user || { name });
     const initial = document.getElementById('profAvatarInitial');
-    if (initial && data.user?.name) initial.textContent = data.user.name.charAt(0).toUpperCase();
+    if (initial) initial.textContent = getUserInitial(data.user || { name });
     showProfMsg('profInfoMsg', 'success', 'Profile saved successfully.');
   } catch (err) {
     showProfMsg('profInfoMsg', 'error', err.message || 'Could not save profile.');
