@@ -3832,8 +3832,14 @@ function getCurrentUserId() {
 function getWorkspaceMemberNameById(memberId) {
   const key = String(memberId || '');
   if (!key) return '';
-  const member = workspaceMembers.find(item => String(item.id || item._id) === key);
+  const member = getWorkspaceMemberById(key);
   return member?.name || member?.email || '';
+}
+
+function getWorkspaceMemberById(memberId) {
+  const key = String(memberId || '');
+  if (!key) return null;
+  return workspaceMembers.find(item => String(item.id || item._id) === key) || null;
 }
 
 function getActiveBoardId() {
@@ -5374,10 +5380,12 @@ function columnIndicatorClass(title, index) {
 
 function renderCard(card) {
   const priority = card.priority || 'medium';
-  const assigneeName = getWorkspaceMemberNameById(card.assignee_id) || card.assignee_name || '';
+  const assigneeMember = getWorkspaceMemberById(card.assignee_id);
+  const assigneeName = assigneeMember?.name || assigneeMember?.email || card.assignee_name || card.assignee_email || '';
+  const assigneeAvatarUrl = assigneeMember?.avatar_url || assigneeMember?.avatarUrl || card.assignee_avatar_url || card.assigneeAvatarUrl || '';
   const assigneeInitial = assigneeName?.charAt(0)?.toUpperCase() || card.assignee_id?.charAt(0)?.toUpperCase() || '';
   const assigneeAvatar = assigneeInitial
-    ? `<div class="c-av u-style-4" title="${escapeHtml(assigneeName || 'Assigned member')}">${escapeHtml(assigneeInitial)}</div>`
+    ? `<div class="c-av u-style-4" title="${escapeHtml(assigneeName || 'Assigned member')}">${assigneeAvatarUrl ? `<img src="${escapeHtml(assigneeAvatarUrl)}" alt="${escapeHtml(assigneeName || 'Assigned member')}">` : escapeHtml(assigneeInitial)}</div>`
     : '<div class="c-av c-av-empty" title="Unassigned"><i class="bi bi-person"></i></div>';
   return `
     <div class="b-card" draggable="${['owner', 'admin', 'member'].includes(currentWorkspaceRole) ? 'true' : 'false'}" data-card-id="${card.id}" onclick="openCardById('${card.id}')">

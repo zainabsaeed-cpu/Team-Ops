@@ -211,7 +211,7 @@ exports.getBoardData = async (req, res) => {
         const columnsResult = await Column.find({ board: boardId }).sort({ position: 1 }).lean();
 
         const columns = await Promise.all(columnsResult.map(async (col) => {
-            const cardsResult = await Card.find({ column: col._id }).sort({ position: 1 }).populate('assignee', 'name email').lean();
+            const cardsResult = await Card.find({ column: col._id }).sort({ position: 1 }).populate('assignee', 'name email avatarUrl').lean();
             
             // Get comment counts for all cards in this column
             const cardsWithComments = await Promise.all(
@@ -487,7 +487,7 @@ exports.createCard = async (req, res) => {
         }
 
         // Populate assignee
-        const populatedCard = await Card.findById(card._id).populate('assignee', 'name email');
+        const populatedCard = await Card.findById(card._id).populate('assignee', 'name email avatarUrl');
 
         emitBoardEvent(req.app.get('io'), boardId, 'card:created', {
             boardId,
@@ -575,7 +575,7 @@ exports.updateCard = async (req, res) => {
             });
         }
 
-        const populatedCard = await Card.findById(cardId).populate('assignee', 'name email');
+        const populatedCard = await Card.findById(cardId).populate('assignee', 'name email avatarUrl');
         emitBoardEvent(req.app.get('io'), boardId, 'card:updated', {
             boardId,
             actorId: req.userId,
@@ -948,7 +948,7 @@ exports.moveCard = async (req, res) => {
             // ignore notification errors
         }
 
-        const populatedCard = await Card.findById(cardId).populate('assignee', 'name email');
+        const populatedCard = await Card.findById(cardId).populate('assignee', 'name email avatarUrl');
         emitBoardEvent(req.app.get('io'), boardId, 'card:moved', {
             boardId,
             actorId: req.userId,
@@ -977,7 +977,7 @@ exports.getBoardAnalytics = async (req, res) => {
 
         const columns = await Column.find({ board: boardId }).sort({ position: 1 }).lean();
         const columnIds = columns.map((column) => column._id);
-        const cards = await Card.find({ column: { $in: columnIds } }).populate('assignee', 'name email').lean();
+        const cards = await Card.find({ column: { $in: columnIds } }).populate('assignee', 'name email avatarUrl').lean();
         const doneColumnIds = new Set(columns.filter((column) => isDoneColumn(column.title)).map((column) => column._id.toString()));
 
         const now = new Date();
