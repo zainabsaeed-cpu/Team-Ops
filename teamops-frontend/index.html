@@ -496,7 +496,7 @@
       <div class="board-comments-head">
         <div>
           <div class="board-comments-title">Board Comments</div>
-          <div class="board-comments-sub">Discuss this board and tag cards when needed.</div>
+          <div class="board-comments-sub">Discuss this board and mention teammates when needed.</div>
         </div>
         <button class="board-comments-close" onclick="toggleBoardCommentsPane(false)" title="Close comments"><i class="bi bi-x-lg"></i></button>
       </div>
@@ -3340,6 +3340,18 @@ function getBoardCards() {
   );
 }
 
+function getBoardMentionableMembers() {
+  return (workspaceMembers || [])
+    .filter(member => member?.id || member?._id)
+    .map(member => ({
+      id: member.id || member._id,
+      name: member.name || member.email || 'Member',
+      email: member.email || '',
+      role: member.role || 'member',
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
 function progressRow(label, percent, fillClass = 'pf-v') {
   const safePercent = Math.max(0, Math.min(100, Math.round(percent || 0)));
   return `
@@ -3666,6 +3678,17 @@ function getCurrentUserId() {
   } catch (_) {
     return '';
   }
+}
+
+function getWorkspaceMemberNameById(memberId) {
+  const key = String(memberId || '');
+  if (!key) return '';
+  const member = workspaceMembers.find(item => String(item.id || item._id) === key);
+  return member?.name || member?.email || '';
+}
+
+function getActiveBoardId() {
+  return activeBoardData?.id || localStorage.getItem('teamops_board_id') || '';
 }
 
 function roleBadgeClass(role = 'member') {
@@ -4195,6 +4218,9 @@ function toggleBoardCommentsPane(forceOpen) {
   const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !pane.classList.contains('open');
   pane.classList.toggle('open', shouldOpen);
   if (shouldOpen) {
+    if (!workspaceMembers.length) {
+      loadWorkspaceMembers({ silent: true }).then(() => renderBoardCommentCardTags());
+    }
     renderBoardCommentCardTags();
     loadBoardComments();
     setTimeout(() => document.getElementById('boardCommentInput')?.focus(), 80);
@@ -4216,11 +4242,19 @@ function renderBoardCommentCardTags() {
     : '<span class="board-comment-ref">No cards yet</span>';
 
   const selectedCards = cards.filter(card => selectedBoardCommentCardIds.has(String(card.id)));
-  selectedEl.innerHTML = selectedCards.map(card => `
+  const selectedMembers = getBoardMentionableMembers().filter(member => selectedBoardCommentMemberIds.has(String(member.id)));
+  selectedEl.innerHTML = [
+    ...selectedMembers.map(member => `
+    <button type="button" class="board-tag-chip active member-mention-chip" onclick="toggleBoardCommentMemberTag('${member.id}')" title="Remove member mention">
+      @${escapeHtml(member.name)} <i class="bi bi-x"></i>
+    </button>
+  `),
+    ...selectedCards.map(card => `
     <button type="button" class="board-tag-chip active" onclick="toggleBoardCommentCardTag('${card.id}')" title="Remove card reference">
       #${escapeHtml(card.title || 'Card')} <i class="bi bi-x"></i>
     </button>
-  `).join('');
+  `),
+  ].join('');
 }
 
 function toggleBoardCommentCardTag(cardId) {
@@ -4229,6 +4263,16 @@ function toggleBoardCommentCardTag(cardId) {
     selectedBoardCommentCardIds.delete(key);
   } else {
     selectedBoardCommentCardIds.add(key);
+  }
+  renderBoardCommentCardTags();
+}
+
+function toggleBoardCommentMemberTag(memberId) {
+  const key = String(memberId);
+  if (selectedBoardCommentMemberIds.has(key)) {
+    selectedBoardCommentMemberIds.delete(key);
+  } else {
+    selectedBoardCommentMemberIds.add(key);
   }
   renderBoardCommentCardTags();
 }
@@ -4261,10 +4305,10 @@ function renderBoardMentionMenu() {
     return;
   }
 
-  menu.innerHTML = boardMentionMatches.map((card, index) => `
+  menu.innerHTML = boardMentionMatches.map((member, index) => `
     <button type="button" class="board-mention-option ${index === boardMentionActiveIndex ? 'active' : ''}" onmousedown="event.preventDefault(); selectBoardMention(${index})">
-      <span class="board-mention-title">@${escapeHtml(card.title || 'Card')}</span>
-      <span class="board-mention-column">${escapeHtml(card.column_title || 'Board card')}</span>
+      <span class="board-mention-title">@${escapeHtml(member.name || 'Member')}</span>
+      <span class="board-mention-column">${escapeHtml(member.email || member.role || 'Board member')}</span>
     </button>
   `).join('');
   menu.classList.add('open');
@@ -4279,8 +4323,8 @@ function handleBoardCommentMentionInput() {
   }
 
   const query = mention.query.toLowerCase();
-  boardMentionMatches = getBoardCards()
-    .filter(card => String(card.title || '').toLowerCase().includes(query))
+  boardMentionMatches = getBoardMentionableMembers()
+    .filter(member => `${member.name || ''} ${member.email || ''}`.toLowerCase().includes(query))
     .slice(0, 8);
   boardMentionActiveIndex = 0;
   renderBoardMentionMenu();
@@ -4321,15 +4365,15 @@ function handleBoardCommentKeydown(event) {
 
 function selectBoardMention(index = 0) {
   const input = document.getElementById('boardCommentInput');
-  const card = boardMentionMatches[index];
+  const member = boardMentionMatches[index];
   const mention = getBoardMentionQuery(input);
-  if (!input || !card || !mention) return;
+  if (!input || !member || !mention) return;
 
-  const insertText = `@${card.title || 'Card'} `;
+  const insertText = `@${member.name || 'Member'} `;
   input.value = input.value.slice(0, mention.start) + insertText + input.value.slice(mention.end);
   const cursor = mention.start + insertText.length;
   input.setSelectionRange(cursor, cursor);
-  selectedBoardCommentCardIds.add(String(card.id));
+  selectedBoardCommentMemberIds.add(String(member.id));
   renderBoardCommentCardTags();
   closeBoardMentionMenu();
   input.focus();
@@ -4338,7 +4382,9 @@ function selectBoardMention(index = 0) {
 function renderBoardComments() {
   const list = document.getElementById('boardCommentsList');
   const countEl = document.getElementById('boardCommentsFabCount');
+  const compose = document.querySelector('.board-comment-compose');
   if (countEl) countEl.textContent = String(boardComments.length);
+  if (compose) compose.classList.toggle('hidden', currentWorkspaceRole === 'viewer');
   if (!list) return;
 
   if (!boardComments.length) {
@@ -4351,6 +4397,7 @@ function renderBoardComments() {
   list.innerHTML = boardComments.map((comment, index) => {
     const isAuthor = String(comment.user_id) === String(currentUserId);
     const refs = Array.isArray(comment.tagged_cards) ? comment.tagged_cards.filter(card => card?.id) : [];
+    const mentionedMembers = Array.isArray(comment.tagged_members) ? comment.tagged_members.filter(member => member?.id) : [];
     const avatarSeed = comment.user_id || comment.user_name || comment.userName || comment.id || '';
     return `
       <div class="board-comment-item">
@@ -4362,7 +4409,10 @@ function renderBoardComments() {
             ${(isAuthor || canModerate) ? `<button class="board-comment-delete" onclick="deleteBoardComment('${comment.id}')" title="Delete comment"><i class="bi bi-trash"></i></button>` : ''}
           </div>
           <div class="board-comment-text">${escapeHtml(comment.content || '')}</div>
-          ${refs.length ? `<div class="board-comment-refs">${refs.map(card => `<span class="board-comment-ref">#${escapeHtml(card.title || 'Card')}</span>`).join('')}</div>` : ''}
+          ${(mentionedMembers.length || refs.length) ? `<div class="board-comment-refs">
+            ${mentionedMembers.map(member => `<span class="board-comment-ref member-mention-ref">@${escapeHtml(member.name || member.email || 'Member')}</span>`).join('')}
+            ${refs.map(card => `<span class="board-comment-ref">#${escapeHtml(card.title || 'Card')}</span>`).join('')}
+          </div>` : ''}
         </div>
       </div>
     `;
@@ -4370,11 +4420,12 @@ function renderBoardComments() {
 }
 
 async function loadBoardComments() {
-  const boardId = localStorage.getItem('teamops_board_id');
+  const boardId = getActiveBoardId();
   const list = document.getElementById('boardCommentsList');
   if (!boardId) {
     boardComments = [];
     renderBoardComments();
+    showToast('bi-exclamation-circle', 'Board not ready', 'Open a board before posting comments.');
     return;
   }
   if (list && !boardComments.length) list.innerHTML = '<div class="notif-loading">Loading comments...</div>';
@@ -4390,11 +4441,22 @@ async function loadBoardComments() {
 }
 
 async function postBoardComment() {
-  const boardId = localStorage.getItem('teamops_board_id');
+  const boardId = getActiveBoardId();
   const input = document.getElementById('boardCommentInput');
   const submit = document.getElementById('boardCommentSubmitBtn');
   const content = String(input?.value || '').trim();
-  if (!boardId || !content) return;
+  if (currentWorkspaceRole === 'viewer') {
+    showToast('bi-shield-lock', 'View only', 'Viewers can read board comments but cannot post them.');
+    return;
+  }
+  if (!boardId) {
+    showToast('bi-exclamation-circle', 'Board not ready', 'Open a board before posting comments.');
+    return;
+  }
+  if (!content) {
+    showToast('bi-chat-dots', 'Comment needed', 'Type a comment before posting.');
+    return;
+  }
 
   try {
     if (submit) submit.disabled = true;
@@ -4403,6 +4465,7 @@ async function postBoardComment() {
       body: JSON.stringify({
         content,
         taggedCards: [...selectedBoardCommentCardIds],
+        taggedMembers: [...selectedBoardCommentMemberIds],
       }),
     });
     if (payload?.comment) {
@@ -4411,6 +4474,7 @@ async function postBoardComment() {
     }
     if (input) input.value = '';
     selectedBoardCommentCardIds.clear();
+    selectedBoardCommentMemberIds.clear();
     renderBoardCommentCardTags();
     showToast('bi-chat-dots', 'Board comment posted', 'Visible to everyone on this board.');
   } catch (error) {
@@ -4421,7 +4485,7 @@ async function postBoardComment() {
 }
 
 async function deleteBoardComment(commentId) {
-  const boardId = localStorage.getItem('teamops_board_id');
+  const boardId = getActiveBoardId();
   if (!boardId || !commentId) return;
 
   try {
@@ -4455,6 +4519,7 @@ let notificationImportantOnly = false;
 let cardComments = [];
 let boardComments = [];
 let selectedBoardCommentCardIds = new Set();
+let selectedBoardCommentMemberIds = new Set();
 let boardMentionMatches = [];
 let boardMentionActiveIndex = 0;
 let projectBoardStats = [];
@@ -4886,7 +4951,7 @@ function getBoardMembersForFilters(board = activeBoardData) {
   (board?.columns || []).forEach(column => {
     (column.cards || []).forEach(card => {
       if (!card.assignee_id) return;
-      members.set(String(card.assignee_id), card.assignee_name || 'Assigned member');
+      members.set(String(card.assignee_id), getWorkspaceMemberNameById(card.assignee_id) || card.assignee_name || 'Assigned member');
     });
   });
   return Array.from(members.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
@@ -5160,7 +5225,8 @@ function columnIndicatorClass(title, index) {
 
 function renderCard(card) {
   const priority = card.priority || 'medium';
-  const assigneeInitial = card.assignee_name?.charAt(0)?.toUpperCase() || '?';
+  const assigneeName = getWorkspaceMemberNameById(card.assignee_id) || card.assignee_name || '';
+  const assigneeInitial = assigneeName?.charAt(0)?.toUpperCase() || card.assignee_id?.charAt(0)?.toUpperCase() || '?';
   return `
     <div class="b-card" draggable="${['owner', 'admin', 'member'].includes(currentWorkspaceRole) ? 'true' : 'false'}" data-card-id="${card.id}" onclick="openCardById('${card.id}')">
       <div class="card-tags"><span class="c-tag ct-v">Task</span></div>

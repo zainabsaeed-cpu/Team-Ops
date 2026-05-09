@@ -661,6 +661,17 @@ const normalizeTaggedCardIds = async (boardId, taggedCards = []) => {
     return requestedIds.filter((id) => allowedIds.has(id));
 };
 
+const normalizeTaggedMemberIds = async (workspaceId, taggedMembers = []) => {
+    const requestedIds = [...new Set((Array.isArray(taggedMembers) ? taggedMembers : [])
+        .map((id) => String(id || '').trim())
+        .filter(Boolean))];
+    if (!requestedIds.length) return [];
+
+    const workspace = await Workspace.findById(workspaceId).select('members.user').lean();
+    const allowedIds = new Set((workspace?.members || []).map((member) => String(member.user?._id || member.user || '')));
+    return requestedIds.filter((id) => allowedIds.has(id));
+};
+
 exports.getBoardComments = async (req, res) => {
     const { boardId } = req.params;
 
@@ -671,6 +682,7 @@ exports.getBoardComments = async (req, res) => {
         const comments = await Comment.find({ board: boardId, card: null })
             .populate('user', 'name email _id')
             .populate('taggedCards', 'title')
+            .populate('taggedMembers', 'name email _id')
             .sort({ createdAt: -1 })
             .lean();
 
@@ -683,7 +695,7 @@ exports.getBoardComments = async (req, res) => {
 
 exports.addBoardComment = async (req, res) => {
     const { boardId } = req.params;
-    const { content, taggedCards = [] } = req.body;
+    const { content, taggedCards = [], taggedMembers = [] } = req.body;
 
     try {
         const access = await resolveBoardAccess(req.userId, boardId, 'member');
@@ -695,17 +707,20 @@ exports.addBoardComment = async (req, res) => {
         }
 
         const safeTaggedCards = await normalizeTaggedCardIds(boardId, taggedCards);
+        const safeTaggedMembers = await normalizeTaggedMemberIds(access.workspaceId, taggedMembers);
         const comment = await Comment.create({
             board: boardId,
             card: null,
             user: req.userId,
             taggedCards: safeTaggedCards,
+            taggedMembers: safeTaggedMembers,
             content: trimmed,
         });
 
         const populatedComment = await Comment.findById(comment._id)
             .populate('user', 'name email _id')
             .populate('taggedCards', 'title')
+            .populate('taggedMembers', 'name email _id')
             .lean();
         const formattedComment = formatComment(populatedComment);
         const user = await User.findById(req.userId).lean();
@@ -717,6 +732,15 @@ exports.addBoardComment = async (req, res) => {
             boardId,
             action: `${user?.name || 'A user'} commented on board "${access.board.name}"`,
         });
+
+        await Promise.all(safeTaggedMembers
+            .filter((memberId) => String(memberId) !== String(req.userId))
+            .map((memberId) => createNotification({
+                io: req.app.get('io'),
+                userId: memberId,
+                message: `${user?.name || 'Someone'} mentioned you on board "${access.board.name}"`,
+                isImportant: true,
+            })));
 
         emitBoardEvent(req.app.get('io'), boardId, 'board:commented', {
             boardId,

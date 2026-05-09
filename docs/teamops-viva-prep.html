@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Name: ____________________ | Roll No: ____________________ | Section: ____________________" />
+  <title>TeamOps Viva Preparation</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="print.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">TeamOps Viva Preparation</h1>
+<p class="subtitle">Complete Question Bank, Model Answers, Tricky
+Follow-Ups, and Examiner Strategy</p>
+<p class="author">Name: ____________________ | Roll No:
+____________________ | Section: ____________________</p>
+<p class="date">Updated: ____________________</p>
+</header>
+<h1 id="teamops-viva-preparation">TeamOps Viva Preparation</h1>
+<p>This document is written so you can explain TeamOps like you
+understand the full system end to end. Do not memorize every word. Learn
+the ideas, then answer naturally.</p>
+<h2 id="second-pitch">30-Second Pitch</h2>
+<p>TeamOps is a full-stack real-time collaborative project management
+platform. It lets users create workspaces, invite members, manage roles,
+create Kanban boards, add columns and cards, assign tasks, set due
+dates, comment, receive notifications, and track activity. The frontend
+is a standalone HTML/CSS/JavaScript app served with Vite. The backend is
+Node.js and Express with MongoDB through Mongoose. Authentication uses
+JWT, passwords are hashed using bcrypt, and real-time updates are
+handled by Socket.io rooms for boards, users, and workspaces.</p>
+<h2 id="minute-architecture-answer">2-Minute Architecture Answer</h2>
+<p>The system has three main parts: frontend, backend API, and database.
+The frontend handles views, forms, dashboard rendering, drag-and-drop,
+local session storage, and Socket.io client events. It communicates with
+the backend through REST APIs using a JWT Bearer token. The backend
+validates the JWT, checks workspace roles, performs database operations
+through Mongoose, and returns formatted JSON. For real-time actions, the
+backend also emits Socket.io events. For example, when a card is moved,
+the backend checks permission, updates the card position in MongoDB,
+creates an activity log, optionally sends a notification, and emits
+<code>card:moved</code> to the <code>board:&lt;boardId&gt;</code> room
+so connected clients refresh instantly.</p>
+<h2 id="must-know-facts">Must-Know Facts</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project name</td>
+<td>TeamOps</td>
+</tr>
+<tr>
+<td>Project type</td>
+<td>Full-stack real-time project management app</td>
+</tr>
+<tr>
+<td>Frontend</td>
+<td>Standalone HTML/CSS/vanilla JS in
+<code>teamops-frontend/index.html</code> and
+<code>styles.css</code></td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>Node.js, Express 5, Socket.io</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>MongoDB</td>
+</tr>
+<tr>
+<td>ODM</td>
+<td>Mongoose</td>
+</tr>
+<tr>
+<td>Auth</td>
+<td>JWT, bcrypt, OTP verification, Google sign-in</td>
+</tr>
+<tr>
+<td>Realtime</td>
+<td>Socket.io</td>
+</tr>
+<tr>
+<td>Main entities</td>
+<td>User, Workspace, Board, Column, Card, Comment, Activity,
+Notification</td>
+</tr>
+<tr>
+<td>Roles</td>
+<td>owner, admin, member, viewer</td>
+</tr>
+<tr>
+<td>Default columns</td>
+<td>To Do, In Progress, In Review, Done</td>
+</tr>
+<tr>
+<td>Seed users</td>
+<td>zainab, ahmed, zunairah, hassan at <code>teamops.dev</code>,
+password <code>123456</code></td>
+</tr>
+<tr>
+<td>Important events</td>
+<td><code>card:moved</code>, <code>activity:new</code>,
+<code>notification:new</code>, <code>workspace:presence</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="basic-questions">Basic Questions</h2>
+<h3 id="what-is-teamops">What is TeamOps?</h3>
+<p>TeamOps is a real-time collaborative project management platform. It
+allows teams to manage tasks using workspaces, boards, columns, cards,
+comments, notifications, activity logs, and analytics.</p>
+<h3 id="why-did-you-build-it">Why did you build it?</h3>
+<p>I built it to solve the problem of scattered project coordination. In
+team projects, tasks often get lost in chat messages or spreadsheets.
+TeamOps centralizes ownership, deadlines, progress, and communication in
+one workspace.</p>
+<h3 id="what-makes-it-different-from-a-simple-crud-app">What makes it
+different from a simple CRUD app?</h3>
+<p>It includes real-time synchronization, role-based permissions, JWT
+authentication, email verification, Google login, comments,
+notifications, activity logs, analytics, member roles, invite workflows,
+and drag-and-drop board movement.</p>
+<h3 id="what-is-the-tech-stack">What is the tech stack?</h3>
+<p>Frontend is HTML, CSS, and vanilla JavaScript served by Vite. Backend
+is Node.js with Express 5. Database is MongoDB through Mongoose.
+Real-time communication uses Socket.io. Authentication uses JWT and
+bcrypt. Google sign-in uses Google Auth Library.</p>
+<h3 id="is-your-frontend-react">Is your frontend React?</h3>
+<p>No. The active frontend is a standalone HTML/CSS/JavaScript app.
+There are some legacy React dependencies in <code>package.json</code>,
+but the actual app logic is in <code>teamops-frontend/index.html</code>
+and styling is in <code>teamops-frontend/styles.css</code>.</p>
+<h3 id="why-did-you-use-vanilla-javascript-instead-of-react">Why did you
+use vanilla JavaScript instead of React?</h3>
+<p>For this version, I wanted full control and a simple static
+deployment model. The app is complex enough to demonstrate frontend
+state management, API integration, DOM rendering, and real-time updates
+without depending on a component framework. A future improvement could
+be modularizing the frontend or migrating to a framework if
+maintainability becomes harder.</p>
+<h3 id="what-database-did-you-use">What database did you use?</h3>
+<p>MongoDB, accessed through Mongoose schemas and models.</p>
+<h3 id="why-mongodb">Why MongoDB?</h3>
+<p>The project has document-friendly data such as workspace members,
+board structures, comments, notifications, and activity logs. MongoDB is
+flexible for iterative development, while Mongoose still gives schema
+validation, references, indexes, and structured queries.</p>
+<h3 id="what-is-the-role-of-express">What is the role of Express?</h3>
+<p>Express handles HTTP routing, middleware, JSON request parsing,
+protected routes, and REST API endpoints for auth, workspaces, boards,
+cards, activities, notifications, and user profile operations.</p>
+<h3 id="what-is-the-role-of-socket.io">What is the role of
+Socket.io?</h3>
+<p>Socket.io provides real-time bidirectional communication. It lets the
+server push updates to connected clients, such as card movement, new
+comments, new activities, notifications, and presence counts.</p>
+<h2 id="feature-questions">Feature Questions</h2>
+<h3 id="what-are-the-main-features">What are the main features?</h3>
+<ul>
+<li>Register/login with JWT.</li>
+<li>Email OTP verification and password reset.</li>
+<li>Google sign-in.</li>
+<li>Create and join workspaces.</li>
+<li>Invite members with codes and email tokens.</li>
+<li>Owner/admin/member/viewer roles.</li>
+<li>Multiple boards per workspace.</li>
+<li>Custom columns.</li>
+<li>Cards with assignee, priority, due date, description, and
+position.</li>
+<li>Drag-and-drop card movement.</li>
+<li>Card and board comments.</li>
+<li>Mentions and tagged card references.</li>
+<li>Live activity feed.</li>
+<li>Notifications with unread and important status.</li>
+<li>Board analytics.</li>
+<li>Profile and assigned work page.</li>
+</ul>
+<h3 id="explain-workspace-creation.">Explain workspace creation.</h3>
+<p>When a user creates a workspace, the backend validates the name,
+normalizes the tech stack, generates a unique invite code, creates the
+workspace with the user as owner, creates a default board called
+<code>Sprint 4</code>, and creates default columns.</p>
+<h3 id="explain-board-loading.">Explain board loading.</h3>
+<p>The frontend reads the active board id from localStorage, joins the
+Socket.io board room, calls <code>GET /api/boards/:boardId</code>,
+receives board metadata, columns, cards, and activity logs, stores it in
+frontend state, then renders the Kanban board.</p>
+<h3 id="explain-card-creation.">Explain card creation.</h3>
+<p>The user opens a modal, enters card details, selects a column,
+assignee, priority, and due date. The frontend sends a POST request to
+<code>/api/boards/:boardId/cards</code>. The backend checks role
+permission, verifies the column belongs to the board, validates assignee
+and due date, calculates the next position, creates the card, logs
+activity, notifies the assignee if necessary, emits
+<code>card:created</code>, and returns the formatted card.</p>
+<h3 id="explain-card-movement.">Explain card movement.</h3>
+<p>The frontend uses drag-and-drop. On drop, it sends a PATCH request to
+<code>/api/boards/:boardId/cards/:cardId/move</code> with destination
+column and index. The backend checks that both source and destination
+columns belong to the same board, recalculates positions, saves the
+card, creates activity, optionally notifies the assignee, and emits
+<code>card:moved</code>.</p>
+<h3 id="explain-notifications.">Explain notifications.</h3>
+<p>Notifications are stored in the <code>Notification</code> collection.
+They belong to a user and include message, read status, important
+status, and creation time. The backend emits
+<code>notification:new</code> to the private user room, and the frontend
+updates the notification inbox and badge.</p>
+<h3 id="explain-activity-logs.">Explain activity logs.</h3>
+<p>Activities are records of important actions such as creating cards,
+moving cards, inviting users, changing roles, and updating accounts.
+They help users understand what happened on a board or workspace.</p>
+<h3 id="explain-audit-log-versus-activity-feed.">Explain audit log
+versus activity feed.</h3>
+<p>Activity feed is for collaboration events. Audit-style filtering
+focuses on governance-sensitive events like workspace changes, invites,
+member roles, password/account actions, and deletions. Owners/admins can
+see broader governance activity; other users see limited governance
+activity.</p>
+<h3 id="explain-analytics.">Explain analytics.</h3>
+<p>The analytics endpoint loads board columns and cards, then calculates
+cards per column, cards completed this week, cards per assignee, and
+overdue card count. The frontend renders those values in the analytics
+dashboard.</p>
+<h2 id="authentication-questions">Authentication Questions</h2>
+<h3 id="what-is-jwt">What is JWT?</h3>
+<p>JWT means JSON Web Token. It is a signed token that stores claims
+such as <code>userId</code>. The client sends it with protected API
+requests. The server verifies the signature and extracts the user
+id.</p>
+<h3 id="why-use-jwt">Why use JWT?</h3>
+<p>JWT works well for stateless API authentication. The backend does not
+need a server-side session table for normal requests. Each request
+carries the token, and the server verifies it using
+<code>JWT_SECRET</code>.</p>
+<h3 id="where-do-you-store-the-token">Where do you store the token?</h3>
+<p>The frontend stores it in <code>localStorage</code> under
+<code>teamops_token</code>.</p>
+<h3 id="is-localstorage-perfectly-secure">Is localStorage perfectly
+secure?</h3>
+<p>No. It is convenient, but if an XSS vulnerability exists, malicious
+JavaScript could read localStorage. A more secure production improvement
+would be HTTP-only secure cookies, combined with CSRF protection if
+needed.</p>
+<h3 id="how-are-passwords-stored">How are passwords stored?</h3>
+<p>Passwords are not stored directly. The backend hashes them using
+bcrypt and stores only <code>passwordHash</code>.</p>
+<h3 id="why-bcrypt">Why bcrypt?</h3>
+<p>bcrypt is intentionally slow and salted, which makes brute-force
+attacks harder if password hashes are leaked.</p>
+<h3 id="what-is-email-verification">What is email verification?</h3>
+<p>After registration, the backend creates a six-digit OTP token with an
+expiry time. The user must provide the code before the account becomes
+verified and before normal login is allowed.</p>
+<h3 id="why-verify-email">Why verify email?</h3>
+<p>It prevents fake or mistyped emails and makes password reset/invite
+workflows more reliable.</p>
+<h3 id="how-does-forgot-password-work">How does forgot password
+work?</h3>
+<p>The user submits email. If the email exists, the backend creates an
+OTP reset token and sends it. The response is generic to avoid revealing
+whether the email exists. Then the user submits email, token, and new
+password. The backend validates the token and updates the password
+hash.</p>
+<h3 id="how-does-google-login-work">How does Google login work?</h3>
+<p>The frontend obtains a Google credential. The backend verifies the ID
+token using the configured Google client id. If valid, it finds or
+creates the user, marks them verified, stores Google id and avatar if
+available, and returns a TeamOps JWT.</p>
+<h3 id="what-happens-if-a-google-user-tries-password-login">What happens
+if a Google user tries password login?</h3>
+<p>If the account uses Google and has no password hash, the backend
+rejects password login and tells the user to continue with Google.</p>
+<h2 id="authorization-and-roles">Authorization and Roles</h2>
+<h3 id="what-is-rbac">What is RBAC?</h3>
+<p>RBAC means role-based access control. Users get permissions based on
+their assigned role in a workspace.</p>
+<h3 id="what-roles-exist">What roles exist?</h3>
+<p>Owner, admin, member, and viewer.</p>
+<h3 id="what-can-owners-do">What can owners do?</h3>
+<p>Owners have full control. They can manage workspace settings, boards,
+columns, members, roles, invites, and delete the workspace.</p>
+<h3 id="what-can-admins-do">What can admins do?</h3>
+<p>Admins can manage boards, columns, members, invites, and settings,
+but they cannot remove or demote the owner.</p>
+<h3 id="what-can-members-do">What can members do?</h3>
+<p>Members can collaborate on boards: create, edit, delete, move cards,
+comment, and participate in work.</p>
+<h3 id="what-can-viewers-do">What can viewers do?</h3>
+<p>Viewers can read board data and comments. They have restricted
+editing permissions.</p>
+<h3 id="how-does-the-backend-enforce-roles">How does the backend enforce
+roles?</h3>
+<p>Protected routes use JWT auth first. Then <code>requireRole</code> or
+controller helpers resolve the workspace and check whether
+<code>req.userId</code> exists in <code>workspace.members</code> with a
+suitable role.</p>
+<h3
+id="why-check-permissions-on-the-backend-if-the-frontend-hides-buttons">Why
+check permissions on the backend if the frontend hides buttons?</h3>
+<p>Frontend checks are only for user experience. A user can still send
+requests manually. Backend checks are mandatory for security.</p>
+<h3 id="what-happens-if-a-member-tries-to-create-a-column">What happens
+if a member tries to create a column?</h3>
+<p>The backend rejects it because column management requires owner or
+admin role.</p>
+<h3 id="what-happens-if-a-viewer-tries-to-create-a-card">What happens if
+a viewer tries to create a card?</h3>
+<p>The backend rejects it because card creation requires owner, admin,
+or member.</p>
+<h2 id="database-questions">Database Questions</h2>
+<h3 id="what-is-mongoose">What is Mongoose?</h3>
+<p>Mongoose is an ODM for MongoDB. It lets me define schemas, models,
+validation, references, defaults, and query helpers in JavaScript.</p>
+<h3 id="why-are-formatters-used">Why are formatters used?</h3>
+<p>The backend uses formatter functions like <code>formatUser</code>,
+<code>formatCard</code>, and <code>formatWorkspace</code> to control API
+output, convert MongoDB <code>_id</code> values to <code>id</code>,
+normalize dates, and expose clean JSON keys.</p>
+<h3 id="what-is-the-user-schema">What is the User schema?</h3>
+<p>It stores name, email, password hash, avatar URL, Google id, auth
+provider, verification status, and notification preferences.</p>
+<h3 id="what-is-the-workspace-schema">What is the Workspace schema?</h3>
+<p>It stores workspace name, description, tech stack, owner, invite
+code, and members. Each member has a user reference and role.</p>
+<h3 id="what-is-the-board-schema">What is the Board schema?</h3>
+<p>It stores workspace id, board name, color, and timestamps.</p>
+<h3 id="what-is-the-column-schema">What is the Column schema?</h3>
+<p>It stores workspace reference, board reference, title, and
+position.</p>
+<h3 id="what-is-the-card-schema">What is the Card schema?</h3>
+<p>It stores column, title, description, priority, assignee, due date,
+position, created timestamp, and updated timestamp.</p>
+<h3 id="why-store-card-position">Why store card position?</h3>
+<p>Position lets the board preserve card ordering inside a column after
+refresh and across users.</p>
+<h3 id="why-not-embed-cards-inside-boards">Why not embed cards inside
+boards?</h3>
+<p>Referencing cards separately makes updates, comments, analytics, and
+movement easier to query and update. If all cards were deeply embedded,
+large board documents could become harder to update and scale.</p>
+<h3
+id="why-are-there-both-workspace-and-workspaceid-fields-in-activity">Why
+are there both <code>workspace</code> and <code>workspaceId</code>
+fields in Activity?</h3>
+<p>The model supports both older and newer naming patterns so activity
+formatting remains compatible. It is partly for backward compatibility
+while the app evolved.</p>
+<h3 id="what-is-a-sparse-unique-index">What is a sparse unique
+index?</h3>
+<p>For <code>googleId</code>, sparse unique means MongoDB enforces
+uniqueness only when the field exists. That allows normal email users to
+have no Google id.</p>
+<h2 id="socket.io-questions">Socket.io Questions</h2>
+<h3 id="what-is-a-socket.io-room">What is a Socket.io room?</h3>
+<p>A room is a server-side grouping of sockets. TeamOps uses rooms like
+<code>board:&lt;boardId&gt;</code>, <code>user:&lt;userId&gt;</code>,
+and <code>workspace:&lt;workspaceId&gt;</code> so events are sent only
+to relevant clients.</p>
+<h3 id="why-not-broadcast-every-event-to-everyone">Why not broadcast
+every event to everyone?</h3>
+<p>Broadcasting to everyone would leak data and waste resources. Board
+updates should only go to users viewing that board, notifications should
+only go to the target user, and presence should only go to the
+workspace.</p>
+<h3 id="how-does-a-user-join-a-board-room">How does a user join a board
+room?</h3>
+<p>The frontend emits <code>board:join</code> or <code>join:board</code>
+with the board id. The socket server joins
+<code>board:&lt;boardId&gt;</code>.</p>
+<h3 id="how-are-private-notifications-sent">How are private
+notifications sent?</h3>
+<p>When a socket connects with a valid JWT, the server joins
+<code>user:&lt;userId&gt;</code>. Notifications are emitted to that
+private room.</p>
+<h3 id="how-is-presence-calculated">How is presence calculated?</h3>
+<p>The socket server maintains a <code>Map</code> of workspace ids to
+user connection counts. When a socket joins or leaves a workspace, the
+server updates the count and emits <code>workspace:presence</code>.</p>
+<h3 id="what-happens-if-a-user-has-multiple-tabs-open">What happens if a
+user has multiple tabs open?</h3>
+<p>The presence map tracks counts per user id, so multiple socket
+connections can be represented without immediately removing the user
+until their last relevant connection leaves.</p>
+<h3 id="what-is-the-limitation-of-the-current-socket.io-setup">What is
+the limitation of the current Socket.io setup?</h3>
+<p>It works for a single backend process. If deployed across multiple
+backend instances, presence and rooms would need a shared adapter such
+as Redis.</p>
+<h2 id="frontend-questions">Frontend Questions</h2>
+<h3 id="how-is-frontend-state-managed">How is frontend state
+managed?</h3>
+<p>The frontend uses JavaScript variables such as
+<code>currentWorkspace</code>, <code>workspaceBoards</code>,
+<code>activeBoardData</code>, <code>activityFeed</code>,
+<code>notificationFeed</code>, <code>workspaceMembers</code>,
+<code>boardFilters</code>, and <code>cardComments</code>. Persistent
+session and workspace ids are stored in <code>localStorage</code>.</p>
+<h3 id="what-is-apirequest">What is <code>apiRequest</code>?</h3>
+<p>It is a shared helper that attaches JSON headers, adds the JWT Bearer
+token, calls the backend, parses JSON, and throws errors when the
+response is not ok.</p>
+<h3 id="how-does-the-app-know-which-backend-url-to-use">How does the app
+know which backend URL to use?</h3>
+<p>It reads Vite placeholders for <code>VITE_API_URL</code> and
+<code>VITE_SOCKET_URL</code>, with local defaults like
+<code>http://localhost:5002/api</code> and
+<code>http://localhost:5002</code>.</p>
+<h3 id="how-does-the-board-render">How does the board render?</h3>
+<p>The frontend loads board data, sorts columns by position, filters
+cards if filters are active, maps each column into HTML, maps each card
+into card HTML, then injects it into the board container.</p>
+<h3 id="how-are-xss-risks-reduced-in-rendering">How are XSS risks
+reduced in rendering?</h3>
+<p>The frontend uses an <code>escapeHtml</code> helper before injecting
+user-controlled text into HTML templates in many render paths.</p>
+<h3 id="how-do-saved-views-work">How do saved views work?</h3>
+<p>Saved views are frontend-side saved filter configurations stored in
+localStorage. They store board id, name, and filters such as assignee,
+priority, and due date.</p>
+<h3 id="is-saved-views-data-stored-on-backend">Is saved views data
+stored on backend?</h3>
+<p>No, currently it is local to the browser. A future improvement would
+persist saved views per user in MongoDB.</p>
+<h3 id="how-does-the-profile-avatar-work">How does the profile avatar
+work?</h3>
+<p>The frontend reads the image file with <code>FileReader</code>,
+stores it temporarily as base64, previews it, and sends it to the
+backend when saving the profile.</p>
+<h2 id="api-design-questions">API Design Questions</h2>
+<h3 id="why-rest-api">Why REST API?</h3>
+<p>REST is simple, familiar, and maps well to resources such as users,
+workspaces, boards, cards, comments, activities, and notifications.</p>
+<h3 id="give-examples-of-rest-endpoints.">Give examples of REST
+endpoints.</h3>
+<ul>
+<li><code>POST /api/auth/register</code></li>
+<li><code>POST /api/auth/login</code></li>
+<li><code>GET /api/workspaces</code></li>
+<li><code>POST /api/workspaces</code></li>
+<li><code>GET /api/boards/:boardId</code></li>
+<li><code>POST /api/boards/:boardId/cards</code></li>
+<li><code>PATCH /api/boards/:boardId/cards/:cardId/move</code></li>
+<li><code>GET /api/notifications</code></li>
+</ul>
+<h3 id="why-use-patch-for-updates">Why use PATCH for updates?</h3>
+<p>PATCH is appropriate for partial updates. For example, updating a
+card may only change title or assignee without replacing the entire
+card.</p>
+<h3 id="why-use-separate-controllers-and-routes">Why use separate
+controllers and routes?</h3>
+<p>Routes define URL structure and middleware. Controllers contain
+business logic. This keeps the backend organized.</p>
+<h3 id="what-is-middleware">What is middleware?</h3>
+<p>Middleware is a function that runs during request processing. In
+TeamOps, auth middleware verifies JWT and role middleware checks
+workspace permissions.</p>
+<h2 id="tricky-examiner-questions">Tricky Examiner Questions</h2>
+<h3
+id="your-frontend-package-has-react-dependencies.-is-this-a-react-app">Your
+frontend package has React dependencies. Is this a React app?</h3>
+<p>No. Those dependencies are legacy from earlier setup, but the active
+frontend is not React. The actual source is standalone
+<code>index.html</code> plus <code>styles.css</code>. I would remove
+unused dependencies in cleanup, but I did not describe the app as React
+because that would be inaccurate.</p>
+<h3
+id="your-landing-page-may-mention-postgresql.-are-you-using-postgresql">Your
+landing page may mention PostgreSQL. Are you using PostgreSQL?</h3>
+<p>No. The active backend uses MongoDB and Mongoose. Any old text
+mentioning PostgreSQL is stale copy and should be updated. The real
+models and controllers use MongoDB.</p>
+<h3 id="why-is-dbinit.sql-unused">Why is <code>db/init.sql</code>
+unused?</h3>
+<p>Because the project uses MongoDB, not PostgreSQL. MongoDB seeding is
+handled through <code>seedDatabase()</code> in the backend model
+file.</p>
+<h3 id="why-are-all-models-in-one-file">Why are all models in one
+file?</h3>
+<p>For this student project, keeping schemas and formatters together in
+<code>models/index.js</code> makes it easy to inspect the complete data
+model. In a larger production app, I would split models into separate
+files.</p>
+<h3 id="why-is-the-frontend-in-one-big-html-file">Why is the frontend in
+one big HTML file?</h3>
+<p>The repository architecture requires the active frontend to be
+standalone. It avoids a framework build step and keeps deployment
+simple. The tradeoff is that as the app grows, modularity becomes
+harder. A future improvement would be splitting JavaScript into ES
+modules while preserving the standalone architecture.</p>
+<h3 id="is-your-app-secure-enough-for-production">Is your app secure
+enough for production?</h3>
+<p>It has important security basics: bcrypt, JWT verification, email
+verification, RBAC, CORS config, role checks, data scoping, and Google
+token verification. For production hardening, I would add rate limiting,
+HTTP-only cookies, stronger token storage, hashed OTPs, better logging,
+automated tests, and a Redis adapter for scaled sockets.</p>
+<h3 id="why-not-store-jwt-in-cookies">Why not store JWT in cookies?</h3>
+<p>Cookies with <code>HttpOnly</code>, <code>Secure</code>, and
+<code>SameSite</code> flags are stronger against token theft through
+XSS. I used localStorage for simplicity in this lab project. If
+production security were the priority, I would move tokens to HTTP-only
+cookies and add CSRF considerations.</p>
+<h3 id="can-a-user-access-a-board-by-guessing-its-id">Can a user access
+a board by guessing its id?</h3>
+<p>They should not be able to access it unless they are a member of the
+workspace. The backend resolves the board’s workspace and checks
+membership/role before returning data.</p>
+<h3 id="can-a-viewer-create-a-card-using-postman">Can a viewer create a
+card using Postman?</h3>
+<p>No. Even if the frontend hides buttons, the backend route requires
+owner/admin/member role. A viewer request should be rejected.</p>
+<h3 id="what-if-two-users-move-the-same-card-at-the-same-time">What if
+two users move the same card at the same time?</h3>
+<p>The backend persists the latest valid move and recalculates
+positions. However, there is no conflict-resolution versioning yet. A
+future improvement would add optimistic concurrency, timestamps, or
+operation queues for stricter consistency.</p>
+<h3 id="what-if-socket.io-event-is-missed">What if Socket.io event is
+missed?</h3>
+<p>The database is the source of truth. The frontend refreshes board
+data after real-time events and also loads current board state through
+REST. If an event is missed, reloading the board retrieves the correct
+persisted data.</p>
+<h3 id="why-not-use-only-socket.io-and-no-rest">Why not use only
+Socket.io and no REST?</h3>
+<p>REST is better for standard CRUD and initial loading because it is
+request-response and easy to secure/debug. Socket.io is used for
+real-time notifications after changes.</p>
+<h3 id="why-not-use-only-rest-and-no-socket.io">Why not use only REST
+and no Socket.io?</h3>
+<p>Without Socket.io, users would need manual refresh or polling.
+Socket.io makes collaboration feel live and reduces unnecessary repeated
+polling.</p>
+<h3 id="what-is-the-biggest-technical-challenge">What is the biggest
+technical challenge?</h3>
+<p>Keeping data scoped correctly across workspaces, boards, columns,
+cards, and roles while also broadcasting real-time updates. A card move
+is not just a UI action: it needs permission checks, board validation,
+position recalculation, activity logging, notification logic, and socket
+emission.</p>
+<h3 id="what-is-the-biggest-weakness">What is the biggest weakness?</h3>
+<p>The biggest weakness is lack of a full automated test suite and the
+large frontend file. The backend logic is meaningful enough that tests
+for auth, RBAC, invites, card movement, and notifications would add a
+lot of confidence.</p>
+<h3 id="how-would-you-scale-this">How would you scale this?</h3>
+<p>I would use a managed MongoDB cluster, add indexes for common
+queries, move uploaded media to object storage, add Redis for Socket.io
+adapter and caching, run multiple backend instances behind a load
+balancer, use structured logging, and add monitoring.</p>
+<h3 id="how-would-you-deploy-it">How would you deploy it?</h3>
+<p>Backend as a web service with environment variables for MongoDB URI,
+JWT secret, CORS origin, frontend URL, and Google client id. Frontend as
+a static site with Vite build output and environment variables pointing
+to backend API and socket URL.</p>
+<h3 id="what-would-happen-if-jwt_secret-changes">What would happen if
+<code>JWT_SECRET</code> changes?</h3>
+<p>Existing tokens signed with the old secret become invalid, so users
+need to log in again. That can be acceptable during rotation but should
+be planned.</p>
+<h3 id="what-happens-if-email-sending-fails-during-registration">What
+happens if email sending fails during registration?</h3>
+<p>The backend catches errors in registration generally and returns an
+error. For robust production behavior, email failure should be handled
+carefully, perhaps retrying or allowing resend verification.</p>
+<h3 id="why-are-otp-tokens-stored-in-database">Why are OTP tokens stored
+in database?</h3>
+<p>The backend needs to verify codes later and enforce expiry. Storing
+them in the database lets the server validate and delete them after
+use.</p>
+<h3 id="should-otps-be-hashed">Should OTPs be hashed?</h3>
+<p>In a production system, yes. Plain OTP storage works functionally,
+but hashing OTPs would reduce risk if the database were leaked.</p>
+<h3 id="how-do-you-prevent-duplicate-invite-codes">How do you prevent
+duplicate invite codes?</h3>
+<p>The backend generates a code and checks whether it already exists in
+the Workspace collection. It repeats until unique.</p>
+<h3 id="what-if-the-invite-token-is-expired">What if the invite token is
+expired?</h3>
+<p>The backend rejects it. Email invite tokens include
+<code>expiresAt</code> and a <code>used</code> flag.</p>
+<h3 id="why-are-there-both-invite-code-and-invite-token-flows">Why are
+there both invite code and invite token flows?</h3>
+<p>Invite codes are simple and quick to share. Email invite tokens are
+more controlled because they are tied to a specific email, role, expiry,
+and used status.</p>
+<h3 id="how-do-you-stop-admins-from-removing-owners">How do you stop
+admins from removing owners?</h3>
+<p>The workspace controller checks target roles and requester roles.
+Admins can manage members/viewers but cannot manage owners.</p>
+<h3 id="what-is-a-race-condition-in-your-project">What is a race
+condition in your project?</h3>
+<p>Two simultaneous card moves or role updates could overwrite each
+other without version checks. The current app handles normal usage, but
+strict concurrency could be improved with transactions or optimistic
+locking.</p>
+<h3 id="do-you-use-database-transactions">Do you use database
+transactions?</h3>
+<p>No, not currently. Some operations use <code>Promise.all</code>, but
+not MongoDB transactions. A production version could use transactions
+for operations like deleting boards with all related data.</p>
+<h3 id="what-happens-when-a-board-is-deleted">What happens when a board
+is deleted?</h3>
+<p>The backend finds its columns and cards, deletes related comments,
+deletes cards, deletes columns, deletes activities for that board,
+deletes the board, and emits <code>board:deleted</code>.</p>
+<h3 id="what-happens-when-a-workspace-is-deleted">What happens when a
+workspace is deleted?</h3>
+<p>The backend checks owner permission, deletes cards, activities,
+columns, boards, and then deletes the workspace.</p>
+<h3 id="what-is-denormalization">What is denormalization?</h3>
+<p>Denormalization means storing some related or repeated data to reduce
+query complexity. TeamOps mostly uses references, but activity records
+include fields like workspaceId and boardId for easier querying and
+formatting.</p>
+<h3 id="how-does-populate-work">How does <code>populate</code>
+work?</h3>
+<p>Mongoose <code>populate</code> replaces referenced object ids with
+selected fields from the referenced document, such as assignee
+name/email or comment user name.</p>
+<h3 id="why-are-response-keys-sometimes-snake_case">Why are response
+keys sometimes snake_case?</h3>
+<p>The formatters intentionally return API-friendly JSON keys such as
+<code>workspace_id</code>, <code>column_id</code>, and
+<code>created_at</code>, while JavaScript model fields may use
+camelCase.</p>
+<h3 id="what-is-cors-and-why-configure-it">What is CORS and why
+configure it?</h3>
+<p>CORS controls which browser origins can call the backend. Since the
+frontend and backend may run on different ports/domains, the backend
+must allow the frontend origin.</p>
+<h3 id="why-does-development-allow-localhost-with-any-port">Why does
+development allow localhost with any port?</h3>
+<p>That makes local testing easier when Vite or backend ports change. In
+production, origins should be restricted.</p>
+<h2 id="deep-technical-questions">Deep Technical Questions</h2>
+<h3 id="explain-requirerole.">Explain <code>requireRole</code>.</h3>
+<p><code>requireRole</code> is attached to protected routes after JWT
+auth. It resolves the workspace id from route params, request body,
+query, or related board/column/card id. Then it loads the workspace,
+checks if the current user is in <code>workspace.members</code>, and
+verifies that their role is allowed for that route.</p>
+<h3 id="explain-resolveboardaccess.">Explain
+<code>resolveBoardAccess</code>.</h3>
+<p>It receives user id, board id, and required role. It loads the board,
+obtains its workspace id, and calls workspace access checking. If
+allowed, it returns the board, workspace id, and member data.</p>
+<h3 id="explain-formatcard.">Explain <code>formatCard</code>.</h3>
+<p>It converts a Mongoose card document into a clean API object with
+<code>id</code>, <code>column_id</code>, title, description, priority,
+<code>assignee_id</code>, formatted <code>due_date</code>, position,
+<code>created_at</code>, and <code>updated_at</code>.</p>
+<h3 id="explain-createactivity.">Explain
+<code>createActivity</code>.</h3>
+<p>It creates an Activity document with user, workspace, board, and
+action. Then it formats the activity and emits <code>activity:new</code>
+to the board room.</p>
+<h3 id="explain-createnotification.">Explain
+<code>createNotification</code>.</h3>
+<p>It creates a Notification document for a user, formats it, and emits
+<code>notification:new</code> to the private user room.</p>
+<h3 id="explain-comment-tagging-safety.">Explain comment tagging
+safety.</h3>
+<p>For board comments, the backend normalizes tagged card ids by
+checking that they belong to the current board. It normalizes tagged
+member ids by checking they belong to the current workspace. This
+prevents users from tagging arbitrary ids from outside the
+workspace.</p>
+<h3 id="explain-overdue-card-calculation.">Explain overdue card
+calculation.</h3>
+<p>Analytics loads cards, identifies done columns, and counts cards with
+due dates before today while excluding cards in done columns.</p>
+<h3 id="explain-completed-this-week-calculation.">Explain
+completed-this-week calculation.</h3>
+<p>The backend finds done columns and counts cards whose current column
+is done and whose updated timestamp is after the start of the current
+week.</p>
+<h3 id="explain-escaperegex.">Explain <code>escapeRegex</code>.</h3>
+<p>It escapes special regex characters before building a
+case-insensitive duplicate column title check. Without it, a title
+containing regex characters could behave unexpectedly.</p>
+<h3 id="explain-escapehtml.">Explain <code>escapeHtml</code>.</h3>
+<p>It creates a temporary div, assigns text to <code>textContent</code>,
+and reads <code>innerHTML</code>. This converts potentially dangerous
+characters into safe HTML entities.</p>
+<h3 id="explain-localstorage-usage.">Explain localStorage usage.</h3>
+<p>The app stores token, user, active workspace id, active board id,
+invite code/link, and saved filter views. This keeps the session and
+active context after page refresh.</p>
+<h2 id="coding-and-implementation-questions">Coding and Implementation
+Questions</h2>
+<h3 id="which-file-starts-the-backend">Which file starts the
+backend?</h3>
+<p><code>teamops-backend/server.js</code>.</p>
+<h3 id="which-file-has-models">Which file has models?</h3>
+<p><code>teamops-backend/models/index.js</code>.</p>
+<h3 id="which-file-handles-sockets">Which file handles sockets?</h3>
+<p><code>teamops-backend/socket/index.js</code>.</p>
+<h3 id="which-file-handles-auth-middleware">Which file handles auth
+middleware?</h3>
+<p><code>teamops-backend/middleware/auth.js</code>.</p>
+<h3 id="which-frontend-files-matter">Which frontend files matter?</h3>
+<p><code>teamops-frontend/index.html</code> and
+<code>teamops-frontend/styles.css</code>.</p>
+<h3 id="how-do-you-run-backend">How do you run backend?</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> teamops-backend</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run dev</span></code></pre></div>
+<h3 id="how-do-you-run-frontend">How do you run frontend?</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> teamops-frontend</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run dev</span></code></pre></div>
+<h3 id="what-is-the-local-backend-url">What is the local backend
+URL?</h3>
+<p>The code defaults to <code>http://localhost:5002/api</code>, although
+the environment variable can override it.</p>
+<h3 id="what-is-the-local-frontend-url">What is the local frontend
+URL?</h3>
+<p>Vite usually serves it at <code>http://localhost:5173</code>.</p>
+<h2 id="scenario-questions">Scenario Questions</h2>
+<h3
+id="a-user-says-card-movement-works-locally-but-not-for-teammates.-what-do-you-check">A
+user says card movement works locally but not for teammates. What do you
+check?</h3>
+<p>I would check whether Socket.io is connected, whether both users
+joined the same <code>board:&lt;boardId&gt;</code> room, whether the
+backend emits <code>card:moved</code>, whether CORS/socket URL are
+correct, and whether the database update succeeds. If socket fails,
+refreshing should still show the persisted move.</p>
+<h3 id="a-user-can-log-in-but-sees-no-boards.-what-do-you-check">A user
+can log in but sees no boards. What do you check?</h3>
+<p>I would check if the user belongs to any workspace, whether workspace
+id is stored correctly, whether <code>/api/workspaces</code> returns
+data, whether <code>ensureWorkspaceBoard</code> created a board, and
+whether the active board id in localStorage is valid.</p>
+<h3 id="a-viewer-says-they-cannot-add-a-card.-is-this-a-bug">A viewer
+says they cannot add a card. Is this a bug?</h3>
+<p>No. Viewers are read-only for cards. They can view board data but
+cannot create/edit cards.</p>
+<h3 id="a-member-says-they-cannot-create-columns.-is-this-a-bug">A
+member says they cannot create columns. Is this a bug?</h3>
+<p>No. Columns change the board workflow, so only owners and admins can
+manage columns.</p>
+<h3 id="a-notification-does-not-appear-instantly.-what-do-you-check">A
+notification does not appear instantly. What do you check?</h3>
+<p>Check whether the socket connected with a valid token, whether it
+joined the <code>user:&lt;userId&gt;</code> room, whether
+<code>createNotification</code> ran, and whether the frontend listens
+for <code>notification:new</code>. The notification should still be in
+the database and load from <code>/api/notifications</code>.</p>
+<h3 id="a-card-due-date-in-the-past-is-rejected.-why">A card due date in
+the past is rejected. Why?</h3>
+<p>The backend prevents active cards from being scheduled in the past.
+Past due dates are allowed only for done cards or when preserving
+existing historical data.</p>
+<h2 id="comparison-questions">Comparison Questions</h2>
+<h3 id="teamops-versus-trello">TeamOps versus Trello?</h3>
+<p>Trello is a mature commercial product. TeamOps is a student-built
+implementation focused on core project management concepts: workspaces,
+boards, roles, cards, comments, activity, notifications, analytics, and
+real-time sync.</p>
+<h3 id="teamops-versus-jira">TeamOps versus Jira?</h3>
+<p>Jira is much more advanced for software teams, with workflows, issue
+types, sprints, reports, and integrations. TeamOps demonstrates a
+simplified version of collaborative task management with a cleaner
+academic scope.</p>
+<h3 id="why-not-build-an-llm-chatbot-like-other-students">Why not build
+an LLM chatbot like other students?</h3>
+<p>LLM projects are impressive, but TeamOps demonstrates full-stack
+product engineering fundamentals: authentication, authorization, data
+modeling, real-time systems, UI state, database consistency, and
+deployment. These are foundational skills behind real-world
+applications, including AI tools.</p>
+<h3 id="can-teamops-integrate-ai-later">Can TeamOps integrate AI
+later?</h3>
+<p>Yes. Future AI features could include task summarization,
+auto-priority suggestions, sprint risk prediction, comment summaries,
+natural language card creation, or an assistant that answers workspace
+questions.</p>
+<h2 id="examiner-flattering-answers">Examiner-Flattering Answers</h2>
+<p>Use these when you want to sound thoughtful.</p>
+<h3 id="what-did-you-learn">What did you learn?</h3>
+<p>I learned that the difficult part of a full-stack app is not just
+making screens. The hard part is keeping frontend state, backend
+validation, database consistency, permissions, and real-time events
+aligned.</p>
+<h3 id="what-would-you-improve-first">What would you improve first?</h3>
+<p>I would add automated tests for authentication, RBAC, invites, and
+card movement because those are the highest-risk flows. After that, I
+would modularize the frontend for maintainability.</p>
+<h3 id="what-is-your-best-design-decision">What is your best design
+decision?</h3>
+<p>Using Socket.io rooms with REST APIs. REST gives a reliable
+source-of-truth API, while Socket.io adds live collaboration without
+replacing normal CRUD.</p>
+<h3 id="what-is-one-tradeoff-you-made">What is one tradeoff you
+made?</h3>
+<p>I kept the frontend standalone instead of using a framework. It
+simplified deployment and matched the project architecture, but it also
+makes the frontend file large. If the project grows, modularization
+would be important.</p>
+<h3 id="what-is-one-production-concern">What is one production
+concern?</h3>
+<p>Scaling real-time presence and board rooms across multiple backend
+instances. That would require a shared Socket.io adapter such as
+Redis.</p>
+<h2 id="rapid-fire-questions">Rapid Fire Questions</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Question</th>
+<th>Short Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What is Node.js?</td>
+<td>JavaScript runtime for server-side code</td>
+</tr>
+<tr>
+<td>What is Express?</td>
+<td>Web framework for Node APIs</td>
+</tr>
+<tr>
+<td>What is MongoDB?</td>
+<td>NoSQL document database</td>
+</tr>
+<tr>
+<td>What is Mongoose?</td>
+<td>ODM for MongoDB</td>
+</tr>
+<tr>
+<td>What is JWT?</td>
+<td>Signed token for stateless authentication</td>
+</tr>
+<tr>
+<td>What is bcrypt?</td>
+<td>Password hashing library</td>
+</tr>
+<tr>
+<td>What is Socket.io?</td>
+<td>Real-time bidirectional communication library</td>
+</tr>
+<tr>
+<td>What is CORS?</td>
+<td>Browser security policy for cross-origin requests</td>
+</tr>
+<tr>
+<td>What is middleware?</td>
+<td>Function that runs during request processing</td>
+</tr>
+<tr>
+<td>What is REST?</td>
+<td>Resource-based API design style</td>
+</tr>
+<tr>
+<td>What is CRUD?</td>
+<td>Create, Read, Update, Delete</td>
+</tr>
+<tr>
+<td>What is RBAC?</td>
+<td>Role-based access control</td>
+</tr>
+<tr>
+<td>What is <code>populate</code>?</td>
+<td>Mongoose feature to load referenced documents</td>
+</tr>
+<tr>
+<td>What is <code>lean()</code>?</td>
+<td>Returns plain JS objects instead of Mongoose documents</td>
+</tr>
+<tr>
+<td>What is a schema?</td>
+<td>Structure definition for a document</td>
+</tr>
+<tr>
+<td>What is an index?</td>
+<td>Database structure for faster lookup</td>
+</tr>
+<tr>
+<td>What is a room in Socket.io?</td>
+<td>Group of sockets for targeted emission</td>
+</tr>
+<tr>
+<td>What is localStorage?</td>
+<td>Browser key-value storage</td>
+</tr>
+<tr>
+<td>What is Vite?</td>
+<td>Fast frontend dev/build tool</td>
+</tr>
+<tr>
+<td>What is an environment variable?</td>
+<td>Runtime configuration value</td>
+</tr>
+</tbody>
+</table>
+<h2 id="hard-questions-with-strong-answers">Hard Questions With Strong
+Answers</h2>
+<h3 id="how-do-you-ensure-database-consistency-when-moving-cards">How do
+you ensure database consistency when moving cards?</h3>
+<p>The backend loads source and destination columns, verifies board
+ownership, inserts the card into the destination order, updates
+positions for destination cards, recalculates source column positions if
+needed, saves the moved card, and emits a real-time event. For stricter
+production consistency, I would wrap related updates in a MongoDB
+transaction.</p>
+<h3 id="how-would-you-add-tests">How would you add tests?</h3>
+<p>I would start with backend integration tests using an isolated test
+database. Tests would cover registration, verification, login, workspace
+creation, role enforcement, card CRUD, card movement, comments,
+notifications, and invite flows. Then I would add Playwright tests for
+browser workflows.</p>
+<h3 id="how-would-you-improve-security">How would you improve
+security?</h3>
+<p>I would add rate limiting, input validation with a schema library,
+HTTP-only cookie auth, hashed OTP tokens, stronger password policy,
+secure headers, centralized error handling, audit log immutability, and
+more restrictive production CORS.</p>
+<h3 id="how-would-you-implement-file-attachments">How would you
+implement file attachments?</h3>
+<p>I would add an Attachment model with card id, uploaded by, filename,
+MIME type, size, storage URL, and created timestamp. Files would be
+uploaded to cloud object storage, not stored directly in MongoDB.</p>
+<h3 id="how-would-you-add-ai-features">How would you add AI
+features?</h3>
+<p>I would add a backend endpoint that gathers scoped workspace data
+only after RBAC checks, then sends a summarized prompt to an AI model.
+Example features include sprint summary, risk detection, auto-card
+generation, and comment summarization.</p>
+<h3 id="how-would-you-prevent-xss">How would you prevent XSS?</h3>
+<p>Escape user-generated text before rendering, sanitize rich text if
+added, avoid dangerous <code>innerHTML</code> where possible, use
+Content Security Policy, avoid storing tokens in localStorage for
+production, and validate inputs on the backend.</p>
+<h3 id="how-would-you-prevent-nosql-injection">How would you prevent
+NoSQL injection?</h3>
+<p>Avoid passing raw user objects directly into MongoDB query operators,
+validate and cast ids, use fixed query shapes, and sanitize inputs.</p>
+<h3
+id="why-is-backend-validation-more-important-than-frontend-validation">Why
+is backend validation more important than frontend validation?</h3>
+<p>Frontend validation improves UX, but attackers can bypass it. Backend
+validation protects the actual data and permissions.</p>
+<h3 id="how-do-you-handle-errors">How do you handle errors?</h3>
+<p>Controllers use try/catch and return appropriate status codes and
+messages. The frontend catches errors from <code>apiRequest</code>,
+shows toasts or inline messages, and avoids crashing the whole app.</p>
+<h3 id="what-status-codes-do-you-use">What status codes do you use?</h3>
+<p>Common examples: <code>200</code> success, <code>201</code> created,
+<code>400</code> bad request, <code>401</code> unauthenticated,
+<code>403</code> unauthorized, <code>404</code> not found,
+<code>409</code> conflict, and <code>500</code> server error.</p>
+<h2 id="data-flow-examples">Data Flow Examples</h2>
+<h3 id="register-and-verify-flow">Register and Verify Flow</h3>
+<pre class="text"><code>User submits signup form
+Frontend POST /api/auth/register
+Backend hashes password
+Backend creates unverified user
+Backend creates OTP token
+Backend sends email
+User enters OTP
+Frontend POST /api/auth/verify
+Backend marks user verified
+Backend returns JWT
+Frontend saves session</code></pre>
+<h3 id="card-move-flow">Card Move Flow</h3>
+<pre class="text"><code>User drags card
+Frontend catches drop event
+Frontend PATCH /api/boards/:boardId/cards/:cardId/move
+Backend verifies JWT
+Backend checks workspace role
+Backend validates source/destination columns
+Backend recalculates positions
+Backend saves MongoDB updates
+Backend creates activity
+Backend emits card:moved
+Other clients reload board data</code></pre>
+<h3 id="notification-flow">Notification Flow</h3>
+<pre class="text"><code>User assigns card to teammate
+Backend creates card/update
+Backend creates Notification document
+Backend emits notification:new to user:&lt;assigneeId&gt;
+Assignee frontend receives event
+Frontend shows toast and reloads inbox</code></pre>
+<h2 id="diagrams-to-draw-in-viva">Diagrams to Draw in Viva</h2>
+<h3 id="system-architecture">System Architecture</h3>
+<pre class="text"><code>Frontend HTML/CSS/JS
+     |
+     | REST + JWT
+     v
+Express Controllers
+     |
+     v
+Mongoose Models
+     |
+     v
+MongoDB
+
+Socket.io side channel:
+Frontend &lt;--&gt; Socket.io rooms &lt;--&gt; Backend events</code></pre>
+<h3 id="entity-relationship">Entity Relationship</h3>
+<pre class="text"><code>User -- member of --&gt; Workspace -- has --&gt; Board -- has --&gt; Column -- has --&gt; Card
+ Card -- assigned to --&gt; User
+ Card -- has --&gt; Comment
+ Board -- has --&gt; Comment
+ Workspace/Board -- has --&gt; Activity
+ User -- has --&gt; Notification</code></pre>
+<h2 id="things-not-to-say">Things Not To Say</h2>
+<ul>
+<li>Do not say it is a React app.</li>
+<li>Do not say the active database is PostgreSQL.</li>
+<li>Do not say Socket.io stores data. MongoDB stores data; Socket.io
+broadcasts events.</li>
+<li>Do not say frontend role checks are enough for security.</li>
+<li>Do not say JWT encrypts data. JWT is signed; it is not automatically
+encrypted.</li>
+<li>Do not say bcrypt encryption. Say bcrypt hashing.</li>
+<li>Do not say localStorage is the most secure token storage.</li>
+<li>Do not claim automated testing is complete if it is not.</li>
+</ul>
+<h2 id="polished-answers-for-weak-points">Polished Answers for Weak
+Points</h2>
+<h3 id="the-frontend-file-is-large.-how-do-you-defend-it">The frontend
+file is large. How do you defend it?</h3>
+<p>The project architecture intentionally uses a standalone frontend
+with no React source tree. I kept the implementation in
+<code>index.html</code> and <code>styles.css</code> to match that
+architecture and simplify deployment. I agree that modularizing
+JavaScript into separate ES modules would be a good next step as the
+project grows.</p>
+<h3 id="there-are-unused-dependencies.-how-do-you-defend-it">There are
+unused dependencies. How do you defend it?</h3>
+<p>Some dependencies appear to be legacy from previous setup. The real
+active frontend does not use React. Removing unused dependencies would
+be a cleanup task, but it does not change the working architecture.</p>
+<h3 id="there-is-no-full-test-suite.-how-do-you-defend-it">There is no
+full test suite. How do you defend it?</h3>
+<p>The project currently focuses on implementing the full feature set. I
+still have basic verification commands, but a proper next step is
+backend integration tests and frontend end-to-end tests. I can clearly
+identify which flows need tests first: auth, RBAC, card movement,
+invites, and notifications.</p>
+<h2 id="final-viva-closing-statement">Final Viva Closing Statement</h2>
+<p>TeamOps demonstrates that I understand more than UI design. I
+implemented a complete application flow from authentication and database
+modeling to REST APIs, role checks, real-time Socket.io updates,
+frontend rendering, notifications, activity tracking, and deployment
+configuration. The strongest part is the integration between backend
+persistence and live collaboration: every important board action is
+validated, saved, logged, and broadcast to the right users.</p>
+</body>
+</html>

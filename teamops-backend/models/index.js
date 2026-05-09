@@ -112,6 +112,7 @@ const commentSchema = new Schema(
     card: { type: Schema.Types.ObjectId, ref: 'Card', default: null, index: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     taggedCards: [{ type: Schema.Types.ObjectId, ref: 'Card' }],
+    taggedMembers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     content: { type: String, required: true, trim: true, maxlength: 2000 },
   },
   { timestamps: true },
@@ -250,6 +251,13 @@ const formatComment = (comment) => ({
     ? comment.taggedCards.map((card) => ({
         id: toId(card?._id || card),
         title: card?.title || '',
+      }))
+    : [],
+  tagged_members: Array.isArray(comment.taggedMembers)
+    ? comment.taggedMembers.map((member) => ({
+        id: toId(member?._id || member),
+        name: member?.name || '',
+        email: member?.email || '',
       }))
     : [],
   created_at: comment.createdAt,
