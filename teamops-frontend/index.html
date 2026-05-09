@@ -5375,7 +5375,10 @@ function columnIndicatorClass(title, index) {
 function renderCard(card) {
   const priority = card.priority || 'medium';
   const assigneeName = getWorkspaceMemberNameById(card.assignee_id) || card.assignee_name || '';
-  const assigneeInitial = assigneeName?.charAt(0)?.toUpperCase() || card.assignee_id?.charAt(0)?.toUpperCase() || '?';
+  const assigneeInitial = assigneeName?.charAt(0)?.toUpperCase() || card.assignee_id?.charAt(0)?.toUpperCase() || '';
+  const assigneeAvatar = assigneeInitial
+    ? `<div class="c-av u-style-4" title="${escapeHtml(assigneeName || 'Assigned member')}">${escapeHtml(assigneeInitial)}</div>`
+    : '<div class="c-av c-av-empty" title="Unassigned"><i class="bi bi-person"></i></div>';
   return `
     <div class="b-card" draggable="${['owner', 'admin', 'member'].includes(currentWorkspaceRole) ? 'true' : 'false'}" data-card-id="${card.id}" onclick="openCardById('${card.id}')">
       <div class="card-tags"><span class="c-tag ct-v">Task</span></div>
@@ -5383,7 +5386,7 @@ function renderCard(card) {
       <div class="b-card-foot">
         <span class="c-prio cp-${priority === 'high' ? 'h' : priority === 'low' ? 'l' : 'm'}">${priority.charAt(0).toUpperCase() + priority.slice(1)}</span>
         ${card.due_date ? `<span class="c-due">${escapeHtml(card.due_date)}</span>` : ''}
-        <div class="c-avs"><div class="c-av u-style-4">${escapeHtml(assigneeInitial)}</div></div>
+        <div class="c-avs">${assigneeAvatar}</div>
       </div>
     </div>
   `;
