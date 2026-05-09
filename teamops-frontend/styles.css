@@ -1519,6 +1519,135 @@ footer {
   font-size: 13px;
   padding: 8px 0;
 }
+.analytics-workspace-panel {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(20,184,166,0.24);
+  border-radius: var(--r);
+  background: linear-gradient(180deg, #ffffff, #f6fffc);
+  box-shadow: 0 12px 28px rgba(20,184,166,0.08);
+}
+.analytics-workspace-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.analytics-workspace-main h4 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  color: var(--ink);
+}
+.analytics-workspace-main p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.analytics-workspace-score {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  min-width: 96px;
+}
+.analytics-workspace-score span {
+  font-size: 34px;
+  font-weight: 900;
+  color: var(--teal);
+  line-height: 1;
+}
+.analytics-workspace-score small {
+  color: var(--muted2);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+.analytics-workspace-track {
+  height: 10px;
+  border-radius: 999px;
+  background: #e7f6f2;
+  overflow: hidden;
+}
+.analytics-workspace-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--teal), var(--violet));
+  transition: width 0.35s var(--ease);
+}
+.analytics-workspace-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.analytics-workspace-kpis div {
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.78);
+}
+.analytics-workspace-kpis strong {
+  display: block;
+  font-size: 20px;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.analytics-workspace-kpis span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.analytics-workspace-board-bars {
+  display: grid;
+  gap: 8px;
+}
+.analytics-board-progress {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(120px, 1fr) 48px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.6);
+  font: inherit;
+  text-align: left;
+}
+.analytics-board-progress.active,
+.analytics-board-progress:hover {
+  border-color: rgba(124,92,252,0.28);
+  background: var(--white);
+}
+.analytics-board-progress-name {
+  color: var(--ink2);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.analytics-board-progress-track {
+  height: 7px;
+  border-radius: 999px;
+  background: #eeeae4;
+  overflow: hidden;
+}
+.analytics-board-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--violet), var(--teal));
+}
+.analytics-board-progress-meta {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+  text-align: right;
+}
 .db-grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; }
 .db-line-chart {
   height: 180px;
@@ -3479,6 +3608,22 @@ html body [contenteditable="true"] {
 }
 
 @media (max-width: 900px) {
+  .analytics-workspace-main {
+    flex-direction: column;
+  }
+  .analytics-workspace-score {
+    justify-items: start;
+  }
+  .analytics-workspace-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .analytics-board-progress {
+    grid-template-columns: minmax(0, 1fr) 48px;
+  }
+  .analytics-board-progress-track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
   .prof-layout { grid-template-columns: 1fr; }
   .prof-form-grid { grid-template-columns: 1fr; }
   .prof-avatar-btn { width: 90px; height: 90px; }

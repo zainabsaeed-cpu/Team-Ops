@@ -685,6 +685,31 @@
         <label for="analyticsBoardSelect">Board</label>
         <select id="analyticsBoardSelect" onchange="selectAnalyticsBoard(this.value)"></select>
       </div>
+      <div class="analytics-workspace-panel db-anim db-delay-2">
+        <div class="analytics-workspace-main">
+          <div>
+            <div class="db-slab-title">Overall project analysis</div>
+            <h4 id="analyticsWorkspaceName">Workspace progress</h4>
+            <p id="analyticsWorkspaceCompletionNote">Aggregating every board in this workspace.</p>
+          </div>
+          <div class="analytics-workspace-score">
+            <span id="analyticsWorkspaceCompletion" data-countup="0">0%</span>
+            <small>complete</small>
+          </div>
+        </div>
+        <div class="analytics-workspace-track">
+          <div id="analyticsWorkspaceCompletionBar" class="analytics-workspace-fill" style="width:0%"></div>
+        </div>
+        <div class="analytics-workspace-kpis">
+          <div><strong id="analyticsWorkspaceBoardCount">0</strong><span>Boards</span></div>
+          <div><strong id="analyticsWorkspaceOpenCards">0</strong><span>Open cards</span></div>
+          <div><strong id="analyticsWorkspaceDoneCards">0</strong><span>Done cards</span></div>
+          <div><strong id="analyticsWorkspaceOverdueCards">0</strong><span>Overdue</span></div>
+        </div>
+        <div class="analytics-workspace-board-bars" id="analyticsWorkspaceBoardBars">
+          <div class="analytics-empty">Loading workspace boards...</div>
+        </div>
+      </div>
       <div class="db-cards-grid db-anim db-delay-2">
         <div class="db-kpi-card">
           <div class="db-kpi-top">
@@ -2635,10 +2660,134 @@ function renderAnalyticsBars(containerId, rows, nameKey, valueKey) {
   }).join('');
 }
 
+function setWorkspaceAnalysisText(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const displayValue = String(value);
+  el.textContent = displayValue;
+  el.dataset.finalText = displayValue;
+  el.dataset.countup = displayValue.replace(/[^\d.]/g, '') || '0';
+}
+
+function workspaceAnalysisTotals(workspaceId = currentWorkspace?.id) {
+  const boards = (projectAllBoards.length ? projectAllBoards : workspaceBoards)
+    .filter(board => !workspaceId || String(board.workspaceId || workspaceId) === String(workspaceId));
+  const boardIds = new Set(boards.map(board => String(board.id)));
+  const stats = projectBoardStats.filter(stat => boardIds.has(String(stat.boardId)));
+  const totals = stats.reduce((acc, stat) => {
+    acc.totalCards += Number(stat.totalCards) || 0;
+    acc.doneCards += Number(stat.doneCards) || 0;
+    acc.openCards += Number(stat.openCards) || 0;
+    acc.overdueCards += Number(stat.overdueCards) || 0;
+    return acc;
+  }, { totalCards: 0, doneCards: 0, openCards: 0, overdueCards: 0 });
+  totals.completion = totals.totalCards ? Math.round((totals.doneCards / totals.totalCards) * 100) : 0;
+  return { boards, stats, totals };
+}
+
+function renderWorkspaceAnalysis() {
+  const workspaceId = currentWorkspace?.id || localStorage.getItem('teamops_workspace_id') || '';
+  const workspaceName = currentWorkspace?.name || 'Workspace';
+  const { boards, stats, totals } = workspaceAnalysisTotals(workspaceId);
+
+  const nameEl = document.getElementById('analyticsWorkspaceName');
+  const noteEl = document.getElementById('analyticsWorkspaceCompletionNote');
+  const fillEl = document.getElementById('analyticsWorkspaceCompletionBar');
+  const barsEl = document.getElementById('analyticsWorkspaceBoardBars');
+
+  if (nameEl) nameEl.textContent = `${workspaceName} progress`;
+  setWorkspaceAnalysisText('analyticsWorkspaceCompletion', `${totals.completion}%`);
+  setWorkspaceAnalysisText('analyticsWorkspaceBoardCount', boards.length);
+  setWorkspaceAnalysisText('analyticsWorkspaceOpenCards', totals.openCards);
+  setWorkspaceAnalysisText('analyticsWorkspaceDoneCards', totals.doneCards);
+  setWorkspaceAnalysisText('analyticsWorkspaceOverdueCards', totals.overdueCards);
+  if (fillEl) fillEl.style.width = `${totals.completion}%`;
+  if (noteEl) {
+    noteEl.textContent = boards.length
+      ? `${totals.doneCards}/${totals.totalCards} cards completed across ${boards.length} board${boards.length === 1 ? '' : 's'}.`
+      : 'Create boards in this workspace to see overall project progress.';
+  }
+
+  if (!barsEl) return;
+  if (!boards.length) {
+    barsEl.innerHTML = '<div class="analytics-empty">No boards yet for this workspace.</div>';
+    return;
+  }
+
+  barsEl.innerHTML = boards.map(board => {
+    const stat = stats.find(item => String(item.boardId) === String(board.id)) || { completion: 0, totalCards: 0, doneCards: 0 };
+    const completion = Math.max(0, Math.min(100, Math.round(stat.completion || 0)));
+    const active = String(board.id) === String(localStorage.getItem('teamops_board_id'));
+    return `
+      <button type="button" class="analytics-board-progress ${active ? 'active' : ''}" onclick="selectAnalyticsBoard('${board.id}')">
+        <span class="analytics-board-progress-name">${escapeHtml(board.name || board.title || 'Board')}</span>
+        <span class="analytics-board-progress-track"><span style="width:${completion}%"></span></span>
+        <span class="analytics-board-progress-meta">${completion}%</span>
+      </button>
+    `;
+  }).join('');
+}
+
+function mergeProjectBoardData(boards, stats) {
+  const workspaceId = currentWorkspace?.id || localStorage.getItem('teamops_workspace_id') || '';
+  const existingBoards = projectAllBoards.filter(board => String(board.workspaceId) !== String(workspaceId));
+  const existingStats = projectBoardStats.filter(stat => String(stat.workspaceId) !== String(workspaceId));
+  projectAllBoards = [...existingBoards, ...boards];
+  projectBoardStats = [...existingStats, ...stats];
+}
+
+async function loadWorkspaceAnalysisData() {
+  const workspaceId = currentWorkspace?.id || localStorage.getItem('teamops_workspace_id');
+  if (!workspaceId) {
+    renderWorkspaceAnalysis();
+    return;
+  }
+
+  try {
+    let boardsSource = workspaceBoards.map(board => ({ ...board, workspaceId }));
+    if (!boardsSource.length) {
+      const payload = await apiRequest(`/workspaces/${workspaceId}/boards`);
+      boardsSource = (Array.isArray(payload?.boards) ? payload.boards : []).map(board => ({ ...board, workspaceId }));
+    }
+
+    const stats = await Promise.all(boardsSource.map(async board => {
+      try {
+        const analytics = await apiRequest(`/boards/${board.id}/analytics`);
+        const cardsPerColumn = Array.isArray(analytics?.cardsPerColumn) ? analytics.cardsPerColumn : [];
+        const doneCards = cardsPerColumn
+          .filter(row => isDoneColumnTitle(row.columnTitle))
+          .reduce((sum, row) => sum + (Number(row.count) || 0), 0);
+        const totalCards = cardsPerColumn.reduce((sum, row) => sum + (Number(row.count) || 0), 0);
+        return {
+          workspaceId,
+          boardId: board.id,
+          totalCards,
+          doneCards,
+          openCards: Math.max(0, totalCards - doneCards),
+          overdueCards: Number(analytics?.overdueCardsCount) || 0,
+          assigneeCount: (Array.isArray(analytics?.cardsPerAssignee) ? analytics.cardsPerAssignee : [])
+            .filter(row => row.assigneeId !== 'unassigned' && (Number(row.count) || 0) > 0)
+            .length,
+          completion: totalCards ? Math.round((doneCards / totalCards) * 100) : 0,
+        };
+      } catch (_) {
+        return { workspaceId, boardId: board.id, totalCards: 0, doneCards: 0, openCards: 0, overdueCards: 0, assigneeCount: 0, completion: 0 };
+      }
+    }));
+
+    mergeProjectBoardData(boardsSource, stats);
+    renderWorkspaceAnalysis();
+  } catch (error) {
+    console.error('Workspace analysis error:', error);
+    renderWorkspaceAnalysis();
+  }
+}
+
 async function loadAnalyticsData(boardId = localStorage.getItem('teamops_board_id')) {
   if (!boardId) return;
   const board = workspaceBoards.find(item => String(item.id) === String(boardId));
   refreshAnalyticsBoardSelector();
+  loadWorkspaceAnalysisData();
 
   try {
     const analytics = await apiRequest(`/boards/${boardId}/analytics`);
