@@ -1993,6 +1993,61 @@ async function apiRequest(path, options = {}) {
   return payload;
 }
 
+function clearBoardAnalyticsCache(boardId = '') {
+  if (boardId) {
+    boardAnalyticsCache.delete(String(boardId));
+    return;
+  }
+  boardAnalyticsCache.clear();
+}
+
+async function getBoardAnalytics(boardId, options = {}) {
+  const key = String(boardId || '');
+  if (!key) return null;
+
+  const now = Date.now();
+  const cached = boardAnalyticsCache.get(key);
+  if (!options.force && cached) {
+    if (cached.promise) return cached.promise;
+    if (now - cached.timestamp < BOARD_ANALYTICS_CACHE_MS) return cached.data;
+  }
+
+  const promise = apiRequest(`/boards/${key}/analytics`)
+    .then(data => {
+      boardAnalyticsCache.set(key, { data, timestamp: Date.now() });
+      return data;
+    })
+    .catch(error => {
+      boardAnalyticsCache.delete(key);
+      throw error;
+    });
+
+  boardAnalyticsCache.set(key, { promise, timestamp: now });
+  return promise;
+}
+
+function boardStatsFromAnalytics(board, analytics = {}) {
+  const cardsPerColumn = Array.isArray(analytics?.cardsPerColumn) ? analytics.cardsPerColumn : [];
+  const doneCards = cardsPerColumn
+    .filter(row => isDoneColumnTitle(row.columnTitle))
+    .reduce((sum, row) => sum + (Number(row.count) || 0), 0);
+  const totalCards = cardsPerColumn.reduce((sum, row) => sum + (Number(row.count) || 0), 0);
+  const assigneeCount = (Array.isArray(analytics?.cardsPerAssignee) ? analytics.cardsPerAssignee : [])
+    .filter(row => row.assigneeId !== 'unassigned' && (Number(row.count) || 0) > 0)
+    .length;
+
+  return {
+    workspaceId: board.workspaceId,
+    boardId: board.id,
+    totalCards,
+    doneCards,
+    openCards: Math.max(0, totalCards - doneCards),
+    assigneeCount,
+    overdueCards: Number(analytics?.overdueCardsCount) || 0,
+    completion: totalCards ? Math.round((doneCards / totalCards) * 100) : 0,
+  };
+}
+
 function connectRealtime(userId = '') {
   if (!window.io || teamopsSocket) return;
   teamopsSocket = window.io(SOCKET_BASE, {
@@ -2021,6 +2076,7 @@ function connectRealtime(userId = '') {
   ['card:created', 'card:moved', 'card:updated', 'card:deleted', 'column:created', 'column:deleted'].forEach(eventName => {
     teamopsSocket.on(eventName, payload => {
       const boardId = localStorage.getItem('teamops_board_id');
+      if (payload?.boardId) clearBoardAnalyticsCache(payload.boardId);
       if (!payload?.boardId || String(payload.boardId) === String(boardId)) {
         loadBoardData();
         if (document.getElementById('dbView-analytics')?.classList.contains('active')) {
@@ -2752,24 +2808,8 @@ async function loadWorkspaceAnalysisData() {
 
     const stats = await Promise.all(boardsSource.map(async board => {
       try {
-        const analytics = await apiRequest(`/boards/${board.id}/analytics`);
-        const cardsPerColumn = Array.isArray(analytics?.cardsPerColumn) ? analytics.cardsPerColumn : [];
-        const doneCards = cardsPerColumn
-          .filter(row => isDoneColumnTitle(row.columnTitle))
-          .reduce((sum, row) => sum + (Number(row.count) || 0), 0);
-        const totalCards = cardsPerColumn.reduce((sum, row) => sum + (Number(row.count) || 0), 0);
-        return {
-          workspaceId,
-          boardId: board.id,
-          totalCards,
-          doneCards,
-          openCards: Math.max(0, totalCards - doneCards),
-          overdueCards: Number(analytics?.overdueCardsCount) || 0,
-          assigneeCount: (Array.isArray(analytics?.cardsPerAssignee) ? analytics.cardsPerAssignee : [])
-            .filter(row => row.assigneeId !== 'unassigned' && (Number(row.count) || 0) > 0)
-            .length,
-          completion: totalCards ? Math.round((doneCards / totalCards) * 100) : 0,
-        };
+        const analytics = await getBoardAnalytics(board.id);
+        return boardStatsFromAnalytics(board, analytics);
       } catch (_) {
         return { workspaceId, boardId: board.id, totalCards: 0, doneCards: 0, openCards: 0, overdueCards: 0, assigneeCount: 0, completion: 0 };
       }
@@ -2790,7 +2830,7 @@ async function loadAnalyticsData(boardId = localStorage.getItem('teamops_board_i
   loadWorkspaceAnalysisData();
 
   try {
-    const analytics = await apiRequest(`/boards/${boardId}/analytics`);
+    const analytics = await getBoardAnalytics(boardId);
     const cardsPerColumn = Array.isArray(analytics.cardsPerColumn) ? analytics.cardsPerColumn : [];
     const cardsPerAssignee = Array.isArray(analytics.cardsPerAssignee) ? analytics.cardsPerAssignee : [];
     const totalCards = cardsPerColumn.reduce((sum, row) => sum + (Number(row.count) || 0), 0);
@@ -3705,27 +3745,8 @@ async function loadProjectsOverview() {
 
     projectBoardStats = await Promise.all(allBoards.map(async board => {
       try {
-        const analytics = await apiRequest(`/boards/${board.id}/analytics`);
-        const cardsPerColumn = Array.isArray(analytics?.cardsPerColumn) ? analytics.cardsPerColumn : [];
-        const doneCards = cardsPerColumn
-          .filter(row => isDoneColumnTitle(row.columnTitle))
-          .reduce((sum, row) => sum + (Number(row.count) || 0), 0);
-        const totalCards = cardsPerColumn.reduce((sum, row) => sum + (Number(row.count) || 0), 0);
-        const completion = totalCards ? Math.round((doneCards / totalCards) * 100) : 0;
-        const assigneeCount = (Array.isArray(analytics?.cardsPerAssignee) ? analytics.cardsPerAssignee : [])
-          .filter(row => row.assigneeId !== 'unassigned' && (Number(row.count) || 0) > 0)
-          .length;
-
-        return {
-          workspaceId: board.workspaceId,
-          boardId: board.id,
-          totalCards,
-          doneCards,
-          openCards: Math.max(0, totalCards - doneCards),
-          assigneeCount,
-          overdueCards: Number(analytics?.overdueCardsCount) || 0,
-          completion,
-        };
+        const analytics = await getBoardAnalytics(board.id);
+        return boardStatsFromAnalytics(board, analytics);
       } catch (_) {
         return {
           workspaceId: board.workspaceId,
@@ -4682,6 +4703,8 @@ let projectAllBoards = [];
 let boardFilters = { assignee: 'all', priority: 'all', dueDate: 'all' };
 let activeSavedViewId = '';
 let activeSavedViewName = '';
+const boardAnalyticsCache = new Map();
+const BOARD_ANALYTICS_CACHE_MS = 8000;
 const boardColors = ['#7c5cfc', '#14b8a6', '#ff4d6d', '#f59e0b', '#38bdf8', '#22c55e'];
 
 function todayISO() {
