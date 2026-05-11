@@ -95,7 +95,10 @@ exports.register = async (req, res) => {
         });
     } catch (err) {
         console.error('Register error:', err);
-        res.status(400).json({ error: 'Registration failed. Please try again.' });
+        const message = process.env.NODE_ENV === 'production'
+            ? `Registration failed: ${err?.message || 'Please try again.'}`
+            : 'Registration failed. Please try again.';
+        res.status(400).json({ error: message });
     }
 };
 
