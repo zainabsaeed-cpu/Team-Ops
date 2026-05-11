@@ -1861,7 +1861,13 @@ function getCookieValue(name) {
 }
 
 function getCsrfToken() {
-  return getCookieValue('teamops_csrf');
+  return sessionStorage.getItem('teamops_csrf') || getCookieValue('teamops_csrf');
+}
+
+function setCsrfToken(token) {
+  if (!token) return;
+  sessionStorage.setItem('teamops_csrf', token);
+  document.cookie = `teamops_csrf=${token}; path=/; max-age=${7*24*60*60}`;
 }
 
 function compactStoredUser(user = {}) {
@@ -3618,9 +3624,7 @@ async function doLogin() {
       return;
     }
 
-    if (payload?.csrfToken) {
-      document.cookie = `teamops_csrf=${payload.csrfToken}; path=/; max-age=${7*24*60*60}`;
-    }
+    setCsrfToken(payload?.csrfToken);
 
     saveSession(payload);
     const signedIn = await bootstrapSession();
@@ -3686,9 +3690,7 @@ async function doSignup() {
       return;
     }
 
-    if (payload?.csrfToken) {
-      document.cookie = `teamops_csrf=${payload.csrfToken}; path=/; max-age=${7*24*60*60}`;
-    }
+    setCsrfToken(payload?.csrfToken);
 
     saveSession(payload);
     const signedIn = await bootstrapSession();
@@ -3725,9 +3727,7 @@ async function doVerify() {
       return;
     }
 
-    if (payload?.csrfToken) {
-      document.cookie = `teamops_csrf=${payload.csrfToken}; path=/; max-age=${7*24*60*60}`;
-    }
+    setCsrfToken(payload?.csrfToken);
 
     saveSession(payload);
     document.getElementById('verificationCode').value = '';
@@ -3831,9 +3831,7 @@ async function handleGoogleCredential(response) {
       return;
     }
 
-    if (payload?.csrfToken) {
-      document.cookie = `teamops_csrf=${payload.csrfToken}; path=/; max-age=${7*24*60*60}`;
-    }
+    setCsrfToken(payload?.csrfToken);
 
     saveSession(payload);
     await bootstrapSession();
