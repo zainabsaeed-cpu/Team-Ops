@@ -26,7 +26,7 @@ const sendVerificationOrHandleFailure = async (email, otp) => {
         if (!allowEmailFailure()) throw err;
 
         const payload = {
-            emailWarning: 'Verification email could not be sent. Use the Render logs for the code while email is being configured.',
+            emailWarning: 'Verification email could not be sent. Check your Resend API key or backend logs.',
         };
         if (exposeVerificationCodes()) {
             payload.verificationCode = otp;
@@ -71,37 +71,40 @@ exports.register = async (req, res) => {
             if (existing.verified) {
                 return res.status(400).json({ error: 'An account with this email already exists. Please log in.' });
             }
-            const user = await User.findByIdAndUpdate(
-                existing._id,
-                {
-                    name: trimmedName,
-                    passwordHash: hashed,
-                    authProvider: 'email',
-                    verified: true,
-                },
-                { new: true }
-            );
-
-            await VerificationToken.deleteMany({ userId: user._id });
-            return sendSession(res, user, 200, {
-                email: user.email,
-                requiresVerification: false,
-                message: 'Account created. You are signed in.'
+            // Existing unverified user — regenerate and resend verification code
+            const otp = String(Math.floor(100000 + Math.random() * 900000));
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+            await VerificationToken.deleteMany({ userId: existing._id });
+            await VerificationToken.create({ userId: existing._id, token: otp, expiresAt });
+            const emailPayload = await sendVerificationOrHandleFailure(normalizedEmail, otp);
+            return res.status(200).json({
+                email: normalizedEmail,
+                requiresVerification: true,
+                message: 'Check your email for the verification code.',
+                ...emailPayload,
             });
         }
 
+        // New user — create unverified and send verification email
         const user = await User.create({ 
             name: trimmedName, 
             email: normalizedEmail, 
             passwordHash: hashed,
             authProvider: 'email',
-            verified: true
+            verified: false
         });
 
-        return sendSession(res, user, 201, {
-            email: user.email,
-            requiresVerification: false,
-            message: 'Account created. You are signed in.'
+        // Generate and send verification token
+        const otp = String(Math.floor(100000 + Math.random() * 900000));
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        await VerificationToken.create({ userId: user._id, token: otp, expiresAt });
+        const emailPayload = await sendVerificationOrHandleFailure(normalizedEmail, otp);
+
+        return res.status(201).json({
+            email: normalizedEmail,
+            requiresVerification: true,
+            message: 'Account created. Check your email for the verification code.',
+            ...emailPayload,
         });
     } catch (err) {
         console.error('Register error:', err);

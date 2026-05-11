@@ -34,10 +34,14 @@ const isDevLocalOrigin = (origin) => (
 );
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || allowedCorsOrigins.includes(origin) || allowedCorsOrigins.includes('*') || isDevLocalOrigin(origin)) {
+    // Allow if no origin (server-to-server or same-site), or explicitly allowed,
+    // or running locally in dev. Also accept Vercel preview domains ("*.vercel.app").
+    const isVercelPreview = typeof origin === 'string' && origin.includes('.vercel.app');
+    if (!origin || allowedCorsOrigins.includes(origin) || allowedCorsOrigins.includes('*') || isDevLocalOrigin(origin) || isVercelPreview) {
       return callback(null, true);
     }
 
+    console.warn(`CORS blocked for origin ${origin}`);
     return callback(new Error(`CORS blocked for origin ${origin}`));
   },
   credentials: true,
