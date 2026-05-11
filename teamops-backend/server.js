@@ -3,7 +3,9 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const { connectDB, seedDatabase, mongoose, User } = require('./models');
+const csrfProtection = require('./middleware/csrf');
 
 const authRoutes = require('./routes/auth');
 const workspaceRoutes = require('./routes/workspaces');
@@ -16,6 +18,7 @@ const userPageRoutes = require('./routes/userPages');
 
 const app = express();
 const server = http.createServer(app);
+app.set('trust proxy', 1);
 const configuredCorsOrigins = (process.env.CORS_ORIGIN || '')
   .split(',')
   .map((origin) => origin.trim())
@@ -40,17 +43,16 @@ const corsOptions = {
   credentials: true,
 };
 const io = new Server(server, {
-  cors: {
-    origin: allowedCorsOrigins.includes('*') || process.env.NODE_ENV !== 'production' ? '*' : allowedCorsOrigins,
-    credentials: true,
-  },
+  cors: corsOptions,
 });
 
 // expose io to express app for controller access
 app.set('io', io);
 
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(cookieParser());
+app.use(express.json({ limit: '5mb' }));
+app.use(csrfProtection);
 
 // Routes
 app.use('/api/auth', authRoutes);

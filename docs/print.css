@@ -1,15 +1,17 @@
 @page {
   size: A4;
-  margin: 18mm 16mm 18mm 16mm;
+  margin: 16mm 15mm 17mm 15mm;
 }
 
 :root {
-  --ink: #162033;
-  --muted: #526173;
-  --line: #d9e2ec;
-  --soft: #f5f7fb;
-  --brand: #4f46e5;
+  --ink: #172033;
+  --muted: #5b677a;
+  --line: #d7dee9;
+  --soft: #f6f8fc;
+  --brand: #2563eb;
+  --brand-dark: #1e3a8a;
   --brand-2: #0f766e;
+  --accent: #e11d48;
   --warn: #b45309;
 }
 
@@ -18,11 +20,25 @@
 }
 
 body {
+  background:
+    linear-gradient(180deg, rgba(37, 99, 235, 0.06), transparent 150px),
+    #ffffff;
   color: var(--ink);
   font-family: Inter, "Segoe UI", Arial, sans-serif;
   font-size: 10.8pt;
   line-height: 1.48;
   margin: 0;
+}
+
+body::before {
+  background: linear-gradient(90deg, var(--brand), var(--brand-2), var(--accent));
+  content: "";
+  display: block;
+  height: 5px;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
 }
 
 h1, h2, h3, h4 {
@@ -48,7 +64,7 @@ h2 {
 }
 
 h3 {
-  color: var(--brand);
+  color: var(--brand-dark);
   font-size: 13.5pt;
   margin-top: 1.1rem;
   page-break-after: avoid;
@@ -76,20 +92,26 @@ li {
 table {
   border-collapse: collapse;
   font-size: 9.7pt;
-  margin: 0.8rem 0 1rem;
+  margin: 0.9rem 0 1.1rem;
+  overflow: hidden;
+  page-break-inside: avoid;
   width: 100%;
 }
 
 th {
-  background: #edf2ff;
+  background: #eaf1ff;
   color: #172554;
   font-weight: 700;
 }
 
 th, td {
   border: 1px solid var(--line);
-  padding: 6px 7px;
+  padding: 7px 8px;
   vertical-align: top;
+}
+
+tr:nth-child(even) td {
+  background: #fbfcff;
 }
 
 code {
@@ -130,10 +152,119 @@ blockquote {
   padding: 0.65rem 0.85rem;
 }
 
+figure {
+  break-inside: avoid;
+  margin: 0.9rem 0 1.2rem;
+}
+
+img {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: block;
+  max-height: 185mm;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+figcaption {
+  color: var(--muted);
+  font-size: 9.2pt;
+  font-weight: 700;
+  margin-top: 0.35rem;
+  text-align: center;
+}
+
 hr {
   border: 0;
   border-top: 1px solid var(--line);
   margin: 1rem 0;
+}
+
+#title-block-header {
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.96), rgba(15, 118, 110, 0.9)),
+    #1e3a8a;
+  border-radius: 0 0 18px 18px;
+  color: #ffffff;
+  margin: -16mm -15mm 1.2rem -15mm;
+  min-height: 250mm;
+  padding: 58mm 22mm 24mm;
+  page-break-after: always;
+  position: relative;
+  text-align: left;
+}
+
+#title-block-header::after {
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 18px;
+  content: "";
+  inset: 18mm 15mm;
+  position: absolute;
+}
+
+#title-block-header h1 {
+  border: 0;
+  color: #ffffff;
+  font-size: 38pt;
+  line-height: 1;
+  margin: 0 0 0.5rem;
+  max-width: 720px;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+}
+
+#title-block-header .subtitle {
+  color: rgba(255,255,255,0.88);
+  font-size: 17pt;
+  font-weight: 600;
+  margin: 0 0 36mm;
+  max-width: 620px;
+  position: relative;
+  z-index: 1;
+}
+
+#title-block-header .author,
+#title-block-header .date {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.24);
+  border-radius: 10px;
+  color: #ffffff;
+  display: inline-block;
+  font-size: 11.5pt;
+  font-weight: 700;
+  margin: 0.25rem 0.3rem 0.25rem 0;
+  padding: 0.55rem 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+
+#TOC {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.1rem;
+  page-break-after: always;
+}
+
+#TOC::before {
+  color: var(--brand-dark);
+  content: "Contents";
+  display: block;
+  font-size: 19pt;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+#TOC ul {
+  list-style: none;
+  margin-left: 0;
+}
+
+#TOC a {
+  color: var(--ink);
+  text-decoration: none;
 }
 
 .title-page {
@@ -192,11 +323,22 @@ hr {
   page-break-after: always;
 }
 
-.toc ul {
-  columns: 2;
-}
-
 .small {
   color: var(--muted);
   font-size: 9pt;
+}
+
+@media print {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  h2 {
+    break-after: avoid;
+  }
+
+  table, pre, blockquote {
+    break-inside: avoid;
+  }
 }

@@ -79,7 +79,7 @@ exports.getMyCards = async (req, res) => {
         }).lean();
         const columnById = new Map(columns.map((column) => [column._id.toString(), column]));
 
-        const cards = await Card.find({ assignee: req.userId, column: { $in: columns.map((column) => column._id) } })
+        const cards = await Card.find({ assignee: req.userId, column: { $in: columns.map((column) => column._id) }, archivedAt: null })
             .sort({ dueDate: 1, createdAt: 1 })
             .lean();
 
@@ -123,7 +123,7 @@ exports.getAnalytics = async (req, res) => {
             columns.filter((c) => /done/i.test(c.title)).map((c) => c._id.toString())
         );
 
-        const allCards = await Card.find({ column: { $in: columns.map((c) => c._id) } }).lean();
+        const allCards = await Card.find({ column: { $in: columns.map((c) => c._id) }, archivedAt: null }).lean();
         const completedTasks = allCards.filter((c) => doneColumnIds.has(c.column.toString())).length;
         const pendingTasks = allCards.length - completedTasks;
         const efficiency = allCards.length > 0 ? Math.round((completedTasks / allCards.length) * 100) : 0;

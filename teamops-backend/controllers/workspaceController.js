@@ -1,6 +1,8 @@
 const crypto = require('crypto');
-const { Workspace, WorkspaceInviteToken, Board, Column, Card, Activity, User, VerificationToken, formatWorkspace, formatUser } = require('../models');
+const { Workspace, WorkspaceInviteToken, Board, Column, Card, Comment, Activity, Notification, User, VerificationToken, formatWorkspace, formatUser } = require('../models');
 const { sendVerificationEmail, sendInvitationEmail, sendWorkspaceInviteEmail } = require('../utils/mailer');
+const { normalizeAutomationSettings, formatAutomationSettings } = require('../utils/automationSettings');
+const { runWorkspaceAutomations } = require('../utils/automationRunner');
 
 const workspaceRoleHierarchy = { owner: 3, admin: 2, member: 1, viewer: 0 };
 const assignableRoles = ['admin', 'member', 'viewer'];
@@ -70,30 +72,13 @@ const canAssignMemberRole = (requesterRole, role) => {
     return false;
 };
 
-const ensureWorkspaceBoard = async (workspace) => {
+const getWorkspaceBoard = async (workspace) => {
     const existing = await Board.findOne({ workspaceId: workspace._id }).sort({ createdAt: 1 });
     if (existing) {
         await Column.updateMany({ workspace: workspace._id, board: { $in: [null, undefined] } }, { board: existing._id });
         return existing;
     }
-
-    const board = await Board.create({
-        workspaceId: workspace._id,
-        name: 'Sprint 4',
-        color: '#7c5cfc',
-    });
-
-    const legacyColumns = await Column.find({ workspace: workspace._id, board: { $in: [null, undefined] } }).lean();
-    if (legacyColumns.length > 0) {
-        await Column.updateMany({ workspace: workspace._id, board: { $in: [null, undefined] } }, { board: board._id });
-    } else {
-        const defaultColumns = ['To Do', 'In Progress', 'In Review', 'Done'];
-        for (let i = 0; i < defaultColumns.length; i++) {
-            await Column.create({ workspace: workspace._id, board: board._id, title: defaultColumns[i], position: i });
-        }
-    }
-
-    return board;
+    return null;
 };
 
 exports.createWorkspace = async (req, res) => {
@@ -118,20 +103,9 @@ exports.createWorkspace = async (req, res) => {
             members: [{ user: ownerId, role: 'owner' }],
         });
 
-        const board = await Board.create({
-            workspaceId: workspace._id,
-            name: 'Sprint 4',
-            color: '#7c5cfc',
-        });
-
-        const defaultColumns = ['To Do', 'In Progress', 'In Review', 'Done'];
-        for (let i = 0; i < defaultColumns.length; i++) {
-            await Column.create({ workspace: workspace._id, board: board._id, title: defaultColumns[i], position: i });
-        }
-
         res.status(201).json({
             ...formatWorkspace(workspace, 'owner', 1),
-            boardId: board._id.toString(),
+            boardId: null,
             inviteCode: workspace.inviteCode,
         });
     } catch (err) {
@@ -143,10 +117,10 @@ exports.getUserWorkspaces = async (req, res) => {
     const workspaces = await Workspace.find({ 'members.user': req.userId }).lean();
     const payload = await Promise.all(workspaces.map(async (workspace) => {
         const member = workspace.members.find((item) => item.user.toString() === req.userId.toString());
-        const board = await ensureWorkspaceBoard(workspace);
+        const board = await getWorkspaceBoard(workspace);
         return {
             ...formatWorkspace(workspace, member?.role || 'member', workspace.members.length),
-            boardId: board?._id?.toString() || workspace._id.toString(),
+            boardId: board?._id?.toString() || null,
         };
     }));
 
@@ -170,7 +144,7 @@ exports.getWorkspaceById = async (req, res) => {
         inviteCode: workspace.inviteCode,
         inviteLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/join?code=${encodeURIComponent(workspace.inviteCode || '')}`,
         currentUserRole: member.role,
-        boardId: (await ensureWorkspaceBoard(workspace))?._id?.toString() || workspace._id.toString(),
+        boardId: (await getWorkspaceBoard(workspace))?._id?.toString() || null,
     });
 };
 
@@ -381,14 +355,14 @@ exports.joinByInviteToken = async (req, res) => {
         await invite.save();
 
         const updatedWorkspace = await Workspace.findById(workspace._id).lean();
-        const joinedBoard = await ensureWorkspaceBoard(updatedWorkspace);
+        const joinedBoard = await getWorkspaceBoard(updatedWorkspace);
         await Activity.create({
             workspace: workspace._id,
-            board: joinedBoard._id,
+            board: joinedBoard?._id || workspace._id,
             user: req.userId,
             userId: req.userId,
             workspaceId: workspace._id,
-            boardId: joinedBoard._id,
+            boardId: joinedBoard?._id || workspace._id,
             action: 'Joined workspace via email invite',
         });
 
@@ -396,7 +370,7 @@ exports.joinByInviteToken = async (req, res) => {
             message: 'Joined workspace',
             workspace: {
                 ...workspacePayloadForUser(updatedWorkspace, req.userId),
-                boardId: joinedBoard?._id?.toString() || updatedWorkspace._id.toString(),
+                boardId: joinedBoard?._id?.toString() || null,
             },
         });
     } catch (err) {
@@ -520,15 +494,15 @@ exports.joinByCode = async (req, res) => {
         const updatedWorkspace = await Workspace.findById(workspace._id).lean();
         const member = updatedWorkspace.members.find((item) => item.user.toString() === req.userId.toString());
 
-        const board = await ensureWorkspaceBoard(updatedWorkspace);
+        const board = await getWorkspaceBoard(updatedWorkspace);
 
-        await Activity.create({ workspace: workspace._id, board: board._id, user: req.userId, userId: req.userId, workspaceId: workspace._id, boardId: board._id, action: 'Joined workspace via invite code' });
+        await Activity.create({ workspace: workspace._id, board: board?._id || workspace._id, user: req.userId, userId: req.userId, workspaceId: workspace._id, boardId: board?._id || workspace._id, action: 'Joined workspace via invite code' });
 
         res.json({
             message: 'Joined workspace',
             workspace: {
                 ...formatWorkspace(updatedWorkspace, member?.role || 'member', updatedWorkspace.members.length),
-                boardId: board?._id?.toString() || updatedWorkspace._id.toString(),
+                boardId: board?._id?.toString() || null,
             },
         });
     } catch (err) {
@@ -575,8 +549,66 @@ exports.updateWorkspace = async (req, res) => {
     }
 };
 
+exports.getAutomationSettings = async (req, res) => {
+    const { workspaceId } = req.params;
+
+    try {
+        const access = await checkWorkspaceAccess(req.userId, workspaceId, 'viewer');
+        if (!access.allowed) return res.status(403).json({ error: access.error });
+
+        const workspace = await Workspace.findById(workspaceId).select('automationSettings').lean();
+        if (!workspace) return res.status(404).json({ error: 'Workspace not found' });
+
+        res.json({ settings: formatAutomationSettings(workspace) });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to load automation settings' });
+    }
+};
+
+exports.updateAutomationSettings = async (req, res) => {
+    const { workspaceId } = req.params;
+
+    try {
+        const access = await checkWorkspaceAccess(req.userId, workspaceId, 'admin');
+        if (!access.allowed) return res.status(403).json({ error: access.error });
+
+        const current = await Workspace.findById(workspaceId).select('automationSettings').lean();
+        if (!current) return res.status(404).json({ error: 'Workspace not found' });
+
+        const settings = normalizeAutomationSettings({
+            ...formatAutomationSettings(current),
+            ...(req.body?.settings || req.body || {}),
+        });
+
+        const workspace = await Workspace.findByIdAndUpdate(
+            workspaceId,
+            { $set: { automationSettings: settings } },
+            { new: true },
+        ).lean();
+
+        const formattedSettings = formatAutomationSettings(workspace);
+        const archived = await runWorkspaceAutomations({
+            io: req.app.get('io'),
+            workspaceId,
+            actorId: req.userId,
+        });
+
+        req.app.get('io')?.to(`workspace:${workspaceId}`).emit('workspace:settings', {
+            workspaceId,
+            settings: formattedSettings,
+            archivedCount: archived.archived,
+        });
+
+        res.json({ settings: formattedSettings, archivedCount: archived.archived });
+    } catch (err) {
+        console.error('Update automation settings error:', err);
+        res.status(500).json({ error: 'Failed to save automation settings' });
+    }
+};
+
 exports.deleteWorkspace = async (req, res) => {
     const { workspaceId } = req.params;
+    const { confirmName } = req.body || {};
 
     try {
         if (!workspaceId) {
@@ -586,12 +618,28 @@ exports.deleteWorkspace = async (req, res) => {
         const access = await checkWorkspaceAccess(req.userId, workspaceId, 'owner');
         if (!access.allowed) return res.status(403).json({ error: access.error });
 
+        const workspace = await Workspace.findById(workspaceId).lean();
+        if (!workspace) {
+            return res.status(404).json({ error: 'Workspace not found' });
+        }
+
+        if (String(confirmName || '') !== String(workspace.name || '')) {
+            return res.status(400).json({ error: 'Workspace name confirmation is required' });
+        }
+
+        const boards = await Board.find({ workspaceId }).select('_id').lean();
+        const boardIds = boards.map((board) => board._id);
         const columns = await Column.find({ workspace: workspaceId }).lean();
         const columnIds = columns.map((column) => column._id);
+        const cards = await Card.find({ column: { $in: columnIds } }).select('_id').lean();
+        const cardIds = cards.map((card) => card._id);
 
         await Promise.all([
             Card.deleteMany({ column: { $in: columnIds } }),
-            Activity.deleteMany({ workspace: workspaceId }),
+            Comment.deleteMany({ $or: [{ board: { $in: boardIds } }, { card: { $in: cardIds } }] }),
+            Activity.deleteMany({ $or: [{ workspace: workspaceId }, { workspaceId }] }),
+            Notification.deleteMany({ workspace: workspaceId }),
+            WorkspaceInviteToken.deleteMany({ workspaceId }),
             Column.deleteMany({ workspace: workspaceId }),
             Board.deleteMany({ workspaceId }),
             Workspace.deleteOne({ _id: workspaceId }),

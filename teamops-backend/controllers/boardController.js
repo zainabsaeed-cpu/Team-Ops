@@ -1,6 +1,8 @@
 const { Workspace, Board, Column, Card, Comment, Activity, User, formatBoard, formatColumn, formatCard, formatComment, formatActivityLog } = require('../models');
 const { createActivity, createNotification, emitBoardEvent } = require('../utils/realtime');
 const { filterActivitiesForRole } = require('../utils/activityVisibility');
+const { formatAutomationSettings } = require('../utils/automationSettings');
+const { runWorkspaceAutomations, isDoneColumnTitle } = require('../utils/automationRunner');
 
 const startOfToday = () => {
     const now = new Date();
@@ -14,7 +16,9 @@ const parseDateOnly = (input) => {
     return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
 };
 
-const isDoneColumn = (title) => /done/i.test(title || '');
+const isDoneColumn = (title) => isDoneColumnTitle(title);
+const isReviewColumn = (title) => /review/i.test(title || '');
+const activeCardQuery = (query = {}) => ({ ...query, archivedAt: null });
 const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const defaultBoardColors = ['#7c5cfc', '#14b8a6', '#ff4d6d', '#f59e0b', '#38bdf8', '#22c55e'];
 const defaultColumns = ['To Do', 'In Progress', 'In Review', 'Done'];
@@ -66,30 +70,11 @@ const createDefaultColumns = async (workspaceId, boardId) => {
     return Column.insertMany(docs);
 };
 
-const ensureWorkspaceBoard = async (workspaceId) => {
+const attachLegacyColumnsToExistingBoard = async (workspaceId) => {
     const existing = await Board.findOne({ workspaceId }).sort({ createdAt: 1 });
     if (existing) {
         await Column.updateMany({ workspace: workspaceId, board: { $in: [null, undefined] } }, { board: existing._id });
-        return existing;
     }
-
-    const workspace = await Workspace.findById(workspaceId).lean();
-    if (!workspace) return null;
-
-    const board = await Board.create({
-        workspaceId,
-        name: `${workspace.name} Board`,
-        color: defaultBoardColors[0],
-    });
-
-    const legacyColumns = await Column.find({ workspace: workspaceId, board: { $in: [null, undefined] } }).lean();
-    if (legacyColumns.length > 0) {
-        await Column.updateMany({ workspace: workspaceId, board: { $in: [null, undefined] } }, { board: board._id });
-    } else {
-        await createDefaultColumns(workspaceId, board._id);
-    }
-
-    return board;
 };
 
 exports.getWorkspaceBoards = async (req, res) => {
@@ -99,7 +84,7 @@ exports.getWorkspaceBoards = async (req, res) => {
         const access = await checkWorkspaceAccess(req.userId, workspaceId, 'viewer');
         if (!access.allowed) return res.status(403).json({ error: access.error });
 
-        await ensureWorkspaceBoard(workspaceId);
+        await attachLegacyColumnsToExistingBoard(workspaceId);
         const boards = await Board.find({ workspaceId }).sort({ createdAt: 1 }).lean();
         res.json({ boards: boards.map(formatBoard) });
     } catch (err) {
@@ -207,11 +192,12 @@ exports.getBoardData = async (req, res) => {
         if (!workspace) {
             return res.status(404).json({ error: 'Board not found' });
         }
+        await runWorkspaceAutomations({ io: req.app.get('io'), workspaceId: access.workspaceId });
 
         const columnsResult = await Column.find({ board: boardId }).sort({ position: 1 }).lean();
 
         const columns = await Promise.all(columnsResult.map(async (col) => {
-            const cardsResult = await Card.find({ column: col._id }).sort({ position: 1 }).populate('assignee', 'name email avatarUrl').lean();
+            const cardsResult = await Card.find(activeCardQuery({ column: col._id })).sort({ position: 1 }).populate('assignee', 'name email avatarUrl').lean();
             
             // Get comment counts for all cards in this column
             const cardsWithComments = await Promise.all(
@@ -413,7 +399,7 @@ exports.deleteColumn = async (req, res) => {
 
 exports.createCard = async (req, res) => {
     const { boardId } = req.params;
-    const { columnId, title, description, priority, assigneeId, dueDate } = req.body;
+    const { columnId, title, description, priority, assigneeId, dueDate, sprint, milestone } = req.body;
 
     try {
         if (!boardId) {
@@ -421,8 +407,8 @@ exports.createCard = async (req, res) => {
         }
 
         // Validate required fields
-        if (!title || !columnId) {
-            return res.status(400).json({ error: 'Title and columnId are required' });
+        if (!title || !columnId || !dueDate) {
+            return res.status(400).json({ error: 'Title, columnId, and dueDate are required' });
         }
 
         // Check access (members can create cards)
@@ -441,8 +427,8 @@ exports.createCard = async (req, res) => {
             if (!assignee) return res.status(400).json({ error: 'Invalid assignee' });
         }
 
-        const dueDateOnly = dueDate ? parseDateOnly(dueDate) : null;
-        if (dueDate && !dueDateOnly) {
+        const dueDateOnly = parseDateOnly(dueDate);
+        if (!dueDateOnly) {
             return res.status(400).json({ error: 'Invalid due date format' });
         }
 
@@ -452,17 +438,21 @@ exports.createCard = async (req, res) => {
         }
 
         // Get max position in column
-        const maxCard = await Card.findOne({ column: columnId }).sort({ position: -1 }).lean();
+        const maxCard = await Card.findOne(activeCardQuery({ column: columnId })).sort({ position: -1 }).lean();
         const position = (maxCard?.position || 0) + 1;
 
         // Create card
+        const milestoneLabel = String(milestone || sprint || '').trim().slice(0, 60);
+
         const card = await Card.create({
             column: columnId,
             title: title.trim(),
             description: description?.trim() || '',
             priority: priority || 'medium',
             assignee: assigneeId || null,
-            dueDate: dueDate ? new Date(dueDate) : null,
+            dueDate: new Date(dueDate),
+            sprint: milestoneLabel,
+            milestone: milestoneLabel,
             position,
         });
 
@@ -481,6 +471,7 @@ exports.createCard = async (req, res) => {
             await createNotification({
                 io: req.app.get('io'),
                 userId: assigneeId,
+                workspaceId: access.workspaceId,
                 message: `You were assigned to "${title}" by ${user?.name || 'Someone'}`,
                 isImportant: isImportantPriority(priority),
             });
@@ -504,7 +495,7 @@ exports.createCard = async (req, res) => {
 
 exports.updateCard = async (req, res) => {
     const { boardId, cardId } = req.params;
-    const { title, description, priority, assigneeId, dueDate, status } = req.body;
+    const { title, description, priority, assigneeId, dueDate, sprint, milestone, status, columnId } = req.body;
 
     try {
         if (!boardId) {
@@ -515,7 +506,7 @@ exports.updateCard = async (req, res) => {
         const access = await resolveBoardAccess(req.userId, boardId, 'member');
         if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
 
-        const card = await Card.findById(cardId);
+        const card = await Card.findOne(activeCardQuery({ _id: cardId }));
         if (!card) return res.status(404).json({ error: 'Card not found' });
 
         // Verify column belongs to this board
@@ -523,21 +514,46 @@ exports.updateCard = async (req, res) => {
         if (!column || column.board?.toString() !== boardId) {
             return res.status(403).json({ error: 'Unauthorized' });
         }
+        const originalColumnId = card.column.toString();
+        let effectiveColumn = column;
+
+        if (columnId !== undefined) {
+            if (!columnId) return res.status(400).json({ error: 'Column is required' });
+            const targetColumn = await Column.findById(columnId).lean();
+            if (!targetColumn || targetColumn.board?.toString() !== boardId) {
+                return res.status(400).json({ error: 'Invalid destination column' });
+            }
+            effectiveColumn = targetColumn;
+
+            if (String(columnId) !== originalColumnId) {
+                const maxCard = await Card.findOne(activeCardQuery({
+                    column: columnId,
+                    _id: { $ne: card._id },
+                })).sort({ position: -1 }).lean();
+                card.column = columnId;
+                card.position = Number.isFinite(maxCard?.position) ? maxCard.position + 1 : 0;
+            }
+        }
 
         // Update fields
         if (title !== undefined) card.title = title.trim();
         if (description !== undefined) card.description = description.trim();
         if (priority !== undefined) card.priority = priority;
+        if (milestone !== undefined || sprint !== undefined) {
+            const milestoneLabel = String(milestone !== undefined ? milestone : sprint || '').trim().slice(0, 60);
+            card.milestone = milestoneLabel;
+            card.sprint = milestoneLabel;
+        }
         if (dueDate !== undefined) {
             if (!dueDate) {
-                card.dueDate = null;
+                return res.status(400).json({ error: 'Due date is required' });
             } else {
                 const dueDateOnly = parseDateOnly(dueDate);
                 if (!dueDateOnly) {
                     return res.status(400).json({ error: 'Invalid due date format' });
                 }
 
-                const allowPastDate = isDoneColumn(column.title);
+                const allowPastDate = isDoneColumn(effectiveColumn.title);
                 const currentDueDateOnly = parseDateOnly(card.dueDate);
                 const isSameHistoricalDate = currentDueDateOnly && currentDueDateOnly.getTime() === dueDateOnly.getTime();
 
@@ -553,6 +569,14 @@ exports.updateCard = async (req, res) => {
         if (assigneeId !== undefined) card.assignee = assigneeId || null;
 
         await card.save();
+
+        if (originalColumnId !== card.column.toString()) {
+            const sourceCards = await Card.find(activeCardQuery({ column: originalColumnId })).sort({ position: 1, createdAt: 1 });
+            await Promise.all(sourceCards.map((item, index) => {
+                item.position = index;
+                return item.save();
+            }));
+        }
 
         // Log activity
         const user = await User.findById(req.userId).lean();
@@ -570,6 +594,7 @@ exports.updateCard = async (req, res) => {
             await createNotification({
                 io: req.app.get('io'),
                 userId: newAssignee,
+                workspaceId: access.workspaceId,
                 message: `You were assigned to "${card.title}" by ${user?.name || 'Someone'}`,
                 isImportant: isImportantPriority(card.priority),
             });
@@ -600,7 +625,7 @@ exports.deleteCard = async (req, res) => {
         const access = await resolveBoardAccess(req.userId, boardId, 'member');
         if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
 
-        const card = await Card.findById(cardId);
+        const card = await Card.findOne(activeCardQuery({ _id: cardId }));
         if (!card) return res.status(404).json({ error: 'Card not found' });
 
         // Verify column belongs to this board
@@ -647,7 +672,7 @@ exports.deleteCard = async (req, res) => {
 const getBoardCardIds = async (boardId) => {
     const columns = await Column.find({ board: boardId }).select('_id').lean();
     const columnIds = columns.map((column) => column._id);
-    return Card.find({ column: { $in: columnIds } }).select('_id').lean();
+    return Card.find(activeCardQuery({ column: { $in: columnIds } })).select('_id').lean();
 };
 
 const normalizeTaggedCardIds = async (boardId, taggedCards = []) => {
@@ -738,6 +763,7 @@ exports.addBoardComment = async (req, res) => {
             .map((memberId) => createNotification({
                 io: req.app.get('io'),
                 userId: memberId,
+                workspaceId: access.workspaceId,
                 message: `${user?.name || 'Someone'} mentioned you on board "${access.board.name}"`,
                 isImportant: true,
             })));
@@ -793,7 +819,7 @@ exports.getCardComments = async (req, res) => {
         const access = await resolveBoardAccess(req.userId, boardId, 'viewer');
         if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
 
-        const card = await Card.findById(cardId).lean();
+        const card = await Card.findOne(activeCardQuery({ _id: cardId })).lean();
         if (!card) return res.status(404).json({ error: 'Card not found' });
 
         const column = await Column.findById(card.column).lean();
@@ -830,7 +856,7 @@ exports.addCardComment = async (req, res) => {
         const access = await resolveBoardAccess(req.userId, boardId, 'viewer');
         if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
 
-        const card = await Card.findById(cardId).lean();
+        const card = await Card.findOne(activeCardQuery({ _id: cardId })).lean();
         if (!card) return res.status(404).json({ error: 'Card not found' });
 
         const column = await Column.findById(card.column).lean();
@@ -883,7 +909,7 @@ exports.moveCard = async (req, res) => {
         const access = await resolveBoardAccess(req.userId, boardId, 'member');
         if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
 
-        const card = await Card.findById(cardId);
+        const card = await Card.findOne(activeCardQuery({ _id: cardId }));
         if (!card) return res.status(404).json({ error: 'Card not found' });
 
         // Verify both columns belong to this board
@@ -899,10 +925,10 @@ exports.moveCard = async (req, res) => {
 
         const fromColumnId = card.column.toString();
         const targetIndex = Math.max(0, Number.isInteger(newIndex) ? newIndex : 0);
-        const destinationCards = await Card.find({
+        const destinationCards = await Card.find(activeCardQuery({
             column: toColumnId,
             _id: { $ne: card._id },
-        }).sort({ position: 1, createdAt: 1 });
+        })).sort({ position: 1, createdAt: 1 });
 
         destinationCards.splice(targetIndex, 0, card);
         await Promise.all(destinationCards.map((item, index) => {
@@ -912,7 +938,7 @@ exports.moveCard = async (req, res) => {
         }));
 
         if (fromColumnId !== String(toColumnId)) {
-            const sourceCards = await Card.find({ column: fromColumnId }).sort({ position: 1, createdAt: 1 });
+            const sourceCards = await Card.find(activeCardQuery({ column: fromColumnId })).sort({ position: 1, createdAt: 1 });
             await Promise.all(sourceCards.map((item, index) => {
                 item.position = index;
                 return item.save();
@@ -937,11 +963,18 @@ exports.moveCard = async (req, res) => {
         // Notify previous assignee if different from actor
         try {
             if (card.assignee && card.assignee.toString() !== req.userId.toString()) {
+                const workspace = await Workspace.findById(access.workspaceId).select('automationSettings').lean();
+                const settings = formatAutomationSettings(workspace || {});
+                const movedIntoReview = fromColumnId !== String(toColumnId) && isReviewColumn(toColumn.title);
+                const message = movedIntoReview && settings.reviewNudges
+                    ? `${user?.name || 'Someone'} moved "${card.title}" into review. Please check the handoff.`
+                    : `${user?.name || 'Someone'} moved your card "${card.title}"`;
                 await createNotification({
                     io: req.app.get('io'),
                     userId: card.assignee,
-                    message: `${user?.name || 'Someone'} moved your card "${card.title}"`,
-                    isImportant: isImportantPriority(card.priority),
+                    workspaceId: access.workspaceId,
+                    message,
+                    isImportant: movedIntoReview && settings.reviewNudges ? true : isImportantPriority(card.priority),
                 });
             }
         } catch (e) {
@@ -975,9 +1008,10 @@ exports.getBoardAnalytics = async (req, res) => {
         const access = await resolveBoardAccess(req.userId, boardId, 'viewer');
         if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
 
+        await runWorkspaceAutomations({ io: req.app.get('io'), workspaceId: access.workspaceId });
         const columns = await Column.find({ board: boardId }).sort({ position: 1 }).lean();
         const columnIds = columns.map((column) => column._id);
-        const cards = await Card.find({ column: { $in: columnIds } }).populate('assignee', 'name email avatarUrl').lean();
+        const cards = await Card.find(activeCardQuery({ column: { $in: columnIds } })).populate('assignee', 'name email avatarUrl').lean();
         const doneColumnIds = new Set(columns.filter((column) => isDoneColumn(column.title)).map((column) => column._id.toString()));
 
         const now = new Date();
@@ -1010,11 +1044,54 @@ exports.getBoardAnalytics = async (req, res) => {
             return parseDateOnly(card.dueDate) < startOfToday();
         }).length;
 
+        const milestoneCounts = new Map();
+        cards.forEach((card) => {
+            const milestoneName = String(card.milestone || card.sprint || '').trim() || 'Backlog';
+            const current = milestoneCounts.get(milestoneName) || {
+                milestone: milestoneName,
+                sprint: milestoneName,
+                total: 0,
+                done: 0,
+                open: 0,
+                overdue: 0,
+                highPriority: 0,
+                assignees: new Set(),
+            };
+            const done = doneColumnIds.has(card.column.toString());
+            current.total += 1;
+            current.done += done ? 1 : 0;
+            current.open += done ? 0 : 1;
+            current.overdue += (!done && card.dueDate && parseDateOnly(card.dueDate) < startOfToday()) ? 1 : 0;
+            current.highPriority += String(card.priority || '').toLowerCase() === 'high' ? 1 : 0;
+            if (card.assignee?._id) current.assignees.add(card.assignee._id.toString());
+            milestoneCounts.set(milestoneName, current);
+        });
+
+        const milestoneBreakdown = Array.from(milestoneCounts.values())
+            .map((milestone) => ({
+                milestone: milestone.milestone,
+                sprint: milestone.milestone,
+                total: milestone.total,
+                done: milestone.done,
+                open: milestone.open,
+                overdue: milestone.overdue,
+                highPriority: milestone.highPriority,
+                assigneeCount: milestone.assignees.size,
+                completion: milestone.total ? Math.round((milestone.done / milestone.total) * 100) : 0,
+            }))
+            .sort((a, b) => {
+                if (a.milestone === 'Backlog') return 1;
+                if (b.milestone === 'Backlog') return -1;
+                return a.milestone.localeCompare(b.milestone, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
         res.json({
             cardsPerColumn,
             completedThisWeek,
             cardsPerAssignee: Array.from(assigneeCounts.values()),
             overdueCardsCount,
+            milestoneBreakdown,
+            sprintBreakdown: milestoneBreakdown,
         });
     } catch (err) {
         console.error('Board analytics error:', err);
@@ -1030,7 +1107,7 @@ exports.getCardComments = async (req, res) => {
         const access = await resolveBoardAccess(req.userId, boardId, 'viewer');
         if (!access.allowed) return res.status(access.status || 403).json({ error: access.error });
 
-        const card = await Card.findById(cardId).lean();
+        const card = await Card.findOne(activeCardQuery({ _id: cardId })).lean();
         if (!card) return res.status(404).json({ error: 'Card not found' });
 
         const comments = await Comment.find({ card: cardId })
@@ -1059,7 +1136,7 @@ exports.addCardComment = async (req, res) => {
             return res.status(400).json({ error: 'Comment cannot be empty' });
         }
 
-        const card = await Card.findById(cardId);
+        const card = await Card.findOne(activeCardQuery({ _id: cardId }));
         if (!card) return res.status(404).json({ error: 'Card not found' });
 
         const comment = new Comment({

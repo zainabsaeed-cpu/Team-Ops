@@ -12,6 +12,8 @@ router.get('/join/:code', auth, workspaceController.joinByCode);
 router.get('/:workspaceId/boards', auth, requireRole('owner', 'admin', 'member', 'viewer'), boardController.getWorkspaceBoards);
 router.post('/:workspaceId/boards', auth, requireRole('owner', 'admin'), boardController.createBoard);
 router.get('/:workspaceId/members', auth, requireRole('owner', 'admin', 'member', 'viewer'), workspaceController.getWorkspaceMembers);
+router.get('/:workspaceId/automation-settings', auth, requireRole('owner', 'admin', 'member', 'viewer'), workspaceController.getAutomationSettings);
+router.patch('/:workspaceId/automation-settings', auth, requireRole('owner', 'admin'), workspaceController.updateAutomationSettings);
 router.post('/:workspaceId/members', auth, requireRole('owner', 'admin'), workspaceController.addMember);
 router.post('/:workspaceId/invite-email', auth, requireRole('owner', 'admin'), workspaceController.inviteByEmail);
 router.patch('/:workspaceId/members/:userId/role', auth, requireRole('owner', 'admin'), workspaceController.updateMemberRole);

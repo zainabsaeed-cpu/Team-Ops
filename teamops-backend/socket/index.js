@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const cookie = require('cookie');
+const { SESSION_COOKIE_NAME } = require('../utils/authCookies');
 const jwtSecret = process.env.JWT_SECRET || 'teamops-dev-secret';
 
 module.exports = (io) => {
@@ -69,7 +71,8 @@ module.exports = (io) => {
 
         // try to extract userId from token provided by client
         try {
-            const token = socket.handshake.auth && socket.handshake.auth.token;
+            const cookies = cookie.parse(socket.handshake.headers.cookie || '');
+            const token = cookies[SESSION_COOKIE_NAME];
             if (token) {
                 const decoded = jwt.verify(token, jwtSecret);
                 socket.userId = decoded.userId;

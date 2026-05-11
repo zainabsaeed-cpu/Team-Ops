@@ -1,42 +1,27 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
-const { User, VerificationToken, Workspace, Board, Column, formatUser } = require('../models');
+const { User, VerificationToken, formatUser } = require('../models');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/mailer');
 const { logAccountActivity } = require('../utils/auditLogger');
+const { setAuthCookies, clearAuthCookies } = require('../utils/authCookies');
 const jwtSecret = process.env.JWT_SECRET || 'teamops-dev-secret';
 const googleClientId = process.env.GOOGLE_CLIENT_ID || '175739577750-6pglkgnai3nha232d8js957jl529ep5i.apps.googleusercontent.com';
 const googleClient = new OAuth2Client(googleClientId);
-
-const createStarterWorkspace = async (userId) => {
-    const workspace = await Workspace.create({
-        name: 'My Workspace',
-        owner: userId,
-        inviteCode: `TEAM-${crypto.randomBytes(2).toString('hex').toUpperCase()}`,
-        members: [{ user: userId, role: 'owner' }],
-    });
-
-    const board = await Board.create({
-        workspaceId: workspace._id,
-        name: 'Sprint 4',
-        color: '#7c5cfc',
-    });
-
-    await Column.insertMany([
-        { workspace: workspace._id, board: board._id, title: 'To Do', position: 0 },
-        { workspace: workspace._id, board: board._id, title: 'In Progress', position: 1 },
-        { workspace: workspace._id, board: board._id, title: 'In Review', position: 2 },
-        { workspace: workspace._id, board: board._id, title: 'Done', position: 3 },
-    ]);
-
-    return workspace;
-};
 
 const issueSession = (user) => ({
     user: formatUser(user),
     token: jwt.sign({ userId: user._id.toString() }, jwtSecret, { expiresIn: '7d' }),
 });
+
+const sendSession = (res, user, status = 200, extraPayload = {}) => {
+    const session = issueSession(user);
+    setAuthCookies(res, session.token);
+    return res.status(status).json({
+        ...extraPayload,
+        user: session.user,
+    });
+};
 
 
 exports.register = async (req, res) => {
@@ -146,11 +131,7 @@ exports.verify = async (req, res) => {
         // Delete used token
         await VerificationToken.deleteOne({ _id: verificationToken._id });
 
-        const jwtToken = jwt.sign({ userId: user._id.toString() }, jwtSecret, { expiresIn: '7d' });
-        
-        res.json({ 
-            user: formatUser(user), 
-            token: jwtToken,
+        sendSession(res, user, 200, {
             message: 'Email verified! Your account is ready.'
         });
     } catch (err) {
@@ -257,7 +238,7 @@ exports.login = async (req, res) => {
         if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
 
         await logAccountActivity(user._id, 'Logged in with email');
-        res.json(issueSession(user));
+        sendSession(res, user);
     } catch (err) {
         res.status(500).json({ error: 'Server error' });
     }
@@ -286,8 +267,6 @@ exports.googleLogin = async (req, res) => {
         }
 
         let user = await User.findOne({ $or: [{ googleId }, { email }] });
-        let createdWorkspace = false;
-
         if (!user) {
             user = await User.create({
                 name,
@@ -298,7 +277,6 @@ exports.googleLogin = async (req, res) => {
                 verified: true,
                 avatarUrl: payload?.picture || null,
             });
-            createdWorkspace = true;
         } else {
             const updates = {
                 verified: true,
@@ -316,12 +294,8 @@ exports.googleLogin = async (req, res) => {
             user = await User.findByIdAndUpdate(user._id, updates, { new: true });
         }
 
-        if (createdWorkspace) {
-            await createStarterWorkspace(user._id);
-        }
-
         await logAccountActivity(user._id, 'Logged in with Google');
-        res.json(issueSession(user));
+        sendSession(res, user);
     } catch (err) {
         console.error('Google login error:', err);
         res.status(401).json({ error: 'Google sign-in failed' });
@@ -337,4 +311,9 @@ exports.me = async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: 'Server error' });
     }
+};
+
+exports.logout = async (req, res) => {
+    clearAuthCookies(res);
+    res.json({ message: 'Logged out' });
 };

@@ -62,6 +62,16 @@ const workspaceSchema = new Schema(
     name: { type: String, required: true },
     description: { type: String, default: '' },
     techStack: { type: [String], default: [] },
+    automationSettings: {
+      desktopNotifications: { type: Boolean, default: true },
+      autoArchive: { type: Boolean, default: false },
+      weeklyDigest: { type: Boolean, default: true },
+      mentionOnlyAfterHours: { type: Boolean, default: true },
+      reviewNudges: { type: Boolean, default: true },
+      quietStart: { type: String, default: '18:00' },
+      quietEnd: { type: String, default: '09:00' },
+      escalationDays: { type: String, default: '3' },
+    },
     owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     inviteCode: { type: String, required: true, unique: true },
     members: [
@@ -101,6 +111,9 @@ const cardSchema = new Schema(
     priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
     assignee: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     dueDate: { type: Date, default: null },
+    archivedAt: { type: Date, default: null, index: true },
+    sprint: { type: String, trim: true, maxlength: 60, default: '' },
+    milestone: { type: String, trim: true, maxlength: 60, default: '' },
     position: { type: Number, required: true },
   },
   { timestamps: true },
@@ -134,9 +147,13 @@ const activitySchema = new Schema(
 const notificationSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    workspace: { type: Schema.Types.ObjectId, ref: 'Workspace', default: null, index: true },
     message: { type: String, required: true },
     is_read: { type: Boolean, default: false },
     is_important: { type: Boolean, default: false, index: true },
+    delivery_mode: { type: String, enum: ['instant', 'digest'], default: 'instant', index: true },
+    digest_date: { type: String, default: '', index: true },
+    digest_count: { type: Number, default: 0 },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 )
@@ -229,6 +246,9 @@ const formatCard = (card) => ({
   assignee_avatar_url: card.assignee?.avatarUrl || null,
   assigneeAvatarUrl: card.assignee?.avatarUrl || null,
   due_date: formatDate(card.dueDate),
+  archived_at: card.archivedAt || null,
+  milestone: card.milestone || card.sprint || '',
+  sprint: card.milestone || card.sprint || '',
   position: card.position,
   created_at: card.createdAt,
   updated_at: card.updatedAt,
@@ -285,6 +305,9 @@ const formatNotification = (notification) => ({
   message: notification.message,
   is_read: notification.is_read,
   is_important: notification.is_important || false,
+  delivery_mode: notification.delivery_mode || 'instant',
+  digest_count: notification.digest_count || 0,
+  digest_date: notification.digest_date || '',
   created_at: notification.createdAt,
 })
 
@@ -322,7 +345,7 @@ async function seedDatabase() {
 
   const board = await Board.create({
     workspaceId: workspace._id,
-    name: 'Sprint 4',
+    name: 'Milestone 4',
     color: '#7c5cfc',
   })
 

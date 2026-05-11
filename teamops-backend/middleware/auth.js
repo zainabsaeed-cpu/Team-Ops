@@ -1,18 +1,19 @@
 const jwt = require('jsonwebtoken');
 const { Workspace, Board, Column, Card } = require('../models');
+const { CSRF_COOKIE_NAME, SESSION_COOKIE_NAME, setCsrfCookie } = require('../utils/authCookies');
 
 const jwtSecret = process.env.JWT_SECRET || 'teamops-dev-secret';
 const roleRank = { viewer: 0, member: 1, admin: 2, owner: 3 };
 
 const auth = (req, res, next) => {
-    const authHeader = req.headers.authorization || '';
-    if (!authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'No token provided' });
-
-    const token = authHeader.slice('Bearer '.length).trim();
+    const token = req.cookies?.[SESSION_COOKIE_NAME] || '';
     if (!token) return res.status(401).json({ error: 'No token provided' });
     try {
         const decoded = jwt.verify(token, jwtSecret);
         req.userId = decoded.userId;
+        if (!req.cookies?.[CSRF_COOKIE_NAME]) {
+            setCsrfCookie(res);
+        }
         next();
     } catch (err) {
         return res.status(401).json({ error: 'Invalid token' });

@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Zainab Saeed (509170) and Zunairah Sarwar (502506)" />
+  <title>TeamOps Project Report</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="print.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">TeamOps Project Report</h1>
+<p class="subtitle">Real-Time Collaborative Project Management
+Platform</p>
+<p class="author">Zainab Saeed (509170) and Zunairah Sarwar (502506)</p>
+<p class="date">Web Technologies | Instructor: Naima Iltaf | 10 May
+2026</p>
+</header>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Field</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project Title</td>
+<td>TeamOps - Real-Time Collaborative Project Management Platform</td>
+</tr>
+<tr>
+<td>Course</td>
+<td>Web Technologies</td>
+</tr>
+<tr>
+<td>Submitted By</td>
+<td>Zainab Saeed (CMS ID: 509170), Zunairah Sarwar (CMS ID: 502506)</td>
+</tr>
+<tr>
+<td>Instructor</td>
+<td>Naima Iltaf</td>
+</tr>
+<tr>
+<td>Project Type</td>
+<td>Full-stack web application</td>
+</tr>
+<tr>
+<td>Frontend</td>
+<td>Standalone HTML, CSS, and vanilla JavaScript served through
+Vite</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>Node.js, Express 5, Socket.io, MongoDB, Mongoose</td>
+</tr>
+<tr>
+<td>Core Domain</td>
+<td>Team workspaces, Kanban boards, task tracking, real-time
+collaboration, notifications, role-based access control</td>
+</tr>
+<tr>
+<td>GitHub Repository</td>
+<td>https://github.com/zainabsaeed-cpu/Team-Ops</td>
+</tr>
+</tbody>
+</table>
+<h2 data-number="1" id="executive-summary"><span
+class="header-section-number">1</span> Executive Summary</h2>
+<p>TeamOps began as a real-time Kanban project management idea for the
+Web Technologies course and matured into a working full-stack
+collaboration platform. The proposal established the main academic
+direction: user accounts, workspaces, Kanban cards, live
+synchronization, activity logs, notifications, and a practical
+demonstration of client-server web development. The implemented system
+keeps that direction but reflects the final repository architecture: a
+standalone HTML/CSS/JavaScript frontend, an Express 5 backend, Socket.io
+real-time rooms, and MongoDB/Mongoose persistence.</p>
+<p>This report documents the finished project as a submission-ready
+artifact. It covers the problem being solved, objectives, architecture,
+database design, backend and frontend implementation, real-time event
+flow, security controls, testing approach, and future enhancements. The
+report intentionally notes important changes from the original proposal,
+especially the shift from React/PostgreSQL planning to the final
+standalone frontend and MongoDB implementation.</p>
+<h2 data-number="2" id="abstract"><span
+class="header-section-number">2</span> Abstract</h2>
+<p>TeamOps is a full-stack collaborative project management system
+designed to help teams organize work through workspaces, boards,
+columns, cards, comments, activity logs, notifications, and live
+updates. The application follows a client-server architecture. The
+frontend is a standalone HTML/CSS/JavaScript application, while the
+backend exposes a REST API using Express and persists data in MongoDB
+through Mongoose models. Real-time synchronization is implemented with
+Socket.io so that board changes, comments, activity events,
+notifications, and workspace presence can update connected users without
+requiring a page refresh.</p>
+<p>The main objective of TeamOps is to provide a practical teamwork
+platform similar to a lightweight Trello/Jira-style board, but with a
+student-project scope that demonstrates authentication, authorization,
+database modeling, REST API design, real-time events, and frontend state
+management. The system supports email registration with OTP
+verification, Google sign-in, HTTP-only cookie-based JWT sessions,
+workspace creation, invite codes, email invite tokens,
+owner/admin/member/viewer roles, manual board creation, card CRUD
+operations, drag-and-drop movement, activity filtering, analytics,
+notifications, profile management, and user-specific “My Work”
+views.</p>
+<h2 data-number="3" id="problem-statement"><span
+class="header-section-number">3</span> Problem Statement</h2>
+<p>Many student teams and small project groups manage tasks through
+scattered messages, spreadsheets, or informal notes. This creates
+problems such as unclear ownership, missing deadlines, poor visibility
+of progress, and delayed communication when one member changes task
+status. TeamOps solves this by providing a centralized workspace where
+team members can create boards, assign cards, track progress, comment on
+tasks, and receive live updates.</p>
+<p>The project focuses on these core problems:</p>
+<ul>
+<li>Teams need a shared space to organize project work.</li>
+<li>Members need clear task ownership, priority, and due dates.</li>
+<li>Admins need control over workspace membership and permissions.</li>
+<li>Users should see updates live instead of manually refreshing.</li>
+<li>Activity history should make collaboration traceable.</li>
+<li>Notifications should highlight assignments and mentions.</li>
+<li>The system should be understandable, maintainable, and suitable for
+future extension.</li>
+</ul>
+<h2 data-number="4" id="objectives"><span
+class="header-section-number">4</span> Objectives</h2>
+<p>The objectives of TeamOps are:</p>
+<ol type="1">
+<li>Build a complete full-stack project management application.</li>
+<li>Implement secure user authentication using JWT and hashed
+passwords.</li>
+<li>Add email verification and password reset through OTP codes.</li>
+<li>Support Google sign-in as an alternative authentication
+provider.</li>
+<li>Model users, workspaces, boards, columns, cards, comments,
+activities, and notifications in MongoDB.</li>
+<li>Enforce role-based access control across workspace and board
+operations.</li>
+<li>Implement real-time board synchronization with Socket.io rooms.</li>
+<li>Provide a Kanban-style UI where cards can be created, edited,
+deleted, assigned, filtered, and moved.</li>
+<li>Maintain activity logs and audit-style visibility for
+governance-related actions.</li>
+<li>Generate useful analytics such as cards per column, completed cards
+this week, overdue cards, and cards per assignee.</li>
+<li>Keep the frontend and backend organized as separate maintainable
+packages.</li>
+</ol>
+<h2 data-number="5" id="existing-repository-structure"><span
+class="header-section-number">5</span> Existing Repository
+Structure</h2>
+<pre class="text"><code>TeamOps/
+  teamops-backend/
+    server.js
+    models/index.js
+    controllers/
+    routes/
+    middleware/
+    socket/
+    utils/
+  teamops-frontend/
+    index.html
+    styles.css
+    vite.config.js
+    package.json</code></pre>
+<p>The active frontend is <code>teamops-frontend/</code>. It is
+intentionally implemented as a standalone HTML/JS app. The main
+application logic is in <code>index.html</code>, and the visual design
+is in <code>styles.css</code>. There is no active React
+<code>src/</code> application.</p>
+<h2 data-number="6" id="technology-stack"><span
+class="header-section-number">6</span> Technology Stack</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technology</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frontend</td>
+<td>HTML5</td>
+<td>App markup and view structure</td>
+</tr>
+<tr>
+<td>Frontend</td>
+<td>CSS3</td>
+<td>Responsive dashboard, modals, board UI, animations</td>
+</tr>
+<tr>
+<td>Frontend</td>
+<td>Vanilla JavaScript</td>
+<td>API calls, local state, DOM rendering, drag-and-drop</td>
+</tr>
+<tr>
+<td>Frontend Server</td>
+<td>Vite</td>
+<td>Static development server and build output</td>
+</tr>
+<tr>
+<td>Backend Runtime</td>
+<td>Node.js</td>
+<td>JavaScript server runtime</td>
+</tr>
+<tr>
+<td>Backend Framework</td>
+<td>Express 5</td>
+<td>REST API routing and middleware</td>
+</tr>
+<tr>
+<td>Real-Time</td>
+<td>Socket.io</td>
+<td>WebSocket-style bidirectional events</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>MongoDB</td>
+<td>Document database</td>
+</tr>
+<tr>
+<td>ODM</td>
+<td>Mongoose</td>
+<td>Schemas, models, queries, validation, indexes</td>
+</tr>
+<tr>
+<td>Authentication</td>
+<td>JWT in HTTP-only cookie</td>
+<td>Stateless signed session stored as a secure browser cookie</td>
+</tr>
+<tr>
+<td>Password Security</td>
+<td>bcryptjs</td>
+<td>Password hashing and comparison</td>
+</tr>
+<tr>
+<td>OAuth</td>
+<td>Google Auth Library</td>
+<td>Google ID token verification</td>
+</tr>
+<tr>
+<td>Email</td>
+<td>Nodemailer/Resend utility layer</td>
+<td>Verification, reset, invitation emails</td>
+</tr>
+</tbody>
+</table>
+<h2 data-number="7" id="system-architecture"><span
+class="header-section-number">7</span> System Architecture</h2>
+<p>TeamOps uses a layered architecture:</p>
+<pre class="text"><code>Browser
+  |
+  | REST requests with browser-sent session cookie
+  | Socket.io connection authenticated from session cookie
+  v
+Express API server
+  |
+  | Controllers enforce validation and business rules
+  v
+Mongoose models and formatter helpers
+  |
+  v
+MongoDB database
+
+Socket.io rooms:
+  board:&lt;boardId&gt;      board updates and activity
+  user:&lt;userId&gt;        private notifications
+  workspace:&lt;id&gt;       workspace presence count</code></pre>
+<p>The backend issues the JWT as an HTTP-only
+<code>teamops_session</code> cookie and sends a readable
+<code>teamops_csrf</code> cookie for CSRF protection. For protected API
+requests, the browser sends the session cookie automatically and the
+frontend adds an <code>X-CSRF-Token</code> header for unsafe
+state-changing requests. The backend verifies the cookie token in
+<code>middleware/auth.js</code>, stores <code>req.userId</code>, and
+then controllers use that user id to check workspace membership and role
+permissions. Socket.io also authenticates from the session cookie
+instead of a manually supplied bearer token.</p>
+<h2 data-number="8" id="workflow-flow-diagrams"><span
+class="header-section-number">8</span> Workflow Flow Diagrams</h2>
+<h3 data-number="8.1" id="user-authentication-workflow"><span
+class="header-section-number">8.1</span> User Authentication
+Workflow</h3>
+<pre class="text"><code>[Visitor]
+   |
+   v
+[Register / Login / Google Sign-In]
+   |
+   +--&gt; Email registration --&gt; [Create unverified user]
+   |                            |
+   |                            v
+   |                         [Send OTP]
+   |                            |
+   |                            v
+   |                         [Verify OTP]
+   |
+   +--&gt; Email login --------&gt; [Check password hash]
+   |
+   +--&gt; Google login -------&gt; [Verify Google ID token]
+                                |
+                                v
+                         [Issue JWT session cookie]
+                                |
+                                v
+                         [Set CSRF cookie]
+                                |
+                                v
+                         [Open workspace setup or dashboard]</code></pre>
+<h3 data-number="8.2" id="workspace-and-board-workflow"><span
+class="header-section-number">8.2</span> Workspace and Board
+Workflow</h3>
+<pre class="text"><code>[Authenticated user]
+   |
+   v
+[Workspace setup]
+   |
+   +--&gt; Create workspace --&gt; [Owner role assigned]
+   |                          |
+   |                          v
+   |                       [Create board]
+   |                          |
+   |                          v
+   |                       [Default columns created]
+   |
+   +--&gt; Join by invite code --&gt; [Member role assigned]
+   |
+   +--&gt; Join by email token --&gt; [Validate token, email, expiry]
+                                |
+                                v
+                         [Dashboard loads selected workspace]
+                                |
+                                v
+                         [Board, members, analytics, activity]</code></pre>
+<h3 data-number="8.3" id="card-collaboration-workflow"><span
+class="header-section-number">8.3</span> Card Collaboration
+Workflow</h3>
+<pre class="text"><code>[Member/Admin/Owner]
+   |
+   v
+[Create or edit card]
+   |
+   +--&gt; Assign user --------&gt; [Create assignee notification]
+   |
+   +--&gt; Add comment/mention -&gt; [Create mention notification]
+   |
+   +--&gt; Drag card ----------&gt; [PATCH move endpoint]
+                                |
+                                v
+                         [Validate role and board scope]
+                                |
+                                v
+                         [Recalculate card positions]
+                                |
+                                v
+                         [Save MongoDB changes]
+                                |
+                                v
+                         [Create activity record]
+                                |
+                                v
+                         [Emit Socket.io board event]
+                                |
+                                v
+                         [Connected clients update live]</code></pre>
+<h3 data-number="8.4" id="admin-and-audit-workflow"><span
+class="header-section-number">8.4</span> Admin and Audit Workflow</h3>
+<pre class="text"><code>[Owner/Admin]
+   |
+   v
+[Members / Settings / Audit views]
+   |
+   +--&gt; Invite member -----&gt; [Generate code or email token]
+   |
+   +--&gt; Change role -------&gt; [Validate role hierarchy]
+   |
+   +--&gt; Remove member -----&gt; [Check requester permissions]
+   |
+   +--&gt; Update settings ---&gt; [Save automation settings]
+                                |
+                                v
+                         [Log governance activity]
+                                |
+                                v
+                         [Emit workspace settings/presence updates]
+                                |
+                                v
+                         [Audit log shows sensitive changes]</code></pre>
+<h2 data-number="9" id="database-design"><span
+class="header-section-number">9</span> Database Design</h2>
+<p>All active Mongoose models and formatter helpers are in
+<code>teamops-backend/models/index.js</code>.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Model</th>
+<th>Main Fields</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User</td>
+<td>name, email, passwordHash, avatarUrl, googleId, authProvider,
+verified, notifyEmail, notifyPush</td>
+<td>Stores account and profile data</td>
+</tr>
+<tr>
+<td>VerificationToken</td>
+<td>userId, token, expiresAt</td>
+<td>OTP verification and reset code storage</td>
+</tr>
+<tr>
+<td>WorkspaceInviteToken</td>
+<td>token, workspaceId, email, role, expiresAt, used</td>
+<td>Secure email invite joining</td>
+</tr>
+<tr>
+<td>Workspace</td>
+<td>name, description, techStack, owner, inviteCode, members</td>
+<td>Top-level team container</td>
+</tr>
+<tr>
+<td>Board</td>
+<td>workspaceId, name, color</td>
+<td>Project board inside a workspace</td>
+</tr>
+<tr>
+<td>Column</td>
+<td>workspace, board, title, position</td>
+<td>Kanban workflow stage</td>
+</tr>
+<tr>
+<td>Card</td>
+<td>column, title, description, priority, assignee, dueDate,
+position</td>
+<td>Task item</td>
+</tr>
+<tr>
+<td>Comment</td>
+<td>board, card, user, taggedCards, taggedMembers, content</td>
+<td>Board and card discussions</td>
+</tr>
+<tr>
+<td>Activity</td>
+<td>workspace, board, user, userId, workspaceId, boardId, action</td>
+<td>Timeline/audit events</td>
+</tr>
+<tr>
+<td>Notification</td>
+<td>user, message, is_read, is_important</td>
+<td>User inbox alerts</td>
+</tr>
+</tbody>
+</table>
+<h3 data-number="9.1" id="relationships"><span
+class="header-section-number">9.1</span> Relationships</h3>
+<ul>
+<li>A user can belong to many workspaces through
+<code>Workspace.members</code>.</li>
+<li>A workspace has many boards.</li>
+<li>A board has many columns.</li>
+<li>A column has many cards.</li>
+<li>A card may have one assignee.</li>
+<li>Comments can belong to either a board or a card.</li>
+<li>Activities belong to workspace and board scope.</li>
+<li>Notifications belong to a specific user.</li>
+</ul>
+<h3 data-number="9.2" id="er-diagram"><span
+class="header-section-number">9.2</span> ER Diagram</h3>
+<figure>
+<img src="screenshots/teamops-er-diagram.png"
+alt="TeamOps ER diagram showing users, workspaces, boards, columns, cards, comments, activity, notifications, and tokens" />
+<figcaption aria-hidden="true">TeamOps ER diagram showing users,
+workspaces, boards, columns, cards, comments, activity, notifications,
+and tokens</figcaption>
+</figure>
+<h3 data-number="9.3" id="why-mongodb-fits-this-project"><span
+class="header-section-number">9.3</span> Why MongoDB Fits This
+Project</h3>
+<p>MongoDB is suitable because the app has nested, document-friendly
+entities such as workspace members and fast-changing collaborative board
+data. Mongoose schemas still provide structure, indexes, validation, and
+model-level consistency. The project uses references for relationships
+that need independent queries, such as cards, columns, comments, users,
+boards, and activities.</p>
+<h2 data-number="10" id="backend-design"><span
+class="header-section-number">10</span> Backend Design</h2>
+<h3 data-number="10.1" id="server-setup"><span
+class="header-section-number">10.1</span> Server Setup</h3>
+<p>The backend entry point is <code>teamops-backend/server.js</code>.
+It:</p>
+<ul>
+<li>Loads environment variables.</li>
+<li>Creates an Express app and HTTP server.</li>
+<li>Attaches Socket.io to the same HTTP server.</li>
+<li>Configures CORS with local development support.</li>
+<li>Adds JSON request parsing.</li>
+<li>Registers REST route modules.</li>
+<li>Exposes a <code>/api/health</code> endpoint.</li>
+<li>Connects to MongoDB.</li>
+<li>Seeds sample data if the database is empty and the environment is
+not production.</li>
+<li>Starts the server.</li>
+</ul>
+<h3 data-number="10.2" id="rest-api-modules"><span
+class="header-section-number">10.2</span> REST API Modules</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Route Prefix</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/auth</code></td>
+<td>Register, login, verify, resend verification, Google login,
+forgot/reset password, current user</td>
+</tr>
+<tr>
+<td><code>/api/workspaces</code></td>
+<td>Workspace CRUD, members, roles, invite code joining, email invite
+joining, workspace boards</td>
+</tr>
+<tr>
+<td><code>/api/boards</code></td>
+<td>Board data, analytics, comments, columns, cards, movement</td>
+</tr>
+<tr>
+<td><code>/api/activities</code></td>
+<td>Activity timeline and audit views</td>
+</tr>
+<tr>
+<td><code>/api/notifications</code></td>
+<td>Notification inbox, unread count, mark read, mark all read,
+important flag</td>
+</tr>
+<tr>
+<td><code>/api/user</code></td>
+<td>Profile, password change, assigned cards</td>
+</tr>
+</tbody>
+</table>
+<h3 data-number="10.3" id="authentication-flow"><span
+class="header-section-number">10.3</span> Authentication Flow</h3>
+<p>For email registration:</p>
+<ol type="1">
+<li>User submits name, email, and password.</li>
+<li>Backend trims and normalizes data.</li>
+<li>Password is hashed with bcrypt.</li>
+<li>User is created as unverified.</li>
+<li>Six-digit OTP is generated and stored in
+<code>VerificationToken</code>.</li>
+<li>Verification email is sent.</li>
+<li>User enters OTP.</li>
+<li>Backend verifies token and expiry.</li>
+<li>User becomes verified.</li>
+<li>JWT is issued in an HTTP-only cookie for a seven-day session.</li>
+</ol>
+<p>For login:</p>
+<ol type="1">
+<li>User submits email and password.</li>
+<li>Backend finds the normalized email.</li>
+<li>Backend rejects unknown, unverified, or Google-only accounts where
+appropriate.</li>
+<li>bcrypt compares the submitted password with the stored hash.</li>
+<li>A signed JWT session cookie is set.</li>
+</ol>
+<p>For Google login:</p>
+<ol type="1">
+<li>Frontend receives a Google credential.</li>
+<li>Backend verifies the ID token using Google Auth Library.</li>
+<li>Backend extracts Google id, email, name, and avatar.</li>
+<li>Existing user is updated or a new Google user is created.</li>
+<li>The same workspace setup flow is used as email signup: if no
+workspace exists, the user is asked to create or join one.</li>
+<li>A signed JWT session cookie is set.</li>
+</ol>
+<h3 data-number="10.4" id="authorization-and-rbac"><span
+class="header-section-number">10.4</span> Authorization and RBAC</h3>
+<p>TeamOps uses workspace roles:</p>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 40%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>Role</th>
+<th style="text-align: right;">Level</th>
+<th>Typical Permissions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>owner</td>
+<td style="text-align: right;">3</td>
+<td>Full workspace control, delete workspace, manage all members</td>
+</tr>
+<tr>
+<td>admin</td>
+<td style="text-align: right;">2</td>
+<td>Manage boards, columns, members, settings, invites</td>
+</tr>
+<tr>
+<td>member</td>
+<td style="text-align: right;">1</td>
+<td>Create/edit/move cards, comment, collaborate</td>
+</tr>
+<tr>
+<td>viewer</td>
+<td style="text-align: right;">0</td>
+<td>Read board data and comments, limited interaction</td>
+</tr>
+</tbody>
+</table>
+<p>The backend uses both route middleware and controller-level checks.
+The <code>requireRole</code> middleware resolves the workspace from
+route params or related board/column/card ids, then validates that the
+current user has one of the required roles. Controllers also use helper
+functions such as <code>checkWorkspaceAccess</code> and
+<code>resolveBoardAccess</code> to enforce role hierarchy before
+sensitive operations.</p>
+<h3 data-number="10.5" id="real-time-design"><span
+class="header-section-number">10.5</span> Real-Time Design</h3>
+<p>Socket.io is initialized in <code>server.js</code> and handled in
+<code>socket/index.js</code>. During connection, the server parses the
+session cookie from the socket handshake headers and verifies the JWT.
+If valid, it joins a private <code>user:&lt;userId&gt;</code> room.</p>
+<p>The frontend joins board and workspace rooms:</p>
+<ul>
+<li><code>board:join</code> or <code>join:board</code> to subscribe to
+board updates.</li>
+<li><code>workspace:join</code> or <code>join:workspace</code> to
+subscribe to presence count.</li>
+<li><code>join:user</code> for private notification delivery.</li>
+</ul>
+<p>Important emitted events include:</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>card:created</code></td>
+<td>A new card was added</td>
+</tr>
+<tr>
+<td><code>card:updated</code></td>
+<td>Card details changed</td>
+</tr>
+<tr>
+<td><code>card:deleted</code></td>
+<td>Card removed</td>
+</tr>
+<tr>
+<td><code>card:moved</code></td>
+<td>Card moved to another column/position</td>
+</tr>
+<tr>
+<td><code>column:created</code></td>
+<td>Board column added</td>
+</tr>
+<tr>
+<td><code>column:deleted</code></td>
+<td>Board column removed</td>
+</tr>
+<tr>
+<td><code>card:commented</code></td>
+<td>Card comment created</td>
+</tr>
+<tr>
+<td><code>comment:deleted</code></td>
+<td>Card comment deleted</td>
+</tr>
+<tr>
+<td><code>board:commented</code></td>
+<td>Board comment created</td>
+</tr>
+<tr>
+<td><code>board:comment:deleted</code></td>
+<td>Board comment deleted</td>
+</tr>
+<tr>
+<td><code>activity:new</code></td>
+<td>Timeline event created</td>
+</tr>
+<tr>
+<td><code>notification:new</code></td>
+<td>User notification created</td>
+</tr>
+<tr>
+<td><code>workspace:presence</code></td>
+<td>Current active connection count for workspace</td>
+</tr>
+</tbody>
+</table>
+<h2 data-number="11" id="frontend-design"><span
+class="header-section-number">11</span> Frontend Design</h2>
+<p>The frontend is a standalone app inside
+<code>teamops-frontend/index.html</code> and
+<code>teamops-frontend/styles.css</code>. It does not use React
+components. The app uses DOM functions, <code>fetch</code>, local state
+variables, browser cookies for authentication, limited
+<code>localStorage</code> for non-sensitive UI/workspace context, custom
+modals, custom select controls, and Socket.io client events.</p>
+<p>Main frontend responsibilities:</p>
+<ul>
+<li>Switching views such as landing, auth, workspace setup, join
+workspace, and dashboard.</li>
+<li>Managing authentication forms and verification/reset flows.</li>
+<li>Keeping only non-sensitive UI context in <code>localStorage</code>,
+such as selected workspace/board ids and saved views.</li>
+<li>Calling REST endpoints through a shared <code>apiRequest</code>
+helper with <code>credentials: 'include'</code> and CSRF headers for
+unsafe requests.</li>
+<li>Connecting to Socket.io and subscribing to board/user/workspace
+rooms.</li>
+<li>Rendering boards, columns, cards, filters, comments, activity,
+notifications, members, analytics, profile, and saved views.</li>
+<li>Enforcing role-based UI restrictions so viewers cannot
+create/edit/delete cards or columns.</li>
+<li>Providing drag-and-drop behavior for card movement.</li>
+<li>Showing toast feedback and confirmation dialogs.</li>
+<li>Supporting dashboard pages for projects, roadmap, integrations,
+channels, help, saved views, profile, workspace settings, and audit
+logs.</li>
+</ul>
+<h2 data-number="12" id="application-screenshots"><span
+class="header-section-number">12</span> Application Screenshots</h2>
+<p>The following screenshots document the main user-facing output of
+TeamOps. They show the public entry screen, authentication flow,
+workspace onboarding, dashboard shell, empty board state, analytics,
+members page, workspace settings, and card creation workflow.</p>
+<figure>
+<img src="screenshots/report-landing.png"
+alt="Landing page and product overview" />
+<figcaption aria-hidden="true">Landing page and product
+overview</figcaption>
+</figure>
+<figure>
+<img src="screenshots/landing-page.png" alt="Initial landing screen" />
+<figcaption aria-hidden="true">Initial landing screen</figcaption>
+</figure>
+<figure>
+<img src="screenshots/report-login.png"
+alt="Login and Google authentication" />
+<figcaption aria-hidden="true">Login and Google
+authentication</figcaption>
+</figure>
+<figure>
+<img src="screenshots/auth-screen.png" alt="Authentication screen" />
+<figcaption aria-hidden="true">Authentication screen</figcaption>
+</figure>
+<figure>
+<img src="screenshots/report-workspace-create.png"
+alt="Workspace creation form" />
+<figcaption aria-hidden="true">Workspace creation form</figcaption>
+</figure>
+<figure>
+<img src="screenshots/dashboard-shell.png" alt="Dashboard shell" />
+<figcaption aria-hidden="true">Dashboard shell</figcaption>
+</figure>
+<figure>
+<img src="screenshots/report-empty-board.png"
+alt="New workspace with no boards yet" />
+<figcaption aria-hidden="true">New workspace with no boards
+yet</figcaption>
+</figure>
+<figure>
+<img src="screenshots/report-analytics.png"
+alt="Analytics view for an empty workspace" />
+<figcaption aria-hidden="true">Analytics view for an empty
+workspace</figcaption>
+</figure>
+<figure>
+<img src="screenshots/report-members.png"
+alt="Members and invite code page" />
+<figcaption aria-hidden="true">Members and invite code page</figcaption>
+</figure>
+<figure>
+<img src="screenshots/report-settings.png"
+alt="Workspace settings and automation controls" />
+<figcaption aria-hidden="true">Workspace settings and automation
+controls</figcaption>
+</figure>
+<figure>
+<img src="screenshots/report-create-card.png" alt="Create-card modal" />
+<figcaption aria-hidden="true">Create-card modal</figcaption>
+</figure>
+<h2 data-number="13" id="core-functional-modules"><span
+class="header-section-number">13</span> Core Functional Modules</h2>
+<h3 data-number="13.1" id="workspaces"><span
+class="header-section-number">13.1</span> Workspaces</h3>
+<p>Users can create workspaces with a name, description, and tech stack.
+Each workspace has an owner and an invite code. Workspaces contain
+members with roles. Owners/admins can invite users, update roles, and
+remove eligible members. The system also supports joining through an
+invite code and joining through a secure email invite token.</p>
+<h3 data-number="13.2" id="boards-and-columns"><span
+class="header-section-number">13.2</span> Boards and Columns</h3>
+<p>Each workspace can contain boards, but a newly created workspace
+starts empty so the user can decide whether to create a board or join an
+existing workspace. Owners and admins can create, update, and delete
+boards and columns. When a board is created, the backend adds the
+default workflow columns: <code>To Do</code>, <code>In Progress</code>,
+<code>In Review</code>, and <code>Done</code>.</p>
+<h3 data-number="13.3" id="cards"><span
+class="header-section-number">13.3</span> Cards</h3>
+<p>Cards represent tasks. A card stores:</p>
+<ul>
+<li>title</li>
+<li>description</li>
+<li>priority</li>
+<li>assignee</li>
+<li>due date</li>
+<li>column id</li>
+<li>position</li>
+</ul>
+<p>Members and above can create, update, delete, and move cards. The
+backend validates that a card belongs to the correct board before
+allowing updates. When a card is assigned to another user, the system
+creates a notification for that user.</p>
+<h3 data-number="13.4" id="drag-and-drop-movement"><span
+class="header-section-number">13.4</span> Drag-and-Drop Movement</h3>
+<p>The frontend uses HTML drag-and-drop events. When a card is dropped
+into another column, the frontend calls:</p>
+<pre class="text"><code>PATCH /api/boards/:boardId/cards/:cardId/move</code></pre>
+<p>The backend validates access, verifies source and destination
+columns, recalculates positions, saves the card, creates an activity
+entry, notifies the assignee if required, and emits
+<code>card:moved</code> to the board room.</p>
+<h3 data-number="13.5" id="comments-and-mentions"><span
+class="header-section-number">13.5</span> Comments and Mentions</h3>
+<p>TeamOps supports:</p>
+<ul>
+<li>Card comments.</li>
+<li>Board comments.</li>
+<li>Board comment tagged cards.</li>
+<li>Board comment tagged members.</li>
+</ul>
+<p>Tagged members receive important notifications. The backend
+normalizes tagged ids to ensure that only cards from the current board
+and members from the current workspace can be referenced.</p>
+<h3 data-number="13.6" id="activity-and-audit"><span
+class="header-section-number">13.6</span> Activity and Audit</h3>
+<p>Every important action can create an activity record. The project
+separates normal collaboration activity from governance-sensitive
+activity. Governance-related events include workspace, invite, member,
+role, permission, login, password, profile, account, security, and
+deletion events. Owners and admins can view broader audit logs, while
+members/viewers see limited events.</p>
+<h3 data-number="13.7" id="notifications"><span
+class="header-section-number">13.7</span> Notifications</h3>
+<p>Notifications are created for assignments, mentions, moved assigned
+cards, and other important events. The inbox supports:</p>
+<ul>
+<li>unread count</li>
+<li>mark one notification as read</li>
+<li>mark all as read</li>
+<li>important flag toggle</li>
+<li>real-time <code>notification:new</code> delivery</li>
+</ul>
+<h3 data-number="13.8" id="analytics"><span
+class="header-section-number">13.8</span> Analytics</h3>
+<p>The board analytics endpoint calculates:</p>
+<ul>
+<li>cards per column</li>
+<li>completed cards this week</li>
+<li>cards per assignee</li>
+<li>overdue card count</li>
+</ul>
+<p>This gives the dashboard measurable project status without requiring
+a separate analytics database.</p>
+<h3 data-number="13.9" id="dashboard-and-saved-views"><span
+class="header-section-number">13.9</span> Dashboard and Saved Views</h3>
+<p>The dashboard has grown into a complete workspace command center. In
+addition to the live board, it includes pages for projects, roadmap,
+integrations, communication channels, help, saved views, members,
+settings, profile, notifications, activity, analytics, and audit logs.
+Saved views allow a user to preserve useful board filters locally so
+repeated workflows can be reopened quickly.</p>
+<h3 data-number="13.10" id="workspace-settings-and-automation"><span
+class="header-section-number">13.10</span> Workspace Settings and
+Automation</h3>
+<p>Owners and admins can adjust workspace automation settings such as
+desktop notification preferences, review nudges, escalation days, weekly
+digest behavior, after-hours mention filtering, and completed-card
+cleanup. The backend normalizes these settings, persists them on the
+workspace, runs supported automation actions, and emits
+<code>workspace:settings</code> so connected clients can refresh the
+visible settings state.</p>
+<h3 data-number="13.11" id="profile-and-my-work"><span
+class="header-section-number">13.11</span> Profile and My Work</h3>
+<p>Users can view and update profile details, upload an avatar, change
+password, and see cards assigned to them across accessible boards. This
+makes the app useful from both manager and individual contributor
+perspectives.</p>
+<h2 data-number="14" id="key-algorithms-and-logic"><span
+class="header-section-number">14</span> Key Algorithms and Logic</h2>
+<h3 data-number="14.1" id="cookie-based-jwt-authentication"><span
+class="header-section-number">14.1</span> Cookie-Based JWT
+Authentication</h3>
+<p>The backend signs tokens using:</p>
+<pre class="text"><code>payload: { userId }
+expiry: 7 days
+secret: JWT_SECRET</code></pre>
+<p>The JWT is stored in the <code>teamops_session</code> HTTP-only
+cookie. Every protected route requires that cookie. The middleware
+verifies the token and sets <code>req.userId</code>. For unsafe methods
+such as POST, PATCH, and DELETE, authenticated requests also include the
+<code>X-CSRF-Token</code> header matching the readable
+<code>teamops_csrf</code> cookie.</p>
+<h3 data-number="14.2" id="role-resolution"><span
+class="header-section-number">14.2</span> Role Resolution</h3>
+<p>For a request involving a board, column, or card, the backend
+resolves the workspace id. Then it checks whether the current user is
+present in <code>workspace.members</code> and has the required role.</p>
+<h3 data-number="14.3" id="card-positioning"><span
+class="header-section-number">14.3</span> Card Positioning</h3>
+<p>When a card moves:</p>
+<ol type="1">
+<li>Load the card.</li>
+<li>Load source column and target column.</li>
+<li>Verify both columns belong to the current board.</li>
+<li>Remove the moved card from the destination list if it is already
+there.</li>
+<li>Insert the card at the target index.</li>
+<li>Save the destination cards with updated positions.</li>
+<li>Recalculate source column positions if the card changed
+columns.</li>
+<li>Emit a real-time event and return success.</li>
+</ol>
+<h3 data-number="14.4" id="due-date-rule"><span
+class="header-section-number">14.4</span> Due Date Rule</h3>
+<p>The backend prevents active cards from being assigned a due date in
+the past. A past due date is allowed if the card is already in a
+<code>Done</code> column, or when preserving an existing historical
+date. This avoids accidental invalid scheduling while still allowing
+completed historical work.</p>
+<h3 data-number="14.5" id="activity-visibility"><span
+class="header-section-number">14.5</span> Activity Visibility</h3>
+<p>Activity filtering uses a governance pattern. Owners/admins can see
+governance events. Members/viewers only see governance events they
+personally caused, while normal board collaboration remains visible.</p>
+<h2 data-number="15" id="security-considerations"><span
+class="header-section-number">15</span> Security Considerations</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Area</th>
+<th>Current Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Password storage</td>
+<td>bcrypt hashing, no plain password storage</td>
+</tr>
+<tr>
+<td>Session auth</td>
+<td>JWT stored in HTTP-only cookie with server-side verification</td>
+</tr>
+<tr>
+<td>CSRF protection</td>
+<td>Double-submit CSRF cookie/header for unsafe authenticated
+requests</td>
+</tr>
+<tr>
+<td>Email verification</td>
+<td>OTP stored with expiry</td>
+</tr>
+<tr>
+<td>Password reset</td>
+<td>OTP reset code with expiry</td>
+</tr>
+<tr>
+<td>Google login</td>
+<td>Google ID token verification</td>
+</tr>
+<tr>
+<td>Authorization</td>
+<td>Workspace role checks in middleware and controllers</td>
+</tr>
+<tr>
+<td>Input validation</td>
+<td>Required fields, trimmed values, role validation, date
+validation</td>
+</tr>
+<tr>
+<td>CORS</td>
+<td>Configurable origin allowlist with local dev support</td>
+</tr>
+<tr>
+<td>Data scoping</td>
+<td>Board/column/card operations verify workspace membership</td>
+</tr>
+<tr>
+<td>Realtime privacy</td>
+<td>Socket.io reads the session cookie and user notifications emit to
+<code>user:&lt;userId&gt;</code> room</td>
+</tr>
+</tbody>
+</table>
+<p>Potential improvements:</p>
+<ul>
+<li>Enforce a stronger <code>JWT_SECRET</code> in all environments.</li>
+<li>Add rate limiting for login, verification, and reset endpoints.</li>
+<li>Hash OTP/reset tokens before storing them.</li>
+<li>Add server-side file storage instead of base64 avatars.</li>
+<li>Add account lockout controls for repeated failed auth attempts.</li>
+<li>Add schema-level indexes for common analytics and activity
+queries.</li>
+<li>Add automated tests for auth, RBAC, board movement, and invite
+flows.</li>
+<li>Use Redis adapter if Socket.io needs multiple backend
+instances.</li>
+</ul>
+<h2 data-number="16" id="testing-and-verification"><span
+class="header-section-number">16</span> Testing and Verification</h2>
+<p>The repository does not include a formal automated test suite, but it
+includes useful verification commands:</p>
+<p>Backend:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> teamops-backend</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test</span></code></pre></div>
+<p>The backend <code>test</code> script currently runs
+<code>node --check server.js</code>, which verifies JavaScript syntax
+for the entry file.</p>
+<p>Frontend:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> teamops-frontend</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run lint</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run build</span></code></pre></div>
+<p>The frontend <code>test</code> script runs lint and build. Because
+the active app is standalone HTML/JS, manual testing is still
+important.</p>
+<h2 data-number="17" id="future-enhancements"><span
+class="header-section-number">17</span> Future Enhancements</h2>
+<ol type="1">
+<li>Add automated backend tests with Jest or Node’s built-in test
+runner.</li>
+<li>Add Playwright end-to-end tests for authentication, board CRUD,
+movement, and invites.</li>
+<li>Add file attachments to cards using cloud storage.</li>
+<li>Add recurring tasks and task templates.</li>
+<li>Add Redis adapter for multi-instance Socket.io scaling.</li>
+<li>Add rate limiting and audit hardening for auth routes.</li>
+<li>Add advanced reports such as burndown charts and cycle time.</li>
+<li>Add email notification preferences connected to backend
+settings.</li>
+<li>Add mobile-friendly refinements and PWA support.</li>
+<li>Split frontend logic into smaller modules while keeping the no-React
+architecture if required.</li>
+</ol>
+<h2 data-number="18" id="conclusion"><span
+class="header-section-number">18</span> Conclusion</h2>
+<p>TeamOps successfully demonstrates a full-stack real-time
+collaboration platform. It combines authentication, authorization,
+database design, REST APIs, WebSocket events, frontend state rendering,
+Kanban workflows, notifications, activity logging, and analytics in one
+coherent project. The most important technical achievement is that the
+app is not just a static dashboard: actions on boards are persisted in
+MongoDB, scoped by workspace permissions, logged as activities, and
+broadcast to connected users through Socket.io.</p>
+<p>The project is suitable for a project submission because it covers
+core software engineering topics: requirements analysis, system
+architecture, schema design, API design, security, real-time
+communication, UI implementation, testing strategy, and future work.</p>
+<h2 data-number="19" id="appendix-a-important-api-endpoints"><span
+class="header-section-number">19</span> Appendix A: Important API
+Endpoints</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/register</code></td>
+<td>Register new user</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/verify</code></td>
+<td>Verify email OTP</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/login</code></td>
+<td>Login with email/password</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/google</code></td>
+<td>Login using Google credential</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/forgot-password</code></td>
+<td>Start reset flow</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/reset-password</code></td>
+<td>Reset password using OTP</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/logout</code></td>
+<td>Clear session and CSRF cookies</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/workspaces</code></td>
+<td>List user’s workspaces</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/workspaces</code></td>
+<td>Create workspace</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/workspaces/join</code></td>
+<td>Join workspace using invite code</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/workspaces/join/invite</code></td>
+<td>Accept secure email invite token</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/workspaces/:workspaceId/boards</code></td>
+<td>List boards in workspace</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/workspaces/:workspaceId/boards</code></td>
+<td>Create board</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/workspaces/:workspaceId/invite-email</code></td>
+<td>Send workspace email invite</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/workspaces/:workspaceId/automation-settings</code></td>
+<td>Load workspace automation settings</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td><code>/api/workspaces/:workspaceId/automation-settings</code></td>
+<td>Update workspace automation settings</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/boards/:boardId</code></td>
+<td>Get board with columns/cards</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/boards/:boardId/analytics</code></td>
+<td>Get board analytics</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/boards/:boardId/cards</code></td>
+<td>Create card</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td><code>/api/boards/:boardId/cards/:cardId</code></td>
+<td>Update card</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td><code>/api/boards/:boardId/cards/:cardId/move</code></td>
+<td>Move card</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/boards/:boardId/cards/:cardId</code></td>
+<td>Delete card</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/activities/workspace/:workspaceId/audit</code></td>
+<td>Get admin audit log</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/notifications</code></td>
+<td>Notification inbox</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/user/profile</code></td>
+<td>User profile</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td><code>/api/user/profile</code></td>
+<td>Update profile</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

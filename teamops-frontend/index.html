@@ -87,7 +87,7 @@
           <div class="phone-statusbar"><span>9:41</span><span>▐▐▐ ●●</span></div>
           <div class="phone-app-icon"><i class="bi bi-lightning-charge-fill"></i></div>
           <div class="phone-label">TeamOps</div>
-          <div class="phone-sub">Sprint 4 is live</div>
+          <div class="phone-sub">Board is live</div>
           <div class="phone-stat-row">
             <div class="phone-stat"><div class="phone-stat-num">12</div><div class="phone-stat-lbl">Cards</div></div>
             <div class="phone-stat"><div class="phone-stat-num">4</div><div class="phone-stat-lbl">Online</div></div>
@@ -97,7 +97,7 @@
       </div>
       <!-- Stats card right top -->
       <div class="float-card fc-stats u-style-7">
-        <div class="fc-stats-title">Sprint Progress</div>
+        <div class="fc-stats-title">Board Progress</div>
         <div class="stat-big">60%</div>
         <div class="stat-change">↑ 12% this week</div>
         <div class="mini-bar-wrap"><div class="mini-bar u-style-8"></div></div>
@@ -180,7 +180,7 @@
       <div class="how-card">
         <div class="how-step"><i class="bi bi-bar-chart"></i></div>
         <div class="how-title">Track progress in real time</div>
-        <div class="how-desc">Live activity feed, notification badges, and sprint progress bars keep everyone aligned without a meeting.</div>
+        <div class="how-desc">Live activity feed, notification badges, and progress bars keep everyone aligned without a meeting.</div>
         <div class="how-visual">
           <div class="prog-item"><div class="prog-head"><span>Board cards</span><span>Live</span></div><div class="prog-track"><div class="prog-fill pf-v u-style-18"></div></div></div>
           <div class="prog-item"><div class="prog-head"><span>Assignments</span><span>Live</span></div><div class="prog-track"><div class="prog-fill pf-g u-style-19"></div></div></div>
@@ -463,7 +463,7 @@
   <div class="db-main">
     <div class="db-header">
       <button class="h-toggle-btn" onclick="toggleSide('left')" aria-label="Toggle left panel"><i class="bi bi-layout-sidebar-inset"></i></button>
-      <div class="db-header-title" id="dbHeaderTitle">Sprint 4 — April 2026</div>
+      <div class="db-header-title" id="dbHeaderTitle">TeamOps Dashboard</div>
       <div class="live-chip" id="workspacePresenceChip"><span class="on-dot"></span> <span id="workspacePresenceCount">Connecting...</span></div>
       <div class="h-search"><span class="u-style-35">⌕</span><input type="text" placeholder="Search cards…"></div>
       <div class="notif-container">
@@ -545,7 +545,7 @@
             </div>
             <div>
               <label class="u-style-42">Due date</label>
-              <input id="cardDueDate" type="date" class="u-style-43">
+              <input id="cardDueDate" type="date" required class="u-style-43">
             </div>
           </div>
           <div>
@@ -592,7 +592,7 @@
         <form id="boardForm" onsubmit="submitBoardForm(event)" class="u-style-41">
           <div>
             <label class="u-style-42">Board name *</label>
-            <input id="boardNameInput" type="text" required class="u-style-43" placeholder="e.g., Product Sprint">
+            <input id="boardNameInput" type="text" required class="u-style-43" placeholder="e.g., Product Roadmap">
           </div>
           <div>
             <label class="u-style-42">Color</label>
@@ -634,10 +634,10 @@
           <h3 id="confirmModalTitle" class="u-style-39">Confirm action</h3>
           <button type="button" onclick="closeConfirmDialog(false)" class="u-style-40">&times;</button>
         </div>
-        <p id="confirmModalMessage" class="u-style-67">Are you sure?</p>
-        <div class="u-style-46">
-          <button type="button" id="confirmModalAction" onclick="closeConfirmDialog(true)" class="u-style-48 danger-btn">Delete</button>
-          <button type="button" onclick="closeConfirmDialog(false)" class="u-style-49">Cancel</button>
+        <p id="confirmModalMessage" class="confirm-message">Are you sure?</p>
+        <div class="confirm-actions">
+          <button type="button" id="confirmModalAction" onclick="closeConfirmDialog(true)" class="confirm-danger-btn">Delete</button>
+          <button type="button" onclick="closeConfirmDialog(false)" class="confirm-cancel-btn">Cancel</button>
         </div>
       </div>
     </div>
@@ -710,6 +710,20 @@
           <div class="analytics-empty">Loading workspace boards...</div>
         </div>
       </div>
+      <div class="analytics-intel-grid db-anim db-delay-2">
+        <div class="analytics-ai-panel">
+          <div class="analytics-panel-head">
+            <div>
+              <div class="db-slab-title">Board summary</div>
+              <h4 id="analyticsSummaryTitle">Reading board signals...</h4>
+            </div>
+          </div>
+          <p id="analyticsSummaryText">TeamOps will summarize progress, risk, and next action once analytics load.</p>
+          <div class="analytics-recommendations" id="analyticsRecommendations">
+            <div class="analytics-empty">Waiting for board analytics...</div>
+          </div>
+        </div>
+      </div>
       <div class="db-cards-grid db-anim db-delay-2">
         <div class="db-kpi-card">
           <div class="db-kpi-top">
@@ -760,7 +774,7 @@
         <div class="db-slab">
           <div class="db-slab-title">Cards per assignee</div>
           <div class="db-donut-wrap">
-            <div class="db-donut"></div>
+            <div class="db-donut" id="analyticsAssigneeDonut" role="img" aria-label="No assigned cards yet"></div>
             <div class="db-donut-label" id="analyticsAssignedTotal" data-countup="0">0</div>
           </div>
           <div class="db-donut-sub">Cards assigned on this board</div>
@@ -804,8 +818,8 @@
           </div>
           <div class="db-hero-metric">
             <div class="db-hero-metric-label">Unread alerts</div>
-            <div class="db-hero-metric-value" id="notifHeroUnread" data-countup="5">5</div>
-            <div class="db-hero-metric-note" id="notifHeroNote">2 require action</div>
+            <div class="db-hero-metric-value" id="notifHeroUnread" data-countup="0">0</div>
+            <div class="db-hero-metric-note" id="notifHeroNote">All caught up</div>
           </div>
         </div>
       </div>
@@ -853,7 +867,7 @@
         <div class="notif-loading">Loading members...</div>
       </div>
       <div class="db-slab db-anim db-delay-3 u-style-62">
-        <div class="db-slab-head"><div class="db-slab-title u-style-50">Collaboration load</div><div class="db-slab-note">Tasks assigned this sprint</div></div>
+        <div class="db-slab-head"><div class="db-slab-title u-style-50">Collaboration load</div><div class="db-slab-note">Tasks assigned on this board</div></div>
         <div class="db-bars" id="memberLoadBars">
           <div class="notif-loading">Loading assignments...</div>
         </div>
@@ -971,8 +985,8 @@
           <button class="db-toggle" data-setting-toggle="autoArchive" onclick="toggleWorkspaceSetting(this, 'autoArchive')" aria-label="Toggle auto-archive completed cards"></button>
         </div>
         <div class="db-setting-row">
-          <div><div class="db-setting-title">Weekly sprint summary email</div><div class="db-setting-desc">Send digest every Friday to all team members.</div></div>
-          <button class="db-toggle on" data-setting-toggle="weeklyDigest" onclick="toggleWorkspaceSetting(this, 'weeklyDigest')" aria-label="Toggle weekly sprint summary email"></button>
+          <div><div class="db-setting-title">Workspace digest batching</div><div class="db-setting-desc">Group non-critical quiet-hour alerts into digest notifications.</div></div>
+          <button class="db-toggle on" data-setting-toggle="weeklyDigest" onclick="toggleWorkspaceSetting(this, 'weeklyDigest')" aria-label="Toggle workspace digest batching"></button>
         </div>
         <div class="db-setting-row">
           <div><div class="db-setting-title">Mention-only after hours</div><div class="db-setting-desc">Mute routine alerts during quiet hours unless a teammate mentions you.</div></div>
@@ -981,6 +995,13 @@
         <div class="db-setting-row">
           <div><div class="db-setting-title">Smart review nudges</div><div class="db-setting-desc">Surface cards that sit in review longer than the escalation window.</div></div>
           <button class="db-toggle on" data-setting-toggle="reviewNudges" onclick="toggleWorkspaceSetting(this, 'reviewNudges')" aria-label="Toggle smart review nudges"></button>
+        </div>
+        <div class="db-setting-row danger-zone-row" id="deleteWorkspaceRow">
+          <div>
+            <div class="db-setting-title">Delete workspace</div>
+            <div class="db-setting-desc">Permanently remove this workspace, its boards, cards, comments, invites, and activity history. Owner only.</div>
+          </div>
+          <button class="db-danger-btn" onclick="deleteCurrentWorkspace()"><i class="bi bi-trash3"></i> Delete</button>
         </div>
       </div>
       <div class="db-actions-row db-anim db-delay-3">
@@ -1048,7 +1069,7 @@
               <div class="db-search-name">WebSocket event system</div>
               <div class="db-search-meta">Card • In Progress</div>
             </div>
-            <div class="db-search-meta u-style-69">Sprint 4</div>
+            <div class="db-search-meta u-style-69">Board update</div>
           </div>
           <div class="db-search-item">
             <div class="db-search-icon"><i class="bi bi-person"></i></div>
@@ -1061,7 +1082,7 @@
           <div class="db-search-item">
             <div class="db-search-icon"><i class="bi bi-chat-dots"></i></div>
             <div class="db-search-info">
-              <div class="db-search-name">Sprint 4 Kickoff</div>
+              <div class="db-search-name">Board update Kickoff</div>
               <div class="db-search-meta">Message • 14 replies</div>
             </div>
             <div class="db-search-meta">2 days ago</div>
@@ -1079,7 +1100,7 @@
             <h3>Team Roadmap</h3>
             <p class="db-page-sub">Quarterly initiatives, launch dates, and dependency tracking for long-term planning.</p>
             <div class="db-hero-badges">
-              <span class="db-badge"><i class="bi bi-lightning-charge"></i> 12 Milestones</span>
+              <span class="db-badge"><i class="bi bi-lightning-charge"></i> 12 Updates</span>
               <span class="db-badge"><i class="bi bi-hourglass"></i> 18 weeks ahead</span>
               <span class="db-badge"><i class="bi bi-graph-up-arrow"></i> On track</span>
             </div>
@@ -1358,12 +1379,17 @@
             </div>
             <div id="profInfoMsg" class="prof-msg" style="display:none"></div>
             <div class="prof-form-grid">
-              <button class="prof-avatar-btn" type="button" onclick="document.getElementById('avatarFileInput').click()" title="Click to upload avatar">
-                <img id="profAvatarImg" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;">
-                <span id="profAvatarInitial" class="prof-avatar-initial">U</span>
-                <span class="prof-avatar-cam"><i class="bi bi-camera"></i></span>
-              </button>
-              <input id="avatarFileInput" type="file" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
+              <div class="prof-avatar-stack">
+                <button class="prof-avatar-btn" type="button" onclick="document.getElementById('avatarFileInput').click()" title="Click to upload avatar">
+                  <img id="profAvatarImg" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                  <span id="profAvatarInitial" class="prof-avatar-initial">U</span>
+                </button>
+                <div class="prof-avatar-actions">
+                  <button class="prof-avatar-action" type="button" onclick="document.getElementById('avatarFileInput').click()"><i class="bi bi-camera"></i> Change</button>
+                  <button class="prof-avatar-action danger" id="profAvatarRemoveBtn" type="button" onclick="removeProfileAvatar()"><i class="bi bi-trash3"></i> Remove</button>
+                </div>
+                <input id="avatarFileInput" type="file" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
+              </div>
               <div class="prof-fields">
                 <label class="prof-label">Name
                   <input id="profNameInput" class="prof-input" type="text" placeholder="Your name">
@@ -1426,7 +1452,7 @@
       </div>
     </div>
     <div class="panel-block">
-      <div class="panel-title">Sprint Progress</div>
+      <div class="panel-title">Board Progress</div>
       <div id="sprintProgressList">
         <div class="notif-loading">Loading progress...</div>
       </div>
@@ -1473,8 +1499,8 @@ function switchDashboardView(viewId, btnEl) {
   if (viewId !== 'board') toggleBoardCommentsPane(false);
 
   const titles = {
-    board: 'Sprint 4 — April 2026',
-    analytics: 'Analytics — Sprint Insights',
+    board: activeBoardData?.name || activeBoardData?.title || 'Boards',
+    analytics: 'Analytics — Board Insights',
     activity: 'Activity — Team Timeline',
     notifications: 'Notifications — Inbox',
     members: 'Members — Workspace Team',
@@ -1508,25 +1534,28 @@ function switchDashboardView(viewId, btnEl) {
   if (viewId === 'audit') {
     try { loadAuditLog(); } catch (e) { console.warn('loadAuditLog failed:', e); }
   }
-  if (viewId === 'settings') refreshSettingsStudio();
+  if (viewId === 'settings') {
+    refreshSettingsStudio();
+    loadWorkspaceSettings();
+  }
   if (viewId === 'profile') loadProfileView();
 
   target.querySelectorAll('.db-kpi-card').forEach(card => card.classList.remove('kpi-finished'));
   runCountUps(target);
 }
 function showDashboard() {
-  if (!getToken()) {
+  if (!hasSessionHint()) {
     showView('auth');
     switchTab('login');
     return;
   }
   showView('dashboard');
   switchDashboardView('board');
-  setTimeout(() => showToast('bi-broadcast-pin','Connected','Joined Sprint 4 board room via WebSocket'), 600);
+  setTimeout(() => showToast('bi-broadcast-pin','Connected','Realtime workspace sync is active'), 600);
 }
 
 function openDashboardFromDemo() {
-  if (!getToken()) {
+  if (!hasSessionHint()) {
     showView('auth');
     switchTab('login');
     setTimeout(() => showToast('bi-shield-lock','Sign in required','Log in with your workspace account to open the dashboard.'), 300);
@@ -1740,17 +1769,32 @@ function trimTrailingSlash(value) {
   return String(value || '').replace(/\/+$/, '');
 }
 
-const API_BASE = trimTrailingSlash(readViteEnv('%VITE_API_URL%', 'http://localhost:5002/api'));
-const SOCKET_BASE = trimTrailingSlash(readViteEnv('%VITE_SOCKET_URL%', 'http://localhost:5002'));
+function alignLocalBackendHost(url) {
+  const pageHost = window.location.hostname;
+  if (!['localhost', '127.0.0.1'].includes(pageHost)) return url;
+  try {
+    const parsed = new URL(url);
+    if (['localhost', '127.0.0.1'].includes(parsed.hostname)) {
+      parsed.hostname = pageHost;
+      return parsed.toString();
+    }
+  } catch (_) {
+  }
+  return url;
+}
+
+const API_BASE = trimTrailingSlash(alignLocalBackendHost(readViteEnv('%VITE_API_URL%', 'http://localhost:5002/api')));
+const SOCKET_BASE = trimTrailingSlash(alignLocalBackendHost(readViteEnv('%VITE_SOCKET_URL%', 'http://localhost:5002')));
 const GOOGLE_CLIENT_ID = readViteEnv(
   '%VITE_GOOGLE_CLIENT_ID%',
   '175739577750-6pglkgnai3nha232d8js957jl529ep5i.apps.googleusercontent.com'
 );
 const backendReachabilityMessage = `Cannot reach backend. Check that the server is running at ${API_BASE}.`;
 let googleAuthInitialized = false;
-const TOKEN_KEY = 'teamops_token';
+let authRequestInFlight = false;
 const USER_KEY = 'teamops_user';
 const SAVED_VIEWS_KEY = 'teamops_saved_views';
+const BOARD_COMMENT_READ_KEY = 'teamops_board_comment_reads';
 const defaultTechStackOptions = [
   'React', 'Node', 'MongoDB', 'PostgreSQL', 'Express', 'Vue', 'Angular', 'Python',
   'Django', 'TypeScript', 'JavaScript', 'Next.js', 'Nuxt', 'Svelte', 'Laravel',
@@ -1803,20 +1847,54 @@ function hideAuthError() {
   });
 }
 
-function getToken() {
-  return localStorage.getItem(TOKEN_KEY) || '';
+function hasSessionHint() {
+  return Boolean(localStorage.getItem(USER_KEY));
+}
+
+function getCookieValue(name) {
+  const encodedName = `${encodeURIComponent(name)}=`;
+  return document.cookie
+    .split(';')
+    .map(part => part.trim())
+    .find(part => part.startsWith(encodedName))
+    ?.slice(encodedName.length) || '';
+}
+
+function getCsrfToken() {
+  const token = getCookieValue('teamops_csrf');
+  return token ? decodeURIComponent(token) : '';
+}
+
+function compactStoredUser(user = {}) {
+  const compact = { ...user };
+  ['avatar_url', 'avatarUrl'].forEach(key => {
+    if (String(compact[key] || '').startsWith('data:')) delete compact[key];
+  });
+  return compact;
 }
 
 function saveSession(payload) {
-  localStorage.setItem(TOKEN_KEY, payload.token);
-  localStorage.setItem(USER_KEY, JSON.stringify(payload.user));
+  if (payload?.user) localStorage.setItem(USER_KEY, JSON.stringify(compactStoredUser(payload.user)));
 }
 
 function clearSession() {
-  localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
   localStorage.removeItem('teamops_workspace_id');
   localStorage.removeItem('teamops_board_id');
+}
+
+function isAuthExpiredError(message = '') {
+  return /no token provided|invalid token|unauthorized/i.test(String(message || ''));
+}
+
+function handleExpiredSession() {
+  const authViewActive = document.getElementById('auth')?.classList.contains('active');
+  clearSession();
+  showView('auth');
+  switchTab('login');
+  if (!authViewActive && !authRequestInFlight) {
+    showToast('bi-shield-lock', 'Session expired', 'Please log in again to continue.');
+  }
 }
 
 function showFormError(id, message) {
@@ -1861,7 +1939,7 @@ function setupCustomTechStackInput() {
 }
 
 function showCreateWorkspace() {
-  if (!getToken()) {
+  if (!hasSessionHint()) {
     showView('auth');
     switchTab('login');
     return;
@@ -1890,7 +1968,7 @@ function handleWorkspaceSetupBack() {
 }
 
 function showJoinWorkspace(prefillCode = '') {
-  if (!getToken()) {
+  if (!hasSessionHint()) {
     showView('auth');
     switchTab('login');
     return;
@@ -1946,8 +2024,11 @@ function storeWorkspaceContext(workspace) {
   const role = getWorkspaceRole(workspace);
   currentWorkspace = { ...workspace, role, currentUserRole: role };
   localStorage.setItem('teamops_workspace_id', workspace.id);
-  if (workspace.boardId || workspace.board_id) {
-    localStorage.setItem('teamops_board_id', workspace.boardId || workspace.board_id);
+  const workspaceBoardId = workspace.boardId || workspace.board_id;
+  if (workspaceBoardId && String(workspaceBoardId) !== String(workspace.id)) {
+    localStorage.setItem('teamops_board_id', workspaceBoardId);
+  } else {
+    localStorage.removeItem('teamops_board_id');
   }
   currentWorkspaceRole = role;
   renderInviteCodePanels(currentWorkspace);
@@ -1973,12 +2054,13 @@ async function openWorkspaceBoard(workspace) {
 
 async function apiRequest(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-  const token = getToken();
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  const method = (options.method || 'GET').toUpperCase();
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
   }
 
-  const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const response = await fetch(`${API_BASE}${path}`, { ...options, headers, credentials: 'include' });
   let payload = null;
   try {
     payload = await response.json();
@@ -1987,7 +2069,11 @@ async function apiRequest(path, options = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(payload?.error || 'Request failed');
+    const message = payload?.error || 'Request failed';
+    if (response.status === 401 && isAuthExpiredError(message)) {
+      handleExpiredSession();
+    }
+    throw new Error(message);
   }
 
   return payload;
@@ -2052,7 +2138,7 @@ function connectRealtime(userId = '') {
   if (!window.io || teamopsSocket) return;
   teamopsSocket = window.io(SOCKET_BASE, {
     transports: ['websocket'],
-    auth: { token: getToken() },
+    withCredentials: true,
   });
 
   teamopsSocket.on('connect', () => {
@@ -2073,7 +2159,7 @@ function connectRealtime(userId = '') {
     updateWorkspacePresenceChip(payload?.count || 0);
   });
 
-  ['card:created', 'card:moved', 'card:updated', 'card:deleted', 'column:created', 'column:deleted'].forEach(eventName => {
+  ['card:created', 'card:moved', 'card:updated', 'card:deleted', 'cards:archived', 'column:created', 'column:deleted'].forEach(eventName => {
     teamopsSocket.on(eventName, payload => {
       const boardId = localStorage.getItem('teamops_board_id');
       if (payload?.boardId) clearBoardAnalyticsCache(payload.boardId);
@@ -2116,6 +2202,10 @@ function connectRealtime(userId = '') {
     if (payload?.comment) {
       boardComments = [payload.comment, ...boardComments.filter(item => String(item.id) !== String(payload.comment.id))];
       renderBoardComments();
+      if (isBoardCommentsPaneOpen()) {
+        markBoardCommentsRead(boardId);
+        scrollBoardCommentsToBottom();
+      }
     }
   });
 
@@ -2125,6 +2215,7 @@ function connectRealtime(userId = '') {
     if (payload?.commentId) {
       boardComments = boardComments.filter(item => String(item.id) !== String(payload.commentId));
       renderBoardComments();
+      if (isBoardCommentsPaneOpen()) markBoardCommentsRead(boardId);
     }
   });
 
@@ -2141,8 +2232,23 @@ function connectRealtime(userId = '') {
   });
 
   teamopsSocket.on('notification:new', payload => {
-    showToast('bi-bell', 'New notification', payload?.message || 'You have a new TeamOps notification.');
+    const message = payload?.message || 'You have a new TeamOps notification.';
+    const isDigest = payload?.delivery_mode === 'digest';
+    showToast(isDigest ? 'bi-collection' : 'bi-bell', isDigest ? 'Digest updated' : 'New notification', message);
+    maybeShowDesktopNotification(isDigest ? 'TeamOps digest updated' : 'TeamOps notification', message);
     loadNotifications();
+  });
+
+  teamopsSocket.on('workspace:settings', payload => {
+    const workspaceId = currentWorkspace?.id || localStorage.getItem('teamops_workspace_id');
+    if (payload?.workspaceId && workspaceId && String(payload.workspaceId) !== String(workspaceId)) return;
+    persistWorkspaceSettings(payload?.settings || {});
+    applyWorkspaceSettingsUI();
+    refreshSettingsStudio();
+    if (payload?.archivedCount > 0) {
+      showToast('bi-archive', 'Cleanup complete', `${payload.archivedCount} completed card${payload.archivedCount === 1 ? '' : 's'} archived.`);
+      loadBoardData();
+    }
   });
 }
 
@@ -2261,6 +2367,64 @@ function updateUserChrome(user = {}) {
   if (headerInitial) headerInitial.textContent = initial;
 }
 
+function syncCurrentUserProfileState(user = {}) {
+  const userId = String(user.id || user._id || '');
+  if (!userId) return;
+
+  const storedUser = JSON.parse(localStorage.getItem(USER_KEY) || '{}');
+  const avatarUrl = user.avatar_url ?? user.avatarUrl ?? null;
+  const mergedUser = compactStoredUser({
+    ...storedUser,
+    ...user,
+    avatar_url: avatarUrl,
+    avatarUrl,
+  });
+
+  localStorage.setItem(USER_KEY, JSON.stringify(mergedUser));
+
+  workspaceMembers = workspaceMembers.map(member => {
+    const memberId = String(member.id || member._id || '');
+    if (memberId !== userId) return member;
+    return {
+      ...member,
+      ...user,
+      avatar_url: avatarUrl,
+      avatarUrl,
+    };
+  });
+
+  if (activeBoardData?.columns?.length) {
+    activeBoardData = {
+      ...activeBoardData,
+      columns: activeBoardData.columns.map(column => ({
+        ...column,
+        cards: (column.cards || []).map(card => {
+          if (String(card.assignee_id || '') !== userId) return card;
+          return {
+            ...card,
+            assignee_name: user.name || card.assignee_name,
+            assignee_email: user.email || card.assignee_email,
+            assignee_avatar_url: avatarUrl,
+            assigneeAvatarUrl: avatarUrl,
+          };
+        }),
+      })),
+    };
+  }
+
+  updateUserChrome(mergedUser);
+
+  if (document.getElementById('dbView-members')?.classList.contains('active')) {
+    renderWorkspaceMembers();
+  }
+
+  if (document.getElementById('dbView-board')?.classList.contains('active') && activeBoardData) {
+    renderBoard(activeBoardData);
+    renderBoardCommentCardTags();
+    setupDragDrop(activeBoardData);
+  }
+}
+
 const SETTINGS_DEFAULTS = {
   desktopNotifications: true,
   autoArchive: false,
@@ -2290,6 +2454,36 @@ function persistWorkspaceSettings(settings) {
   localStorage.setItem(getWorkspaceSettingsKey(), JSON.stringify({ ...SETTINGS_DEFAULTS, ...settings }));
 }
 
+async function loadWorkspaceSettings() {
+  const workspaceId = currentWorkspace?.id || localStorage.getItem('teamops_workspace_id');
+  if (!workspaceId) {
+    applyWorkspaceSettingsUI();
+    return getWorkspaceSettings();
+  }
+
+  try {
+    const payload = await apiRequest(`/workspaces/${workspaceId}/automation-settings`);
+    persistWorkspaceSettings(payload?.settings || {});
+    applyWorkspaceSettingsUI();
+    refreshSettingsStudio();
+    return getWorkspaceSettings();
+  } catch (error) {
+    console.warn('Load workspace settings failed:', error);
+    applyWorkspaceSettingsUI();
+    return getWorkspaceSettings();
+  }
+}
+
+async function persistWorkspaceSettingsRemote(settings) {
+  const workspaceId = currentWorkspace?.id || localStorage.getItem('teamops_workspace_id');
+  persistWorkspaceSettings(settings);
+  if (!workspaceId) return { settings };
+  return apiRequest(`/workspaces/${workspaceId}/automation-settings`, {
+    method: 'PATCH',
+    body: JSON.stringify({ settings }),
+  });
+}
+
 function applyWorkspaceSettingsUI(settings = getWorkspaceSettings()) {
   document.querySelectorAll('[data-setting-toggle]').forEach(button => {
     const key = button.dataset.settingToggle;
@@ -2309,36 +2503,75 @@ function applyWorkspaceSettingsUI(settings = getWorkspaceSettings()) {
   }
 }
 
-function toggleWorkspaceSetting(button, key) {
+async function requestDesktopNotificationPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    try { await Notification.requestPermission(); } catch (_) {}
+  }
+}
+
+function maybeShowDesktopNotification(title, message) {
+  const settings = getWorkspaceSettings();
+  if (!settings.desktopNotifications || !('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    new Notification(title, { body: message, tag: 'teamops-notification' });
+  } catch (_) {
+  }
+}
+
+async function toggleWorkspaceSetting(button, key) {
   const settings = getWorkspaceSettings();
   settings[key] = !Boolean(settings[key]);
+  if (key === 'desktopNotifications' && settings[key]) await requestDesktopNotificationPermission();
   persistWorkspaceSettings(settings);
   applyWorkspaceSettingsUI(settings);
   refreshSettingsStudio();
-  const title = settings[key] ? 'Setting enabled' : 'Setting disabled';
-  showToast(settings[key] ? 'bi-toggle-on' : 'bi-toggle-off', title, settingLabel(key));
+  try {
+    const payload = await persistWorkspaceSettingsRemote(settings);
+    if (payload?.settings) persistWorkspaceSettings(payload.settings);
+    if (payload?.archivedCount > 0) loadBoardData();
+    applyWorkspaceSettingsUI();
+    refreshSettingsStudio();
+    const title = settings[key] ? 'Setting enabled' : 'Setting disabled';
+    const suffix = payload?.archivedCount > 0 ? ` ${payload.archivedCount} completed card${payload.archivedCount === 1 ? '' : 's'} archived.` : '';
+    showToast(settings[key] ? 'bi-toggle-on' : 'bi-toggle-off', title, `${settingLabel(key)}.${suffix}`);
+  } catch (error) {
+    settings[key] = !settings[key];
+    persistWorkspaceSettings(settings);
+    applyWorkspaceSettingsUI(settings);
+    refreshSettingsStudio();
+    showToast('bi-exclamation-circle', 'Settings error', error.message || 'Could not save workspace setting.');
+  }
 }
 
-function updateSettingInput(key, value) {
+async function updateSettingInput(key, value) {
   const settings = getWorkspaceSettings();
   settings[key] = value;
   persistWorkspaceSettings(settings);
   applyWorkspaceSettingsUI(settings);
   refreshSettingsStudio();
+  try {
+    const payload = await persistWorkspaceSettingsRemote(settings);
+    if (payload?.settings) persistWorkspaceSettings(payload.settings);
+    applyWorkspaceSettingsUI();
+    refreshSettingsStudio();
+  } catch (error) {
+    showToast('bi-exclamation-circle', 'Settings error', error.message || 'Could not save workspace setting.');
+  }
 }
 
 function settingLabel(key) {
   const labels = {
     desktopNotifications: 'Real-time desktop notifications',
     autoArchive: 'Auto-archive completed cards',
-    weeklyDigest: 'Weekly sprint summary email',
+    weeklyDigest: 'Workspace digest batching',
     mentionOnlyAfterHours: 'Mention-only after hours',
     reviewNudges: 'Smart review nudges',
   };
   return labels[key] || 'Workspace setting';
 }
 
-function applySettingsPreset(preset) {
+async function applySettingsPreset(preset) {
   const settings = getWorkspaceSettings();
   if (preset === 'focus') {
     Object.assign(settings, {
@@ -2369,20 +2602,48 @@ function applySettingsPreset(preset) {
   persistWorkspaceSettings(settings);
   applyWorkspaceSettingsUI(settings);
   refreshSettingsStudio();
-  showToast('bi-magic', 'Recipe applied', 'Review and save the updated workspace policy.');
+  try {
+    const payload = await persistWorkspaceSettingsRemote(settings);
+    if (payload?.settings) persistWorkspaceSettings(payload.settings);
+    if (payload?.archivedCount > 0) loadBoardData();
+    applyWorkspaceSettingsUI();
+    refreshSettingsStudio();
+    showToast('bi-magic', 'Recipe applied', payload?.archivedCount > 0
+      ? `${payload.archivedCount} completed card${payload.archivedCount === 1 ? '' : 's'} archived.`
+      : 'Workspace policy synced in real time.');
+  } catch (error) {
+    showToast('bi-exclamation-circle', 'Settings error', error.message || 'Could not apply recipe.');
+  }
 }
 
-function resetWorkspaceSettings() {
+async function resetWorkspaceSettings() {
   persistWorkspaceSettings(SETTINGS_DEFAULTS);
   applyWorkspaceSettingsUI(SETTINGS_DEFAULTS);
   refreshSettingsStudio();
-  showToast('bi-arrow-counterclockwise', 'Reverted', 'Settings reset to recommended defaults');
+  try {
+    await persistWorkspaceSettingsRemote(SETTINGS_DEFAULTS);
+    showToast('bi-arrow-counterclockwise', 'Reverted', 'Settings reset to recommended defaults');
+  } catch (error) {
+    showToast('bi-exclamation-circle', 'Settings error', error.message || 'Could not reset settings.');
+  }
 }
 
-function saveWorkspaceSettings() {
-  persistWorkspaceSettings(getWorkspaceSettings());
+async function saveWorkspaceSettings() {
+  const settings = getWorkspaceSettings();
+  persistWorkspaceSettings(settings);
   refreshSettingsStudio();
-  showToast('bi-floppy', 'Saved', 'Workspace settings updated successfully');
+  try {
+    const payload = await persistWorkspaceSettingsRemote(settings);
+    if (payload?.settings) persistWorkspaceSettings(payload.settings);
+    if (payload?.archivedCount > 0) loadBoardData();
+    applyWorkspaceSettingsUI();
+    refreshSettingsStudio();
+    showToast('bi-floppy', 'Saved', payload?.archivedCount > 0
+      ? `Workspace settings saved. ${payload.archivedCount} completed card${payload.archivedCount === 1 ? '' : 's'} archived.`
+      : 'Workspace settings synced for the team.');
+  } catch (error) {
+    showToast('bi-exclamation-circle', 'Settings error', error.message || 'Could not save workspace settings.');
+  }
 }
 
 function getSettingsCards() {
@@ -2522,6 +2783,7 @@ function applyWorkspaceContext(sessionUser, workspaces) {
   renderWorkspaceMenu(userWorkspaces);
   renderInviteCodePanels(primaryWorkspace);
   joinWorkspacePresence(primaryWorkspace?.id);
+  loadWorkspaceSettings();
 
   const canManage = role === 'owner' || role === 'admin';
   const canManageCards = ['owner', 'admin', 'member'].includes(role);
@@ -2533,6 +2795,7 @@ function applyWorkspaceContext(sessionUser, workspaces) {
   const headerAddBtn = document.querySelector('.h-add-btn');
   const invitePanel = document.querySelector('#dbView-members .workspace-invite-panel');
   const settingsInviteRow = document.querySelector('#dbView-settings .invite-setting-row');
+  const deleteWorkspaceRow = document.getElementById('deleteWorkspaceRow');
 
   if (newBoardBtn) {
     newBoardBtn.classList.toggle('hidden', !canManage);
@@ -2557,6 +2820,7 @@ function applyWorkspaceContext(sessionUser, workspaces) {
   if (headerAddBtn) headerAddBtn.classList.toggle('hidden', !canManageCards);
   if (invitePanel) invitePanel.classList.toggle('hidden', !canManage);
   if (settingsInviteRow) settingsInviteRow.classList.toggle('hidden', !canManage);
+  if (deleteWorkspaceRow) deleteWorkspaceRow.classList.toggle('hidden', role !== 'owner');
   document.querySelectorAll('.invite-row').forEach(button => button.classList.toggle('hidden', !canManage));
   refreshSettingsStudio();
 
@@ -2573,6 +2837,7 @@ function renderNoWorkspaceState() {
   if (boardList) {
     boardList.innerHTML = '<button class="aside-board-item active"><div class="b-dot u-style-4"></div>Create or join a workspace first</button>';
   }
+  resetActiveBoardContext('TeamOps Dashboard');
   currentWorkspace = null;
   localStorage.removeItem('teamops_workspace_id');
   localStorage.removeItem('teamops_board_id');
@@ -2592,6 +2857,46 @@ function setActiveSidebarBoard(boardId) {
   document.querySelectorAll('.aside-board-item[data-board-id]').forEach(btn => {
     btn.classList.toggle('active', String(btn.dataset.boardId) === String(boardId));
   });
+}
+
+function resetActiveBoardContext(title = 'Boards') {
+  activeBoardData = null;
+  const titleEl = document.getElementById('dbHeaderTitle');
+  if (titleEl && document.getElementById('dbView-board')?.classList.contains('active')) {
+    titleEl.textContent = title;
+  }
+  const addCardBtn = document.querySelector('.h-add-btn');
+  if (addCardBtn) {
+    addCardBtn.classList.add('hidden');
+    addCardBtn.title = 'Create a board before adding cards';
+  }
+  const searchInput = document.querySelector('.h-search input');
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.disabled = true;
+    searchInput.placeholder = 'Create a board to search cards';
+  }
+  boardComments = [];
+  renderBoardComments();
+  renderBoardCommentCardTags();
+}
+
+function applyActiveBoardHeader(board) {
+  const titleEl = document.getElementById('dbHeaderTitle');
+  if (titleEl && document.getElementById('dbView-board')?.classList.contains('active')) {
+    titleEl.textContent = board?.name || board?.title || 'Board';
+  }
+  const canManageCards = ['owner', 'admin', 'member'].includes(currentWorkspaceRole);
+  const addCardBtn = document.querySelector('.h-add-btn');
+  if (addCardBtn) {
+    addCardBtn.classList.toggle('hidden', !canManageCards);
+    addCardBtn.title = canManageCards ? '' : 'Only owners, admins, and members can add cards';
+  }
+  const searchInput = document.querySelector('.h-search input');
+  if (searchInput) {
+    searchInput.disabled = false;
+    searchInput.placeholder = 'Search cards...';
+  }
 }
 
 async function loadWorkspaceBoards(workspaceId, role = currentWorkspaceRole) {
@@ -2618,7 +2923,13 @@ async function loadWorkspaceBoards(workspaceId, role = currentWorkspaceRole) {
     `).join('');
 
     if (!boards.length) {
+      localStorage.removeItem('teamops_board_id');
+      resetActiveBoardContext('Boards');
       boardList.innerHTML = '<button class="aside-board-item active"><div class="b-dot u-style-4"></div>No boards yet</button>';
+      await loadBoardData();
+      await loadActivityFeed({ silent: true });
+      renderSprintProgress();
+      refreshAnalyticsBoardSelector();
     }
 
     if (canManage) {
@@ -2694,7 +3005,48 @@ function setAnalyticsText(id, value) {
   }
 }
 
-function renderAnalyticsBars(containerId, rows, nameKey, valueKey) {
+const ASSIGNEE_CHART_COLORS = ['#7c5cfc', '#f59e0b', '#14b8a6', '#ef4444', '#3b82f6', '#84cc16', '#ec4899', '#64748b'];
+
+function getAssigneeChartRows(rows = []) {
+  return rows
+    .filter(row => row.assigneeId !== 'unassigned' && (Number(row.count) || 0) > 0)
+    .map((row, index) => ({
+      ...row,
+      chartColor: ASSIGNEE_CHART_COLORS[index % ASSIGNEE_CHART_COLORS.length],
+    }));
+}
+
+function renderAssigneeDonut(rows = []) {
+  const donut = document.getElementById('analyticsAssigneeDonut');
+  if (!donut) return;
+
+  const chartRows = getAssigneeChartRows(rows);
+  const total = chartRows.reduce((sum, row) => sum + (Number(row.count) || 0), 0);
+
+  if (!total) {
+    donut.style.setProperty('--donut-bg', '#f1efeb');
+    donut.title = 'No assigned cards yet';
+    donut.setAttribute('aria-label', 'No assigned cards yet');
+    return;
+  }
+
+  let cursor = 0;
+  const segments = chartRows.map(row => {
+    const value = Number(row.count) || 0;
+    const start = cursor;
+    cursor += (value / total) * 100;
+    return `${row.chartColor} ${start.toFixed(2)}% ${cursor.toFixed(2)}%`;
+  });
+  const label = chartRows
+    .map(row => `${row.assigneeName || 'Assigned member'}: ${Number(row.count) || 0}`)
+    .join(', ');
+
+  donut.style.setProperty('--donut-bg', `conic-gradient(${segments.join(', ')})`);
+  donut.title = label;
+  donut.setAttribute('aria-label', label);
+}
+
+function renderAnalyticsBars(containerId, rows, nameKey, valueKey, options = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
@@ -2706,10 +3058,16 @@ function renderAnalyticsBars(containerId, rows, nameKey, valueKey) {
 
   container.innerHTML = rows.map(row => {
     const value = Number(row[valueKey]) || 0;
+    const marker = options.colorKey && row[options.colorKey]
+      ? `<span class="db-bar-dot" style="background:${escapeHtml(row[options.colorKey])}"></span>`
+      : '';
+    const progressStyle = options.colorKey && row[options.colorKey]
+      ? ` style="--progress-color:${escapeHtml(row[options.colorKey])}"`
+      : '';
     return `
       <div class="db-bar-row">
-        <div class="db-bar-name">${escapeHtml(row[nameKey] || 'Unassigned')}</div>
-        <progress class="analytics-progress" max="${max}" value="${value}"></progress>
+        <div class="db-bar-name">${marker}${escapeHtml(row[nameKey] || 'Unassigned')}</div>
+        <progress class="analytics-progress" max="${max}" value="${value}"${progressStyle}></progress>
         <div class="db-bar-val">${value}</div>
       </div>
     `;
@@ -2784,6 +3142,55 @@ function renderWorkspaceAnalysis() {
   }).join('');
 }
 
+function boardHealthFromAnalytics(analytics = {}) {
+  const cardsPerColumn = Array.isArray(analytics.cardsPerColumn) ? analytics.cardsPerColumn : [];
+  const totalCards = cardsPerColumn.reduce((sum, row) => sum + (Number(row.count) || 0), 0);
+  const doneCards = cardsPerColumn
+    .filter(row => isDoneColumnTitle(row.columnTitle))
+    .reduce((sum, row) => sum + (Number(row.count) || 0), 0);
+  const openCards = Math.max(0, totalCards - doneCards);
+  const overdueCards = Number(analytics.overdueCardsCount) || 0;
+  const completion = totalCards ? Math.round((doneCards / totalCards) * 100) : 0;
+  const assigneeCount = (Array.isArray(analytics.cardsPerAssignee) ? analytics.cardsPerAssignee : [])
+    .filter(row => row.assigneeId !== 'unassigned' && (Number(row.count) || 0) > 0)
+    .length;
+  const busiestColumn = [...cardsPerColumn]
+    .filter(row => !isDoneColumnTitle(row.columnTitle))
+    .sort((a, b) => (Number(b.count) || 0) - (Number(a.count) || 0))[0];
+
+  return { totalCards, doneCards, openCards, overdueCards, completion, assigneeCount, busiestColumn };
+}
+
+function renderBoardSummary(analytics = {}, board = {}) {
+  const titleEl = document.getElementById('analyticsSummaryTitle');
+  const textEl = document.getElementById('analyticsSummaryText');
+  const recEl = document.getElementById('analyticsRecommendations');
+  if (!titleEl || !textEl || !recEl) return;
+
+  const health = boardHealthFromAnalytics(analytics);
+  const boardName = board?.name || board?.title || 'this board';
+  const riskLevel = health.overdueCards > 0 ? 'At risk' : health.completion >= 75 ? 'On track' : health.openCards ? 'In motion' : 'Ready';
+
+  titleEl.textContent = `${riskLevel}: ${boardName}`;
+  textEl.textContent = health.totalCards
+    ? `${health.doneCards}/${health.totalCards} cards are complete (${health.completion}%). ${health.openCards} card${health.openCards === 1 ? '' : 's'} remain open, with ${health.overdueCards} overdue and ${health.assigneeCount} active assignee${health.assigneeCount === 1 ? '' : 's'}.`
+    : 'No cards yet. Create a few cards, assign owners, and due dates to unlock board insight.';
+
+  const recommendations = [];
+  if (health.overdueCards > 0) recommendations.push(`Rescue ${health.overdueCards} overdue card${health.overdueCards === 1 ? '' : 's'} before adding more active work.`);
+  if (health.openCards > 0 && health.assigneeCount === 0) recommendations.push('Assign owners to open cards so accountability is visible.');
+  if (health.busiestColumn && Number(health.busiestColumn.count) > 0) recommendations.push(`Watch "${health.busiestColumn.columnTitle}" because it currently holds the most active work.`);
+  if (!recommendations.length && health.totalCards) recommendations.push('Board looks steady. Keep moving completed work into Done to preserve the weekly signal.');
+  if (!recommendations.length) recommendations.push('Start with a few cards, clear owners, and realistic due dates.');
+
+  recEl.innerHTML = recommendations.map((item, index) => `
+    <div class="analytics-recommendation">
+      <span>${index + 1}</span>
+      <p>${escapeHtml(item)}</p>
+    </div>
+  `).join('');
+}
+
 function mergeProjectBoardData(boards, stats) {
   const workspaceId = currentWorkspace?.id || localStorage.getItem('teamops_workspace_id') || '';
   const existingBoards = projectAllBoards.filter(board => String(board.workspaceId) !== String(workspaceId));
@@ -2851,8 +3258,11 @@ async function loadAnalyticsData(boardId = localStorage.getItem('teamops_board_i
       subtitle.textContent = `Live performance pulse for ${board?.name || board?.title || 'this board'} with cards, columns, and assignments.`;
     }
 
+    const assigneeChartRows = getAssigneeChartRows(cardsPerAssignee);
+    renderAssigneeDonut(cardsPerAssignee);
     renderAnalyticsBars('analyticsColumnBars', cardsPerColumn, 'columnTitle', 'count');
-    renderAnalyticsBars('analyticsAssigneeBars', cardsPerAssignee, 'assigneeName', 'count');
+    renderAnalyticsBars('analyticsAssigneeBars', assigneeChartRows, 'assigneeName', 'count', { colorKey: 'chartColor' });
+    renderBoardSummary(analytics, board);
 
     const analyticsView = document.getElementById('dbView-analytics');
     if (analyticsView?.classList.contains('active')) {
@@ -2980,18 +3390,67 @@ async function deleteCurrentBoard() {
   }
 }
 
-async function bootstrapSession() {
-  if (!getToken()) {
-    showView('auth');
-    switchTab('login');
-    return false;
+async function deleteCurrentWorkspace() {
+  const workspace = currentWorkspace;
+  const workspaceId = workspace?.id || localStorage.getItem('teamops_workspace_id');
+  const workspaceName = workspace?.name || 'this workspace';
+  if (!workspaceId) return;
+  if (currentWorkspaceRole !== 'owner') {
+    showToast('bi-shield-lock', 'Owner only', 'Only the workspace owner can delete a workspace.');
+    return;
   }
 
+  const confirmed = await showConfirmDialog({
+    title: 'Delete workspace',
+    message: `This permanently deletes "${workspaceName}", including its boards, cards, comments, invites, activity, and related notifications. This cannot be undone.`,
+    action: 'Continue',
+  });
+  if (!confirmed) return;
+
+  const typedName = window.prompt(`Type "${workspaceName}" to permanently delete this workspace.`);
+  if (typedName !== workspaceName) {
+    showToast('bi-shield-lock', 'Delete cancelled', 'Workspace name did not match.');
+    return;
+  }
+
+  try {
+    await apiRequest(`/workspaces/${workspaceId}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ confirmName: workspaceName }),
+    });
+
+    userWorkspaces = userWorkspaces.filter(item => String(item.id) !== String(workspaceId));
+    localStorage.removeItem('teamops_workspace_id');
+    localStorage.removeItem('teamops_board_id');
+    localStorage.removeItem('teamops_invite_code');
+    localStorage.removeItem('teamops_invite_link');
+    activeBoardData = null;
+    workspaceBoards = [];
+    workspaceMembers = [];
+    currentWorkspace = null;
+    currentWorkspaceRole = 'member';
+    projectBoardStats = [];
+    projectAllBoards = [];
+
+    showToast('bi-trash', 'Workspace deleted', `"${workspaceName}" was permanently removed.`);
+    if (userWorkspaces.length) {
+      await applyWorkspaceContext(JSON.parse(localStorage.getItem(USER_KEY) || '{}'), userWorkspaces);
+      switchDashboardView('board');
+    } else {
+      renderNoWorkspaceState();
+      showCreateWorkspace();
+    }
+  } catch (error) {
+    showToast('bi-exclamation-circle', 'Could not delete workspace', error.message);
+  }
+}
+
+async function bootstrapSession() {
   try {
     const me = await apiRequest('/auth/me');
     const workspaces = await apiRequest('/workspaces');
     if (me?.user) {
-      localStorage.setItem(USER_KEY, JSON.stringify(me.user));
+      localStorage.setItem(USER_KEY, JSON.stringify(compactStoredUser(me.user)));
       connectRealtime(me.user.id);
       
       if (workspaces && workspaces.length > 0) {
@@ -3056,6 +3515,7 @@ async function doForgotPassword() {
     const response = await fetch(`${API_BASE}/auth/forgot-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email }),
     });
 
@@ -3098,6 +3558,7 @@ async function doResetPassword() {
     const response = await fetch(`${API_BASE}/auth/reset-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email, token, password }),
     });
 
@@ -3139,10 +3600,12 @@ async function doLogin() {
     return;
   }
 
+  authRequestInFlight = true;
   try {
     const response = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email, password }),
     });
 
@@ -3153,11 +3616,14 @@ async function doLogin() {
     }
 
     saveSession(payload);
-    await bootstrapSession();
+    const signedIn = await bootstrapSession();
+    if (!signedIn) return;
     if (inviteCodeParam) showJoinWorkspace(inviteCodeParam);
     setTimeout(() => showToast('bi-person-check', `Welcome back, ${payload.user?.name || 'User'}!`, 'You are now signed in.'), 700);
   } catch (err) {
-    showAuthError(backendReachabilityMessage);
+    showAuthError(err?.message || 'Login failed. Please try again.');
+  } finally {
+    authRequestInFlight = false;
   }
 }
 
@@ -3190,6 +3656,7 @@ async function doSignup() {
     const response = await fetch(`${API_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ name: fullName, email, password }),
     });
 
@@ -3228,6 +3695,7 @@ async function doVerify() {
     const response = await fetch(`${API_BASE}/auth/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(verifyPayload),
     });
 
@@ -3302,11 +3770,19 @@ async function submitJoinWorkspace() {
     showFormError('joinWorkspaceError', error.message || 'Could not join workspace.');
   }
 }
-function doLogout() {
+async function doLogout() {
+  try {
+    await apiRequest('/auth/logout', { method: 'POST' });
+  } catch (_) {
+  }
+  if (teamopsSocket) {
+    teamopsSocket.disconnect();
+    teamopsSocket = null;
+  }
   clearSession();
   showView('auth');
   switchTab('login');
-  setTimeout(() => showToast('bi-box-arrow-right','Logged out','You have been signed out of Alpha workspace'), 350);
+  setTimeout(() => showToast('bi-box-arrow-right','Logged out','You have been signed out.'), 350);
 }
 
 async function handleGoogleCredential(response) {
@@ -3321,6 +3797,7 @@ async function handleGoogleCredential(response) {
     const apiResponse = await fetch(`${API_BASE}/auth/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ credential }),
     });
 
@@ -3353,12 +3830,12 @@ function initializeGoogleAuth() {
 
     if (googleButton) {
       window.google.accounts.id.renderButton(googleButton, {
-        theme: 'filled_black',
-        size: 'large',
-        text: 'continue_with',
-        shape: 'rectangular',
-        logo_alignment: 'center',
-        width: Math.min(340, Math.max(220, googleButton.offsetWidth || 320)),
+      theme: 'filled_black',
+      size: 'large',
+      text: 'continue_with',
+      shape: 'pill',
+      logo_alignment: 'left',
+      width: Math.min(340, Math.max(220, googleButton.offsetWidth || 320)),
       });
       googleButton.style.display = 'flex';
     }
@@ -3619,21 +4096,37 @@ function renderProjectsOverview() {
   const workspaces = Array.isArray(userWorkspaces) ? userWorkspaces : [];
   const boards = Array.isArray(projectAllBoards) ? projectAllBoards : [];
   const stats = Array.isArray(projectBoardStats) ? projectBoardStats : [];
+  const scopedWorkspaceId = currentWorkspace?.id || '';
+  const scopedWorkspaces = scopedWorkspaceId
+    ? workspaces.filter(workspace => String(workspace.id) === String(scopedWorkspaceId))
+    : workspaces;
+  const summaryWorkspaces = scopedWorkspaceId && !scopedWorkspaces.length && currentWorkspace
+    ? [currentWorkspace]
+    : scopedWorkspaces;
+  const scopedBoards = scopedWorkspaceId
+    ? boards.filter(board => String(board.workspaceId) === String(scopedWorkspaceId))
+    : boards;
+  const scopedBoardIds = new Set(scopedBoards.map(board => String(board.id)));
+  const scopedStats = scopedWorkspaceId
+    ? stats.filter(stat => scopedBoardIds.has(String(stat.boardId)))
+    : stats;
 
-  const totals = stats.reduce((acc, stat) => {
+  const totals = scopedStats.reduce((acc, stat) => {
     acc.totalCards += stat.totalCards || 0;
     acc.doneCards += stat.doneCards || 0;
     acc.overdueCards += stat.overdueCards || 0;
     return acc;
   }, { totalCards: 0, doneCards: 0, overdueCards: 0 });
 
-  const avgCompletion = stats.length
-    ? Math.round(stats.reduce((sum, stat) => sum + (stat.completion || 0), 0) / stats.length)
+  const emptyBoardCount = Math.max(0, scopedBoards.length - scopedStats.length);
+  const completionDivisor = scopedStats.length + emptyBoardCount;
+  const avgCompletion = completionDivisor
+    ? Math.round(scopedStats.reduce((sum, stat) => sum + (stat.completion || 0), 0) / completionDivisor)
     : 0;
 
-  if (activeBadge) activeBadge.textContent = `${boards.length} Active`;
+  if (activeBadge) activeBadge.textContent = `${scopedBoards.length} Active`;
   if (contributorBadge) {
-    const totalContributors = workspaces.reduce((sum, workspace) => sum + (Number(workspace.memberCount) || 0), 0);
+    const totalContributors = summaryWorkspaces.reduce((sum, workspace) => sum + (Number(workspace.memberCount) || 0), 0);
     contributorBadge.textContent = `${totalContributors} Contributors`;
   }
   if (budgetBadge) budgetBadge.textContent = totals.overdueCards ? `${totals.overdueCards} Overdue` : 'On budget';
@@ -3643,7 +4136,9 @@ function renderProjectsOverview() {
     avgMetric.dataset.finalText = `${avgCompletion}%`;
   }
   if (avgNote) {
-    avgNote.textContent = `${totals.doneCards}/${totals.totalCards} cards completed`;
+    avgNote.textContent = scopedBoards.length
+      ? `${totals.doneCards}/${totals.totalCards} cards completed`
+      : 'No boards yet';
   }
 
   if (!grid) return;
@@ -3786,7 +4281,7 @@ function getSprintProgressList() {
   let list = document.getElementById('sprintProgressList');
   if (list) return list;
 
-  const block = getPanelBlockByTitle('Sprint Progress');
+  const block = getPanelBlockByTitle('Board Progress');
   if (!block) return null;
   block.querySelectorAll('.prog-item').forEach(item => item.remove());
   list = document.createElement('div');
@@ -4239,15 +4734,18 @@ function renderNotifications() {
       return;
     }
     
-    const notifHtml = visibleNotifications.map(notif => `
+    const notifHtml = visibleNotifications.map(notif => {
+      const isDigest = notif.delivery_mode === 'digest';
+      return `
       <div class="db-activity-item ${notif.is_read ? '' : 'unread'}">
-        <div class="db-activity-icon ${notif.is_important ? 'important' : ''}"><i class="bi ${notif.is_important ? 'bi-star-fill' : 'bi-bell'}"></i></div>
+        <div class="db-activity-icon ${notif.is_important ? 'important' : ''}"><i class="bi ${notif.is_important ? 'bi-star-fill' : (isDigest ? 'bi-collection' : 'bi-bell')}"></i></div>
         <div class="db-activity-msg">${escapeHtml(notif.message)}</div>
         <div class="db-activity-time">${formatTimeAgo(new Date(notif.created_at))}</div>
         ${canPinNotifications ? `<button class="notif-important-btn ${notif.is_important ? 'active' : ''}" onclick="toggleNotificationImportant('${notif.id}')" title="${notif.is_important ? 'Unpin notification' : 'Pin notification'}" aria-label="${notif.is_important ? 'Unpin notification' : 'Pin notification'}"><i class="bi ${notif.is_important ? 'bi-star-fill' : 'bi-star'}"></i></button>` : ''}
         ${!notif.is_read ? `<button class="notif-mark-read-btn" onclick="markNotificationRead('${notif.id}')" title="Mark as read">✓</button>` : ''}
       </div>
-    `).join('');
+    `;
+    }).join('');
     
     if (dropdownList) dropdownList.innerHTML = notifHtml;
     if (centerList) centerList.innerHTML = notifHtml;
@@ -4263,6 +4761,8 @@ function updateNotificationHero(unread, needsAction, canPinNotifications) {
   const heroValue = document.getElementById('notifHeroUnread');
   const heroNote = document.getElementById('notifHeroNote');
   if (heroValue) {
+    heroValue.dataset.countupAnimation = 'notifications-live';
+    delete heroValue.dataset.finalText;
     heroValue.textContent = String(unread);
     heroValue.setAttribute('data-countup', String(unread));
   }
@@ -4388,6 +4888,64 @@ function sendComment(btn) {
   if (ta.value.trim()) { showToast('bi-chat-dots','Comment posted','Broadcast to all board members'); ta.value = ''; }
 }
 
+function readBoardCommentState() {
+  try {
+    const state = JSON.parse(localStorage.getItem(BOARD_COMMENT_READ_KEY) || '{}');
+    return state && typeof state === 'object' ? state : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function getBoardCommentReadAt(boardId = getActiveBoardId()) {
+  const value = readBoardCommentState()[String(boardId || '')];
+  const parsed = value ? new Date(value).getTime() : 0;
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getBoardCommentTime(comment = {}) {
+  const parsed = new Date(comment.created_at || comment.createdAt || 0).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getUnreadBoardCommentCount(boardId = getActiveBoardId()) {
+  const readAt = getBoardCommentReadAt(boardId);
+  const currentUserId = getCurrentUserId();
+  return boardComments.filter(comment => (
+    getBoardCommentTime(comment) > readAt
+    && String(comment.user_id || '') !== String(currentUserId || '')
+  )).length;
+}
+
+function updateBoardCommentBadge() {
+  const countEl = document.getElementById('boardCommentsFabCount');
+  if (!countEl) return;
+  const unread = getUnreadBoardCommentCount();
+  countEl.textContent = String(unread);
+  countEl.classList.toggle('hidden', unread <= 0);
+}
+
+function markBoardCommentsRead(boardId = getActiveBoardId()) {
+  if (!boardId) return;
+  const newestCommentTime = Math.max(Date.now(), ...boardComments.map(getBoardCommentTime));
+  const state = readBoardCommentState();
+  state[String(boardId)] = new Date(newestCommentTime).toISOString();
+  localStorage.setItem(BOARD_COMMENT_READ_KEY, JSON.stringify(state));
+  updateBoardCommentBadge();
+}
+
+function isBoardCommentsPaneOpen() {
+  return document.getElementById('boardCommentsPane')?.classList.contains('open');
+}
+
+function scrollBoardCommentsToBottom() {
+  const list = document.getElementById('boardCommentsList');
+  if (!list) return;
+  requestAnimationFrame(() => {
+    list.scrollTop = list.scrollHeight;
+  });
+}
+
 function toggleBoardCommentsPane(forceOpen) {
   const pane = document.getElementById('boardCommentsPane');
   if (!pane) return;
@@ -4399,7 +4957,10 @@ function toggleBoardCommentsPane(forceOpen) {
     }
     renderBoardCommentCardTags();
     loadBoardComments();
+    scrollBoardCommentsToBottom();
     setTimeout(() => document.getElementById('boardCommentInput')?.focus(), 80);
+  } else {
+    updateBoardCommentBadge();
   }
 }
 
@@ -4557,9 +5118,8 @@ function selectBoardMention(index = 0) {
 
 function renderBoardComments() {
   const list = document.getElementById('boardCommentsList');
-  const countEl = document.getElementById('boardCommentsFabCount');
   const compose = document.querySelector('.board-comment-compose');
-  if (countEl) countEl.textContent = String(boardComments.length);
+  updateBoardCommentBadge();
   if (compose) compose.classList.toggle('hidden', currentWorkspaceRole === 'viewer');
   if (!list) return;
 
@@ -4570,13 +5130,14 @@ function renderBoardComments() {
 
   const currentUserId = getCurrentUserId();
   const canModerate = ['owner', 'admin'].includes(currentWorkspaceRole);
-  list.innerHTML = boardComments.map((comment, index) => {
+  const chronologicalComments = [...boardComments].sort((a, b) => getBoardCommentTime(a) - getBoardCommentTime(b));
+  list.innerHTML = chronologicalComments.map((comment) => {
     const isAuthor = String(comment.user_id) === String(currentUserId);
     const refs = Array.isArray(comment.tagged_cards) ? comment.tagged_cards.filter(card => card?.id) : [];
     const mentionedMembers = Array.isArray(comment.tagged_members) ? comment.tagged_members.filter(member => member?.id) : [];
     const avatarSeed = comment.user_id || comment.user_name || comment.userName || comment.id || '';
     return `
-      <div class="board-comment-item">
+      <div class="board-comment-item ${isAuthor ? 'own' : ''}">
         <div class="card-comment-avatar ${commentAvatarClass(avatarSeed)}">${escapeHtml(memberInitial(comment.user_name || 'U'))}</div>
         <div class="board-comment-main">
           <div class="board-comment-meta">
@@ -4610,6 +5171,10 @@ async function loadBoardComments() {
     const payload = await apiRequest(`/boards/${boardId}/comments`);
     boardComments = Array.isArray(payload?.comments) ? payload.comments : [];
     renderBoardComments();
+    if (isBoardCommentsPaneOpen()) {
+      markBoardCommentsRead(boardId);
+      scrollBoardCommentsToBottom();
+    }
   } catch (error) {
     if (list) list.innerHTML = '<div class="notif-empty">Could not load board comments</div>';
     showToast('bi-exclamation-circle', 'Comments error', error.message);
@@ -4647,6 +5212,8 @@ async function postBoardComment() {
     if (payload?.comment) {
       boardComments = [payload.comment, ...boardComments.filter(item => String(item.id) !== String(payload.comment.id))];
       renderBoardComments();
+      markBoardCommentsRead(boardId);
+      scrollBoardCommentsToBottom();
     }
     if (input) input.value = '';
     selectedBoardCommentCardIds.clear();
@@ -4668,6 +5235,7 @@ async function deleteBoardComment(commentId) {
     await apiRequest(`/boards/${boardId}/comments/${commentId}`, { method: 'DELETE' });
     boardComments = boardComments.filter(comment => String(comment.id) !== String(commentId));
     renderBoardComments();
+    if (isBoardCommentsPaneOpen()) markBoardCommentsRead(boardId);
   } catch (error) {
     showToast('bi-exclamation-circle', 'Could not delete comment', error.message);
   }
@@ -4703,6 +5271,9 @@ let projectAllBoards = [];
 let boardFilters = { assignee: 'all', priority: 'all', dueDate: 'all' };
 let activeSavedViewId = '';
 let activeSavedViewName = '';
+let draggedBoardCard = null;
+let draggedBoardSourceColumnId = '';
+let boardDragHandlersBound = false;
 const boardAnalyticsCache = new Map();
 const BOARD_ANALYTICS_CACHE_MS = 8000;
 const boardColors = ['#7c5cfc', '#14b8a6', '#ff4d6d', '#f59e0b', '#38bdf8', '#22c55e'];
@@ -4909,8 +5480,8 @@ async function submitCardForm(e) {
   const assigneeId = document.getElementById('cardAssignee').value;
   const selectedColumnId = document.getElementById('cardColumn').value;
 
-  if (!title.trim() || !selectedColumnId) {
-    showToast('bi-exclamation-circle', 'Error', 'Please fill in required fields');
+  if (!title.trim() || !selectedColumnId || !dueDate) {
+    showToast('bi-exclamation-circle', 'Error', 'Please add a title, column, and due date.');
     return;
   }
 
@@ -4939,7 +5510,7 @@ async function submitCardForm(e) {
       title,
       description,
       priority,
-      dueDate: dueDate || null,
+      dueDate,
       assigneeId: assigneeId || null,
     };
     const path = currentEditingCardId
@@ -5067,13 +5638,30 @@ async function loadBoardData() {
   if (!boardContainer) return;
 
   if (!boardId) {
+    resetActiveBoardContext('Boards');
     const canManageBoards = ['owner', 'admin'].includes(currentWorkspaceRole);
     boardContainer.innerHTML = `
       <div class="board-empty-state">
-        <i class="bi bi-kanban"></i>
-        <h3>Create or join a workspace, then create a board</h3>
-        <p>Boards hold your columns, cards, and real-time activity.</p>
-        ${canManageBoards ? '<button class="add-col-btn" onclick="createBoardFromSidebar()">+ New board</button>' : ''}
+        <div class="board-empty-art" aria-hidden="true">
+          <div class="board-empty-column">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="board-empty-column accent">
+            <span></span><span></span>
+          </div>
+          <div class="board-empty-spark"><i class="bi bi-stars"></i></div>
+        </div>
+        <div class="board-empty-copy">
+          <div class="board-empty-kicker">Fresh workspace</div>
+          <h3>Start with your first board</h3>
+          <p>Create a board, add the default columns, and invite the team when you are ready.</p>
+        </div>
+        ${canManageBoards ? `
+          <div class="board-empty-actions">
+            <button class="board-empty-primary" onclick="createBoardFromSidebar()"><i class="bi bi-plus-lg"></i> New board</button>
+            <button class="board-empty-secondary" onclick="switchDashboardView('members')"><i class="bi bi-people"></i> Invite team</button>
+          </div>
+        ` : '<div class="board-empty-note">Ask an owner or admin to create the first board.</div>'}
       </div>
     `;
     return;
@@ -5081,15 +5669,9 @@ async function loadBoardData() {
 
   try {
     joinBoardRoom(boardId);
-    const token = getToken();
-    const response = await fetch(`${API_BASE}/boards/${boardId}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-
-    if (!response.ok) throw new Error('Failed to load board');
-
-    const board = await response.json();
+    const board = await apiRequest(`/boards/${boardId}`);
     activeBoardData = board;
+    applyActiveBoardHeader(board);
     renderBoard(board);
     renderBoardCommentCardTags();
     loadBoardComments();
@@ -5401,15 +5983,25 @@ function columnIndicatorClass(title, index) {
   return ['ci-todo', 'ci-prog', 'ci-rev', 'ci-done'][index % 4];
 }
 
+function renderAssigneeAvatar(avatarUrl, initial, name = 'Assigned member') {
+  const safeInitial = escapeHtml(initial || 'U');
+  const safeName = escapeHtml(name || 'Assigned member');
+  const fallback = `<span class="c-av-initial">${safeInitial}</span>`;
+  const image = avatarUrl
+    ? `<img src="${escapeHtml(avatarUrl)}" alt="${safeName}" loading="lazy" onerror="this.remove(); this.parentElement.classList.remove('c-av-has-image'); this.parentElement.classList.add('c-av-fallback');">`
+    : '';
+  return `<div class="c-av u-style-4 ${avatarUrl ? 'c-av-has-image' : 'c-av-fallback'}" title="${safeName}">${image}${fallback}</div>`;
+}
+
 function renderCard(card) {
   const priority = card.priority || 'medium';
   const assigneeMember = getWorkspaceMemberById(card.assignee_id);
   const assigneeName = assigneeMember?.name || assigneeMember?.email || card.assignee_name || card.assignee_email || '';
   const assigneeAvatarUrl = assigneeMember?.avatar_url || assigneeMember?.avatarUrl || card.assignee_avatar_url || card.assigneeAvatarUrl || '';
   const assigneeInitial = assigneeName?.charAt(0)?.toUpperCase() || card.assignee_id?.charAt(0)?.toUpperCase() || '';
-  const assigneeAvatar = assigneeInitial
-    ? `<div class="c-av u-style-4" title="${escapeHtml(assigneeName || 'Assigned member')}">${assigneeAvatarUrl ? `<img src="${escapeHtml(assigneeAvatarUrl)}" alt="${escapeHtml(assigneeName || 'Assigned member')}">` : escapeHtml(assigneeInitial)}</div>`
-    : '<div class="c-av c-av-empty" title="Unassigned"><i class="bi bi-person"></i></div>';
+  const assigneeAvatar = card.assignee_id
+    ? renderAssigneeAvatar(assigneeAvatarUrl, assigneeInitial, assigneeName)
+    : '';
   return `
     <div class="b-card" draggable="${['owner', 'admin', 'member'].includes(currentWorkspaceRole) ? 'true' : 'false'}" data-card-id="${card.id}" onclick="openCardById('${card.id}')">
       <div class="card-tags"><span class="c-tag ct-v">Task</span></div>
@@ -5572,21 +6164,28 @@ function openCardDetail(card) {
   openCardModal(card.column_id, card);
 }
 
-function setupDragDrop(board) {
-  if (!['owner', 'admin', 'member'].includes(currentWorkspaceRole)) return;
-  let dragged = null, srcCol = null;
-  
+function bindBoardDragDocumentHandlers() {
+  if (boardDragHandlersBound) return;
+  boardDragHandlersBound = true;
+
   document.addEventListener('dragstart', e => {
     const c = e.target.closest('.b-card');
     if (!c) return;
-    dragged = c;
-    srcCol = c.closest('.b-cards')?.dataset?.columnId || '';
+    draggedBoardCard = c;
+    draggedBoardSourceColumnId = c.closest('.b-cards')?.dataset?.columnId || '';
     setTimeout(() => c.classList.add('dragging'), 0);
   });
 
   document.addEventListener('dragend', () => {
-    if (dragged) { dragged.classList.remove('dragging'); dragged = null; }
+    if (draggedBoardCard) draggedBoardCard.classList.remove('dragging');
+    draggedBoardCard = null;
+    draggedBoardSourceColumnId = '';
   });
+}
+
+function setupDragDrop(board) {
+  if (!['owner', 'admin', 'member'].includes(currentWorkspaceRole)) return;
+  bindBoardDragDocumentHandlers();
 
   document.querySelectorAll('.b-cards').forEach(col => {
     col.addEventListener('dragover', e => {
@@ -5600,11 +6199,11 @@ function setupDragDrop(board) {
     col.addEventListener('drop', async e => {
       e.preventDefault();
       col.style.outline = '';
-      if (!dragged || col.contains(dragged)) return;
+      if (!draggedBoardCard || col.contains(draggedBoardCard)) return;
 
       const targetColumnId = col.dataset.columnId;
       const targetColumn = board.columns.find(column => String(column.id) === String(targetColumnId));
-      const cardId = dragged.dataset.cardId;
+      const cardId = draggedBoardCard.dataset.cardId;
       const card = board.columns.flatMap(c => c.cards || []).find(c => String(c.id) === String(cardId));
       
       if (card && targetColumn) {
@@ -5612,16 +6211,14 @@ function setupDragDrop(board) {
         
         if (boardId) {
           try {
-            const token = getToken();
-            await fetch(`${API_BASE}/boards/${boardId}/cards/${card.id}/move`, {
+            await apiRequest(`/boards/${boardId}/cards/${card.id}/move`, {
               method: 'PATCH',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
               body: JSON.stringify({ toColumnId: targetColumn.id, newIndex: 0 }),
             });
             
-            col.appendChild(dragged);
+            col.appendChild(draggedBoardCard);
             showToast('bi-arrow-left-right', 'Card moved', `Moved to ${targetColumn.title}`);
-            srcCol = targetColumn.id;
+            draggedBoardSourceColumnId = targetColumn.id;
             await loadBoardData();
           } catch (err) {
             console.error('Move error:', err);
@@ -5699,7 +6296,7 @@ if (verificationToken) {
   }, 100);
 } else {
   bootstrapSession().then(() => {
-    if (inviteCodeParam && getToken()) showJoinWorkspace(inviteCodeParam);
+    if (inviteCodeParam && hasSessionHint()) showJoinWorkspace(inviteCodeParam);
   });
 }
 
@@ -5737,15 +6334,18 @@ async function loadProfileView() {
 
     const img = document.getElementById('profAvatarImg');
     const initial = document.getElementById('profAvatarInitial');
+    const removeBtn = document.getElementById('profAvatarRemoveBtn');
     const avatarUrl = u.avatar_url || u.avatarUrl;
     if (avatarUrl) {
       img.src = avatarUrl;
       img.style.display = '';
       initial.style.display = 'none';
+      if (removeBtn) removeBtn.style.display = '';
     } else {
       img.style.display = 'none';
       initial.style.display = '';
       initial.textContent = getUserInitial(u);
+      if (removeBtn) removeBtn.style.display = 'none';
     }
 
     const strip = document.getElementById('profWorkspaceStrip');
@@ -5754,6 +6354,7 @@ async function loadProfileView() {
         ? u.workspaces.map(ws => `<span class="prof-ws-badge">${ws.name}<strong>${ws.role}</strong></span>`).join('')
         : '<span class="prof-muted">No workspaces yet.</span>';
     }
+    syncCurrentUserProfileState(u || {});
   } catch (err) {
     showProfMsg('profInfoMsg', 'error', 'Could not load profile: ' + err.message);
   }
@@ -5832,15 +6433,49 @@ function handleAvatarUpload(event) {
   }
   const reader = new FileReader();
   reader.onload = () => {
-    profAvatarBase64 = reader.result;
-    const img = document.getElementById('profAvatarImg');
-    const initial = document.getElementById('profAvatarInitial');
-    img.src = profAvatarBase64;
-    img.style.display = '';
-    initial.style.display = 'none';
-    showProfMsg('profInfoMsg', 'info', 'Avatar ready — click Save to apply.');
+    const source = new Image();
+    source.onload = () => {
+      const maxSize = 360;
+      const scale = Math.min(1, maxSize / Math.max(source.width, source.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(source.width * scale));
+      canvas.height = Math.max(1, Math.round(source.height * scale));
+      const context = canvas.getContext('2d');
+      context.drawImage(source, 0, 0, canvas.width, canvas.height);
+      profAvatarBase64 = canvas.toDataURL('image/jpeg', 0.82);
+      const img = document.getElementById('profAvatarImg');
+      const initial = document.getElementById('profAvatarInitial');
+      const removeBtn = document.getElementById('profAvatarRemoveBtn');
+      img.src = profAvatarBase64;
+      img.style.display = '';
+      initial.style.display = 'none';
+      if (removeBtn) removeBtn.style.display = '';
+      showProfMsg('profInfoMsg', 'info', 'Avatar ready — click Save to apply.');
+    };
+    source.onerror = () => showProfMsg('profInfoMsg', 'error', 'Could not read that image.');
+    source.src = reader.result;
   };
   reader.readAsDataURL(file);
+}
+
+function removeProfileAvatar() {
+  profAvatarBase64 = '';
+  const img = document.getElementById('profAvatarImg');
+  const initial = document.getElementById('profAvatarInitial');
+  const removeBtn = document.getElementById('profAvatarRemoveBtn');
+  const name = document.getElementById('profNameInput')?.value?.trim() || '';
+  if (img) {
+    img.removeAttribute('src');
+    img.style.display = 'none';
+  }
+  if (initial) {
+    initial.textContent = getUserInitial({ name });
+    initial.style.display = '';
+  }
+  if (removeBtn) removeBtn.style.display = 'none';
+  const fileInput = document.getElementById('avatarFileInput');
+  if (fileInput) fileInput.value = '';
+  showProfMsg('profInfoMsg', 'info', 'Profile picture will be removed when you save.');
 }
 
 async function saveProfileInfo() {
@@ -5852,9 +6487,12 @@ async function saveProfileInfo() {
     if (profAvatarBase64 !== null) body.avatar = profAvatarBase64;
     const data = await apiRequest('/user/profile', { method: 'PATCH', body: JSON.stringify(body) });
     profAvatarBase64 = null;
-    updateUserChrome(data.user || { name });
+    syncCurrentUserProfileState(data.user || { name });
     const initial = document.getElementById('profAvatarInitial');
     if (initial) initial.textContent = getUserInitial(data.user || { name });
+    const removeBtn = document.getElementById('profAvatarRemoveBtn');
+    const savedAvatar = data.user?.avatar_url || data.user?.avatarUrl;
+    if (removeBtn) removeBtn.style.display = savedAvatar ? '' : 'none';
     showProfMsg('profInfoMsg', 'success', 'Profile saved successfully.');
   } catch (err) {
     showProfMsg('profInfoMsg', 'error', err.message || 'Could not save profile.');

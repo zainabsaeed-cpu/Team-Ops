@@ -1,4 +1,5 @@
-const { Activity, Notification, formatActivityFeed, formatNotification } = require('../models');
+const { Activity, Notification, Workspace, formatActivityFeed, formatNotification } = require('../models');
+const { formatAutomationSettings, shouldDigestNotification } = require('./automationSettings');
 
 function emitBoardEvent(io, boardId, eventName, payload) {
   if (!io || !boardId || !eventName) {
@@ -42,12 +43,47 @@ async function createNotification(firstArg, userIdArg, messageArg) {
   const options = typeof firstArg === 'object' && firstArg !== null && !firstArg.emit
     ? firstArg
     : { io: firstArg, userId: userIdArg, message: messageArg };
-  const { io, userId, message, isImportant = false } = options;
+  const { io, userId, message, isImportant = false, workspaceId = null } = options;
+  const workspace = workspaceId ? await Workspace.findById(workspaceId).select('automationSettings').lean() : null;
+  const settings = formatAutomationSettings(workspace || {});
+  const shouldDigest = workspaceId && shouldDigestNotification(settings, { isImportant, message });
+
+  if (shouldDigest) {
+    const digestDate = new Date().toISOString().slice(0, 10);
+    const notification = await Notification.findOneAndUpdate(
+      {
+        user: userId,
+        workspace: workspaceId,
+        delivery_mode: 'digest',
+        digest_date: digestDate,
+        is_read: false,
+      },
+      {
+        $setOnInsert: {
+          user: userId,
+          workspace: workspaceId,
+          is_important: false,
+          delivery_mode: 'digest',
+          digest_date: digestDate,
+        },
+        $inc: { digest_count: 1 },
+      },
+      { upsert: true, new: true },
+    );
+    notification.message = `Digest: ${notification.digest_count} non-critical update${notification.digest_count === 1 ? '' : 's'} waiting`;
+    await notification.save();
+
+    const payload = formatNotification(notification.toObject());
+    emitUserEvent(io, userId, 'notification:new', payload);
+    return payload;
+  }
 
   const notification = await Notification.create({
     user: userId,
+    workspace: workspaceId,
     message,
     is_important: Boolean(isImportant),
+    delivery_mode: 'instant',
   });
 
   const payload = formatNotification(notification.toObject());
