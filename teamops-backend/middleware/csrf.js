@@ -1,4 +1,4 @@
-const { CSRF_COOKIE_NAME, SESSION_COOKIE_NAME, verifyCsrfToken } = require('../utils/authCookies');
+const { SESSION_COOKIE_NAME, verifyCsrfToken } = require('../utils/authCookies');
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 const EXEMPT_PATHS = new Set([
@@ -21,10 +21,9 @@ module.exports = (req, res, next) => {
         return next();
     }
 
-    const csrfCookie = req.cookies?.[CSRF_COOKIE_NAME] || '';
     const csrfHeader = req.get('x-csrf-token') || '';
 
-    if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader || !verifyCsrfToken(csrfCookie)) {
+    if (!csrfHeader || !verifyCsrfToken(csrfHeader)) {
         return res.status(403).json({ error: 'Invalid CSRF token' });
     }
 
