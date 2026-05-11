@@ -16,12 +16,12 @@ services:
       - key: CORS_ORIGIN
         sync: false
 
-  - type: static_site
+  - type: web
     name: teamops-frontend
-    env: static
+    runtime: static
     plan: free
     buildCommand: cd teamops-frontend && npm install && npm run build
-    publishPath: teamops-frontend/dist
+    staticPublishPath: teamops-frontend/dist
     autoDeploy: true
     envVars:
       - key: VITE_API_URL
