@@ -3670,14 +3670,23 @@ async function doSignup() {
       return;
     }
 
-    document.getElementById('verificationEmail').textContent = payload?.email || email;
     document.getElementById('signupFirstName').value = '';
     document.getElementById('signupLastName').value = '';
     document.getElementById('signupEmail').value = '';
     document.getElementById('signupPassword').value = '';
-    sessionStorage.setItem('pendingVerificationEmail', payload?.email || email);
-    switchTab('verification');
-    showToast('bi-envelope-check', 'Check your email', 'Enter the verification code to finish registration.');
+
+    if (payload?.requiresVerification) {
+      document.getElementById('verificationEmail').textContent = payload?.email || email;
+      sessionStorage.setItem('pendingVerificationEmail', payload?.email || email);
+      switchTab('verification');
+      showToast('bi-envelope-check', 'Check your email', 'Enter the verification code to finish registration.');
+      return;
+    }
+
+    saveSession(payload);
+    const signedIn = await bootstrapSession();
+    if (!signedIn) return;
+    showToast('bi-person-plus', `Welcome, ${payload.user?.name || firstName}!`, 'Your account is ready.');
   } catch (err) {
     showAuthError(backendReachabilityMessage, 'signupError');
   }

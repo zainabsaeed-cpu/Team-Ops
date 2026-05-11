@@ -77,23 +77,16 @@ exports.register = async (req, res) => {
                     name: trimmedName,
                     passwordHash: hashed,
                     authProvider: 'email',
-                    verified: false,
+                    verified: true,
                 },
                 { new: true }
             );
 
             await VerificationToken.deleteMany({ userId: user._id });
-            const otp = String(Math.floor(100000 + Math.random() * 900000));
-            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-            await VerificationToken.create({ userId: user._id, token: otp, expiresAt });
-            const emailPayload = await sendVerificationOrHandleFailure(normalizedEmail, otp);
-
-            return res.status(200).json({
-                user: formatUser(user),
+            return sendSession(res, user, 200, {
                 email: user.email,
-                requiresVerification: true,
-                ...emailPayload,
-                message: 'Verification code sent. Verify your email to finish registration.'
+                requiresVerification: false,
+                message: 'Account created. You are signed in.'
             });
         }
 
@@ -102,20 +95,13 @@ exports.register = async (req, res) => {
             email: normalizedEmail, 
             passwordHash: hashed,
             authProvider: 'email',
-            verified: false 
+            verified: true
         });
 
-        const otp = String(Math.floor(100000 + Math.random() * 900000));
-        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-        await VerificationToken.create({ userId: user._id, token: otp, expiresAt });
-        const emailPayload = await sendVerificationOrHandleFailure(normalizedEmail, otp);
-
-        res.status(201).json({
-            user: formatUser(user),
+        return sendSession(res, user, 201, {
             email: user.email,
-            requiresVerification: true,
-            ...emailPayload,
-            message: 'Verification code sent. Verify your email to finish registration.'
+            requiresVerification: false,
+            message: 'Account created. You are signed in.'
         });
     } catch (err) {
         console.error('Register error:', err);
