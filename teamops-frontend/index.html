@@ -2212,7 +2212,11 @@ function connectRealtime(userId = '') {
   teamopsSocket.on('board:comment:deleted', payload => {
     const boardId = localStorage.getItem('teamops_board_id');
     if (payload?.boardId && String(payload.boardId) !== String(boardId)) return;
-    if (payload?.commentId) {
+    if (payload?.comment) {
+      boardComments = boardComments.map(item => String(item.id) === String(payload.comment.id) ? payload.comment : item);
+      renderBoardComments();
+      if (isBoardCommentsPaneOpen()) markBoardCommentsRead(boardId);
+    } else if (payload?.commentId) {
       boardComments = boardComments.filter(item => String(item.id) !== String(payload.commentId));
       renderBoardComments();
       if (isBoardCommentsPaneOpen()) markBoardCommentsRead(boardId);
@@ -5133,20 +5137,26 @@ function renderBoardComments() {
   const chronologicalComments = [...boardComments].sort((a, b) => getBoardCommentTime(a) - getBoardCommentTime(b));
   list.innerHTML = chronologicalComments.map((comment) => {
     const isAuthor = String(comment.user_id) === String(currentUserId);
+    const isDeleted = Boolean(comment.is_deleted);
+    const deletedLabel = comment.deleted_by_role === 'owner'
+      ? 'This message was deleted by owner'
+      : comment.deleted_by_role === 'admin'
+        ? 'This message was deleted by admin'
+        : 'This message was deleted';
     const refs = Array.isArray(comment.tagged_cards) ? comment.tagged_cards.filter(card => card?.id) : [];
     const mentionedMembers = Array.isArray(comment.tagged_members) ? comment.tagged_members.filter(member => member?.id) : [];
     const avatarSeed = comment.user_id || comment.user_name || comment.userName || comment.id || '';
     return `
-      <div class="board-comment-item ${isAuthor ? 'own' : ''}">
+      <div class="board-comment-item ${isAuthor ? 'own' : ''} ${isDeleted ? 'deleted' : ''}">
         <div class="card-comment-avatar ${commentAvatarClass(avatarSeed)}">${escapeHtml(memberInitial(comment.user_name || 'U'))}</div>
         <div class="board-comment-main">
           <div class="board-comment-meta">
             <span class="board-comment-author">${escapeHtml(comment.user_name || 'Teammate')}</span>
             <span>${formatTimeAgo(new Date(comment.created_at || Date.now()))}</span>
-            ${(isAuthor || canModerate) ? `<button class="board-comment-delete" onclick="deleteBoardComment('${comment.id}')" title="Delete comment"><i class="bi bi-trash"></i></button>` : ''}
+            ${(!isDeleted && (isAuthor || canModerate)) ? `<button class="board-comment-delete" onclick="deleteBoardComment('${comment.id}')" title="Delete comment"><i class="bi bi-trash"></i></button>` : ''}
           </div>
-          <div class="board-comment-text">${escapeHtml(comment.content || '')}</div>
-          ${(mentionedMembers.length || refs.length) ? `<div class="board-comment-refs">
+          <div class="board-comment-text">${isDeleted ? `<i class="bi bi-ban"></i> ${escapeHtml(deletedLabel)}` : escapeHtml(comment.content || '')}</div>
+          ${(!isDeleted && (mentionedMembers.length || refs.length)) ? `<div class="board-comment-refs">
             ${mentionedMembers.map(member => `<span class="board-comment-ref member-mention-ref">@${escapeHtml(member.name || member.email || 'Member')}</span>`).join('')}
             ${refs.map(card => `<span class="board-comment-ref">#${escapeHtml(card.title || 'Card')}</span>`).join('')}
           </div>` : ''}
@@ -5232,8 +5242,12 @@ async function deleteBoardComment(commentId) {
   if (!boardId || !commentId) return;
 
   try {
-    await apiRequest(`/boards/${boardId}/comments/${commentId}`, { method: 'DELETE' });
-    boardComments = boardComments.filter(comment => String(comment.id) !== String(commentId));
+    const payload = await apiRequest(`/boards/${boardId}/comments/${commentId}`, { method: 'DELETE' });
+    if (payload?.comment) {
+      boardComments = boardComments.map(comment => String(comment.id) === String(commentId) ? payload.comment : comment);
+    } else {
+      boardComments = boardComments.filter(comment => String(comment.id) !== String(commentId));
+    }
     renderBoardComments();
     if (isBoardCommentsPaneOpen()) markBoardCommentsRead(boardId);
   } catch (error) {

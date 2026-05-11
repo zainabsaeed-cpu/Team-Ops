@@ -127,6 +127,9 @@ const commentSchema = new Schema(
     taggedCards: [{ type: Schema.Types.ObjectId, ref: 'Card' }],
     taggedMembers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     content: { type: String, required: true, trim: true, maxlength: 2000 },
+    deletedAt: { type: Date, default: null, index: true },
+    deletedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    deletedByRole: { type: String, enum: ['owner', 'admin', 'author', 'member'], default: null },
   },
   { timestamps: true },
 )
@@ -270,7 +273,11 @@ const formatComment = (comment) => ({
   card_id: toId(comment.card),
   user_id: toId(comment.user?._id || comment.user),
   user_name: comment.user?.name || '',
-  content: comment.content,
+  content: comment.deletedAt ? '' : comment.content,
+  is_deleted: Boolean(comment.deletedAt),
+  deleted_at: comment.deletedAt || null,
+  deleted_by: toId(comment.deletedBy),
+  deleted_by_role: comment.deletedByRole || '',
   tagged_cards: Array.isArray(comment.taggedCards)
     ? comment.taggedCards.map((card) => ({
         id: toId(card?._id || card),

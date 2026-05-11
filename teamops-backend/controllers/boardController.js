@@ -795,13 +795,29 @@ exports.deleteBoardComment = async (req, res) => {
             return res.status(403).json({ error: 'You can only delete your own comments' });
         }
 
-        await Comment.deleteOne({ _id: commentId });
+        const isAuthor = String(comment.user) === String(req.userId);
+        const deletedByRole = isAuthor ? 'author' : access.member.role;
+        comment.content = 'Deleted message';
+        comment.taggedCards = [];
+        comment.taggedMembers = [];
+        comment.deletedAt = new Date();
+        comment.deletedBy = req.userId;
+        comment.deletedByRole = deletedByRole;
+        await comment.save();
+
+        const populatedComment = await Comment.findById(comment._id)
+            .populate('user', 'name email _id')
+            .populate('taggedCards', 'title')
+            .populate('taggedMembers', 'name email _id')
+            .lean();
+        const formattedComment = formatComment(populatedComment);
         emitBoardEvent(req.app.get('io'), boardId, 'board:comment:deleted', {
             boardId,
             commentId,
+            comment: formattedComment,
         });
 
-        res.json({ message: 'Comment deleted' });
+        res.json({ message: 'Comment deleted', comment: formattedComment });
     } catch (err) {
         console.error('Delete board comment error:', err);
         res.status(500).json({ error: 'Failed to delete board comment' });

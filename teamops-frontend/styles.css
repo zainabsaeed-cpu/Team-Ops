@@ -3342,6 +3342,17 @@ footer {
   border-color: rgba(124, 92, 252, 0.24);
   background: linear-gradient(135deg, rgba(124, 92, 252, 0.12), rgba(124, 92, 252, 0.06));
 }
+.board-comment-item.deleted .board-comment-main {
+  border-style: dashed;
+  background: #f7f6f3;
+}
+.board-comment-item.deleted .board-comment-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted2);
+  font-style: italic;
+}
 .board-comment-meta { display: flex; align-items: center; gap: 6px; color: var(--muted2); font-size: 11px; margin-bottom: 5px; }
 .board-comment-item.own .board-comment-meta {
   justify-content: flex-end;
