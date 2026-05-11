@@ -48,11 +48,13 @@ const verifyCsrfToken = (token) => {
 
 const setAuthCookies = (res, jwtToken) => {
     res.cookie(SESSION_COOKIE_NAME, jwtToken, sessionCookieOptions());
-    setCsrfCookie(res);
+    return setCsrfCookie(res);
 };
 
 const setCsrfCookie = (res) => {
-    res.cookie(CSRF_COOKIE_NAME, createCsrfToken(), csrfCookieOptions());
+    const token = createCsrfToken();
+    res.cookie(CSRF_COOKIE_NAME, token, csrfCookieOptions());
+    return token;
 };
 
 const clearAuthCookies = (res) => {

@@ -38,10 +38,11 @@ const sendVerificationOrHandleFailure = async (email, otp) => {
 
 const sendSession = (res, user, status = 200, extraPayload = {}) => {
     const session = issueSession(user);
-    setAuthCookies(res, session.token);
+    const csrfToken = setAuthCookies(res, session.token);
     return res.status(status).json({
         ...extraPayload,
         user: session.user,
+        csrfToken,
     });
 };
 
