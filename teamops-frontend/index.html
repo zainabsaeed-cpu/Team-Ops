@@ -1783,8 +1783,8 @@ function alignLocalBackendHost(url) {
   return url;
 }
 
-const API_BASE = trimTrailingSlash(alignLocalBackendHost(readViteEnv('%VITE_API_URL%', 'http://localhost:5002/api')));
-const SOCKET_BASE = trimTrailingSlash(alignLocalBackendHost(readViteEnv('%VITE_SOCKET_URL%', 'http://localhost:5002')));
+const API_BASE = trimTrailingSlash(alignLocalBackendHost(readViteEnv('%VITE_API_URL%', 'https://teamops-backend.onrender.com/api')));
+const SOCKET_BASE = trimTrailingSlash(alignLocalBackendHost(readViteEnv('%VITE_SOCKET_URL%', 'https://teamops-backend.onrender.com')));
 const GOOGLE_CLIENT_ID = readViteEnv(
   '%VITE_GOOGLE_CLIENT_ID%',
   '175739577750-6pglkgnai3nha232d8js957jl529ep5i.apps.googleusercontent.com'
@@ -3618,6 +3618,10 @@ async function doLogin() {
       return;
     }
 
+    if (payload?.csrfToken) {
+      document.cookie = `teamops_csrf=${payload.csrfToken}; path=/; max-age=${7*24*60*60}`;
+    }
+
     saveSession(payload);
     const signedIn = await bootstrapSession();
     if (!signedIn) return;
@@ -3682,6 +3686,10 @@ async function doSignup() {
       return;
     }
 
+    if (payload?.csrfToken) {
+      document.cookie = `teamops_csrf=${payload.csrfToken}; path=/; max-age=${7*24*60*60}`;
+    }
+
     saveSession(payload);
     const signedIn = await bootstrapSession();
     if (!signedIn) return;
@@ -3715,6 +3723,10 @@ async function doVerify() {
     if (!response.ok) {
       showAuthError(payload?.error || 'Verification failed. Please try again.', 'verificationError');
       return;
+    }
+
+    if (payload?.csrfToken) {
+      document.cookie = `teamops_csrf=${payload.csrfToken}; path=/; max-age=${7*24*60*60}`;
     }
 
     saveSession(payload);
@@ -3817,6 +3829,10 @@ async function handleGoogleCredential(response) {
     if (!apiResponse.ok) {
       showAuthError(payload?.error || 'Google sign-in failed. Please try again.');
       return;
+    }
+
+    if (payload?.csrfToken) {
+      document.cookie = `teamops_csrf=${payload.csrfToken}; path=/; max-age=${7*24*60*60}`;
     }
 
     saveSession(payload);
