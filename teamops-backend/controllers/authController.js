@@ -14,6 +14,28 @@ const issueSession = (user) => ({
     token: jwt.sign({ userId: user._id.toString() }, jwtSecret, { expiresIn: '7d' }),
 });
 
+const allowEmailFailure = () => String(process.env.ALLOW_EMAIL_FAILURE || '').toLowerCase() === 'true';
+const exposeVerificationCodes = () => String(process.env.EXPOSE_VERIFICATION_CODES || '').toLowerCase() === 'true';
+
+const sendVerificationOrHandleFailure = async (email, otp) => {
+    try {
+        await sendVerificationEmail(email, otp);
+        return {};
+    } catch (err) {
+        console.error('Verification email error:', err);
+        if (!allowEmailFailure()) throw err;
+
+        const payload = {
+            emailWarning: 'Verification email could not be sent. Use the Render logs for the code while email is being configured.',
+        };
+        if (exposeVerificationCodes()) {
+            payload.verificationCode = otp;
+        }
+        console.log(`Verification code for ${email}: ${otp}`);
+        return payload;
+    }
+};
+
 const sendSession = (res, user, status = 200, extraPayload = {}) => {
     const session = issueSession(user);
     setAuthCookies(res, session.token);
@@ -64,12 +86,13 @@ exports.register = async (req, res) => {
             const otp = String(Math.floor(100000 + Math.random() * 900000));
             const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
             await VerificationToken.create({ userId: user._id, token: otp, expiresAt });
-            await sendVerificationEmail(normalizedEmail, otp);
+            const emailPayload = await sendVerificationOrHandleFailure(normalizedEmail, otp);
 
             return res.status(200).json({
                 user: formatUser(user),
                 email: user.email,
                 requiresVerification: true,
+                ...emailPayload,
                 message: 'Verification code sent. Verify your email to finish registration.'
             });
         }
@@ -85,12 +108,13 @@ exports.register = async (req, res) => {
         const otp = String(Math.floor(100000 + Math.random() * 900000));
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
         await VerificationToken.create({ userId: user._id, token: otp, expiresAt });
-        await sendVerificationEmail(normalizedEmail, otp);
+        const emailPayload = await sendVerificationOrHandleFailure(normalizedEmail, otp);
 
         res.status(201).json({
             user: formatUser(user),
             email: user.email,
             requiresVerification: true,
+            ...emailPayload,
             message: 'Verification code sent. Verify your email to finish registration.'
         });
     } catch (err) {
