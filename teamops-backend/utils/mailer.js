@@ -61,6 +61,9 @@ async function getTransporter() {
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT || 587),
       secure: String(process.env.EMAIL_SECURE || '').toLowerCase() === 'true',
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
       auth: process.env.EMAIL_USER && process.env.EMAIL_PASS ? {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -74,6 +77,9 @@ async function getTransporter() {
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
         _transporter = nodemailer.createTransport({
             service: 'gmail',
+            connectionTimeout: 10000,
+            greetingTimeout: 10000,
+            socketTimeout: 10000,
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS,
