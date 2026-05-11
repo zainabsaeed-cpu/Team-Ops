@@ -1,7 +1,9 @@
 const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
 let _transporter = null;
 let _isEthereal = false;
+let _resend = null;
 
 const frontendBaseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
@@ -55,6 +57,14 @@ const emailShell = ({ title, heading, body, ctaLabel, ctaUrl, footerNote, extraH
 
 async function getTransporter() {
     if (_transporter) return _transporter;
+
+  // Resend API takes priority
+  if (process.env.RESEND_API_KEY) {
+    _transporter = 'resend'; // marker, not a real transporter
+    _resend = new Resend(process.env.RESEND_API_KEY);
+    console.log('📧 Mailer: using Resend API');
+    return _transporter;
+  }
 
   if (process.env.EMAIL_HOST) {
     _transporter = nodemailer.createTransport({
@@ -110,6 +120,26 @@ async function getTransporter() {
 async function sendVerificationEmail(toEmail, otp) {
     const transporter = await getTransporter();
     const verificationUrl = `${frontendBaseUrl}/login?email=${encodeURIComponent(toEmail)}`;
+
+    if (transporter === 'resend' && _resend) {
+        const emailHtml = emailShell({
+            title: 'Your verification code',
+            heading: 'Your verification code',
+            body: `Enter this code on the TeamOps sign-up page to activate your account.`,
+            ctaLabel: 'Open TeamOps',
+            ctaUrl: verificationUrl,
+            extraHtml: `<div style="display:inline-block;background:linear-gradient(135deg,#7c5cfc,#06b6d4);border-radius:12px;padding:20px 40px;margin-bottom:24px;"><span style="color:#ffffff;font-size:36px;font-weight:800;letter-spacing:10px;">${otp}</span></div>`,
+            footerNote: `Your code is: <strong>${otp}</strong>. It expires in <strong>24 hours</strong>. If you didn't create a TeamOps account, you can safely ignore this email.`,
+        });
+        const info = await _resend.emails.send({
+            from: process.env.EMAIL_FROM || 'noreply@teamops.dev',
+            to: toEmail,
+            subject: 'Your TeamOps verification code',
+            html: emailHtml,
+        });
+        console.log(`📧 Verification email sent via Resend to ${toEmail}`);
+        return info;
+    }
 
     const info = await transporter.sendMail({
         from: process.env.EMAIL_FROM || `"TeamOps" <no-reply@teamops.dev>`,
@@ -200,6 +230,26 @@ async function sendWorkspaceInviteEmail({ toEmail, workspaceName, inviterName, t
 async function sendPasswordResetEmail(toEmail, otp) {
   const transporter = await getTransporter();
   const resetUrl = `${frontendBaseUrl}/login?resetEmail=${encodeURIComponent(toEmail)}`;
+
+  if (transporter === 'resend' && _resend) {
+    const emailHtml = emailShell({
+      title: 'Reset your password',
+      heading: 'Reset your password',
+      body: 'Enter this code in TeamOps to set a new password.',
+      ctaLabel: 'Open TeamOps',
+      ctaUrl: resetUrl,
+      extraHtml: `<div style="display:inline-block;background:linear-gradient(135deg,#7c5cfc,#06b6d4);border-radius:12px;padding:20px 40px;margin-bottom:24px;"><span style="color:#ffffff;font-size:36px;font-weight:800;letter-spacing:10px;">${otp}</span></div>`,
+      footerNote: `Your reset code is: <strong>${otp}</strong>. It expires in <strong>24 hours</strong>.`,
+    });
+    const info = await _resend.emails.send({
+      from: process.env.EMAIL_FROM || 'noreply@teamops.dev',
+      to: toEmail,
+      subject: 'Reset your TeamOps password',
+      html: emailHtml,
+    });
+    console.log(`📧 Password reset email sent via Resend to ${toEmail}`);
+    return info;
+  }
 
   const info = await transporter.sendMail({
     from: process.env.EMAIL_FROM || `"TeamOps" <no-reply@teamops.dev>`,

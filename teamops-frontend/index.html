@@ -1861,8 +1861,7 @@ function getCookieValue(name) {
 }
 
 function getCsrfToken() {
-  const token = getCookieValue('teamops_csrf');
-  return token ? decodeURIComponent(token) : '';
+  return getCookieValue('teamops_csrf');
 }
 
 function compactStoredUser(user = {}) {
